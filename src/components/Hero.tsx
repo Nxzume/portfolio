@@ -11,7 +11,7 @@ export function Hero({ intensity }: Props) {
       <div className="hero__media" aria-hidden>
         <img
           className="hero__image"
-          src="/images/level-hero-alt.jpg"
+          src="/images/level-gameplay.png"
           alt=""
           fetchPriority="high"
         />
