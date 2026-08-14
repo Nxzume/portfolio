@@ -31,7 +31,11 @@ export function Footer() {
       <p>
         © {new Date().getFullYear()} {site.name}
       </p>
-      <p>Edit site copy in the <code>content/</code> folder — no React changes needed.</p>
+      <p>
+        <a href="/admin">Edit site</a>
+        <span aria-hidden> · </span>
+        Forms-based editor — no coding required
+      </p>
     </footer>
   )
 }

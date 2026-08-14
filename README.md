@@ -4,18 +4,19 @@ Interactive React portfolio for **Alexandre Guichet**: game composition, level d
 
 **Live:** [portfolio-vercel-1406s-projects.vercel.app](https://portfolio-vercel-1406s-projects.vercel.app)
 
-## Edit content (no React)
+## Edit without coding
 
-All copy lives in [`content/`](./content/). See [`content/README.md`](./content/README.md) for:
+Use the visual editor (forms, image uploads, Publish button):
 
-- editing About / hero / contact
-- adding music (`content/sketches.json` + `public/audio/`)
-- adding projects (`content/projects/*.json` + `public/images/`)
+- **Friend guide:** [docs/EDITING.md](./docs/EDITING.md)
+- **Owner setup (once):** [docs/ADMIN-SETUP.md](./docs/ADMIN-SETUP.md)
+- **Editor URL:** [/admin](https://portfolio-vercel-1406s-projects.vercel.app/admin)
 
 ## Stack
 
 - Vite + React + TypeScript
 - Framer Motion + React Router
+- Decap CMS admin (GitHub-backed)
 - Hosted on Vercel
 
 ## Local development

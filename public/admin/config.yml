@@ -1,0 +1,199 @@
+# Visual editor for people who don’t write code.
+# Open https://YOUR-SITE/admin after setup (see docs/EDITING.md).
+
+backend:
+  name: github
+  repo: Nxzume/portfolio
+  branch: master
+  base_url: https://portfolio-vercel-1406s-projects.vercel.app
+  auth_endpoint: api/auth
+
+# Uncomment for local editing with: npx decap-server
+# local_backend: true
+
+media_folder: public/images
+public_folder: /images
+
+logo_url: /favicon.svg
+locale: en
+
+collections:
+  - name: pages
+    label: Site pages
+    description: Homepage text your visitors see first
+    files:
+      - name: hero
+        label: Hero (top of homepage)
+        file: content/hero.json
+        fields:
+          - { label: Brand name, name: brand, widget: string }
+          - { label: Headline, name: headline, widget: string }
+          - { label: Short supporting sentence, name: lede, widget: text }
+          - { label: Background image, name: image, widget: image }
+          - label: Primary button
+            name: primaryCta
+            widget: object
+            fields:
+              - { label: Label, name: label, widget: string }
+              - { label: Link, name: href, widget: string, hint: "Use #compose or #projects for on-page links" }
+          - label: Secondary button
+            name: secondaryCta
+            widget: object
+            fields:
+              - { label: Label, name: label, widget: string }
+              - { label: Link, name: href, widget: string }
+
+      - name: about
+        label: About me
+        file: content/about.json
+        fields:
+          - { label: Portrait photo, name: portrait, widget: image }
+          - { label: Photo description (accessibility), name: portraitAlt, widget: string }
+          - { label: Headline, name: lead, widget: string }
+          - label: Paragraphs
+            name: body
+            widget: list
+            field: { label: Paragraph, name: paragraph, widget: text }
+          - { label: Optional footnote, name: note, widget: text, required: false }
+
+      - name: contact
+        label: Contact
+        file: content/contact.json
+        fields:
+          - { label: Small label, name: eyebrow, widget: string }
+          - { label: Title, name: title, widget: string }
+          - { label: Description, name: lede, widget: text }
+          - label: Buttons
+            name: actions
+            widget: list
+            fields:
+              - { label: Button text, name: label, widget: string }
+              - { label: Link (email or URL), name: href, widget: string }
+              - label: Style
+                name: style
+                widget: select
+                options: [primary, ghost]
+                default: ghost
+
+      - name: site
+        label: Site settings
+        file: content/site.json
+        fields:
+          - { label: Display name, name: name, widget: string }
+          - { label: Tagline, name: tagline, widget: string }
+          - { label: Email, name: email, widget: string }
+          - label: Links
+            name: links
+            widget: object
+            fields:
+              - { label: itch.io, name: itch, widget: string, required: false }
+              - { label: Arena GitHub, name: githubArena, widget: string, required: false }
+              - { label: Level GitHub, name: githubLevel, widget: string, required: false }
+
+      - name: score
+        label: Music section titles
+        file: content/score.json
+        fields:
+          - { label: Small label, name: eyebrow, widget: string }
+          - { label: Title, name: title, widget: string }
+          - { label: Description, name: lede, widget: text }
+
+      - name: projects_section
+        label: Projects section titles
+        file: content/projects-section.json
+        fields:
+          - { label: Small label, name: eyebrow, widget: string }
+          - { label: Title, name: title, widget: string }
+          - { label: Description, name: lede, widget: text }
+
+      - name: focuses
+        label: Compose / Levels / Azure tabs
+        file: content/focuses.json
+        fields:
+          - label: Tabs
+            name: tabs
+            widget: list
+            fields:
+              - { label: ID (compose, levels, azure…), name: id, widget: string }
+              - { label: Tab label, name: label, widget: string }
+              - { label: Headline, name: headline, widget: string }
+              - { label: Body text, name: body, widget: text }
+
+      - name: sketches
+        label: Music tracks
+        file: content/sketches.json
+        fields:
+          - label: Tracks
+            name: tracks
+            widget: list
+            summary: "{{title}}"
+            fields:
+              - { label: ID (unique, no spaces), name: id, widget: string }
+              - { label: Title, name: title, widget: string }
+              - { label: Mood / subtitle, name: mood, widget: string }
+              - { label: BPM, name: bpm, widget: number, value_type: int, default: 100 }
+              - {
+                  label: Audio file path,
+                  name: audio,
+                  widget: string,
+                  required: false,
+                  hint: "Put files in public/audio/ then enter /audio/my-track.mp3 — leave empty for a placeholder tone",
+                  default: "",
+                }
+              - { label: Placeholder base frequency (optional), name: baseFreq, widget: number, required: false, value_type: float }
+              - label: Placeholder note pattern (optional)
+                name: pattern
+                widget: list
+                required: false
+                field: { label: Semitone, name: step, widget: number, value_type: int }
+
+  - name: projects
+    label: Projects
+    label_singular: Project
+    description: Games and case studies — each gets its own page
+    folder: content/projects
+    create: true
+    slug: "{{slug}}"
+    extension: json
+    format: json
+    summary: "{{title}}"
+    fields:
+      - { label: ID (unique, no spaces), name: id, widget: string }
+      - { label: URL slug, name: slug, widget: string, hint: "Appears in /projects/your-slug" }
+      - { label: Sort order (lower = first), name: order, widget: number, value_type: int, default: 10 }
+      - { label: Title, name: title, widget: string }
+      - { label: Subtitle, name: subtitle, widget: string }
+      - { label: Cover image, name: image, widget: image }
+      - label: Gallery images
+        name: gallery
+        widget: list
+        field: { label: Image, name: image, widget: image }
+      - { label: Short summary (homepage card), name: summary, widget: text }
+      - label: Highlights
+        name: highlights
+        widget: list
+        field: { label: Highlight, name: item, widget: string }
+      - label: Links (Play, GitHub…)
+        name: links
+        widget: list
+        fields:
+          - { label: Label, name: label, widget: string }
+          - { label: URL, name: href, widget: string }
+      - label: Intro paragraphs
+        name: intro
+        widget: list
+        field: { label: Paragraph, name: paragraph, widget: text }
+      - label: Page sections
+        name: sections
+        widget: list
+        summary: "{{title}}"
+        fields:
+          - { label: Section ID, name: id, widget: string }
+          - { label: Heading, name: title, widget: string }
+          - { label: Quote (optional), name: quote, widget: text, required: false }
+          - label: Paragraphs
+            name: paragraphs
+            widget: list
+            field: { label: Paragraph, name: paragraph, widget: text }
+          - { label: Image (optional), name: image, widget: image, required: false }
+          - { label: Image caption, name: imageAlt, widget: string, required: false }

@@ -32,8 +32,12 @@ function loadProjects(): Project[] {
 
 export const site = siteJson as SiteContent
 export const about = aboutJson as AboutContent
-export const focuses = focusesJson as Focus[]
-export const sketches = sketchesJson as Sketch[]
+export const focuses = (Array.isArray(focusesJson)
+  ? focusesJson
+  : (focusesJson as { tabs: Focus[] }).tabs) as Focus[]
+export const sketches = (Array.isArray(sketchesJson)
+  ? sketchesJson
+  : (sketchesJson as { tracks: Sketch[] }).tracks) as Sketch[]
 export const score = scoreJson as SectionCopy
 export const contact = contactJson as ContactContent
 export const hero = heroJson as HeroContent

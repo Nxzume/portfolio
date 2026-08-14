@@ -1,20 +1,22 @@
-[
-  {
-    "id": "compose",
-    "label": "Compose",
-    "headline": "Scores that carry a world",
-    "body": "Alexandre produces music in his free time and wants to be hired as a composer for video games — writing themes, stingers, and atmospheres that make levels feel alive."
-  },
-  {
-    "id": "levels",
-    "label": "Levels",
-    "headline": "Spaces players learn by playing",
-    "body": "Through Unity projects like Level and The Arena, he designs puzzles and encounters that teach mechanics through space, pacing, and curiosity — not walls of text."
-  },
-  {
-    "id": "azure",
-    "label": "Azure",
-    "headline": "DevOps on Microsoft Azure",
-    "body": "Alongside creative work, Alexandre works with Microsoft Azure DevOps — bringing reliable delivery, automation, and cloud craft to teams that ship."
-  }
-]
+{
+  "tabs": [
+    {
+      "id": "compose",
+      "label": "Compose",
+      "headline": "Scores that carry a world",
+      "body": "Alexandre produces music in his free time and wants to be hired as a composer for video games — writing themes, stingers, and atmospheres that make levels feel alive."
+    },
+    {
+      "id": "levels",
+      "label": "Levels",
+      "headline": "Spaces players learn by playing",
+      "body": "Through Unity projects like Level and The Arena, he designs puzzles and encounters that teach mechanics through space, pacing, and curiosity — not walls of text."
+    },
+    {
+      "id": "azure",
+      "label": "Azure",
+      "headline": "DevOps on Microsoft Azure",
+      "body": "Alongside creative work, Alexandre works with Microsoft Azure DevOps — bringing reliable delivery, automation, and cloud craft to teams that ship."
+    }
+  ]
+}
