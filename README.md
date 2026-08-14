@@ -2,11 +2,13 @@
 
 Interactive React portfolio for **Alexandre Guichet**: game composition, level design, and Azure DevOps.
 
+**Live:** [portfolio-vercel-1406s-projects.vercel.app](https://portfolio-vercel-1406s-projects.vercel.app)
+
 ## Stack
 
 - Vite + React + TypeScript
-- Framer Motion
-- Deploy-ready for Vercel
+- Framer Motion + React Router
+- Hosted on Vercel
 
 ## Local development
 
@@ -21,10 +23,6 @@ npm run dev
 npm run build
 npm run preview
 ```
-
-## Deploy (Vercel)
-
-Connect this repo in Vercel. Framework preset: Vite. Build command `npm run build`, output `dist`.
 
 ## Content note
 
