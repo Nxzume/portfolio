@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Edit portfolio — Alexandre Guichet</title>
+    <base href="/admin/" />
     <style>
       body {
         margin: 0;
@@ -11,9 +12,48 @@
         background: #0c1017;
         color: #e8e4dc;
       }
+      .cms-boot {
+        padding: 2rem;
+        max-width: 32rem;
+      }
+      .cms-boot code {
+        color: #d4a84b;
+      }
     </style>
   </head>
   <body>
+    <div class="cms-boot" id="cms-status">Loading editor…</div>
+    <script>
+      // Load config ourselves so /admin (no trailing slash) still works.
+      window.CMS_MANUAL_INIT = true
+    </script>
+    <script src="https://unpkg.com/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
     <script src="https://unpkg.com/decap-cms@^3.8.0/dist/decap-cms.js"></script>
+    <script>
+      ;(async function boot() {
+        const status = document.getElementById('cms-status')
+        try {
+          const res = await fetch('/admin/config.yml', { cache: 'no-store' })
+          if (!res.ok) throw new Error('Could not load /admin/config.yml (' + res.status + ')')
+          const text = await res.text()
+          if (text.trim().startsWith('<!')) {
+            throw new Error(
+              'Got HTML instead of YAML for config.yml. Check Vercel rewrites so /admin/config.yml is a static file.',
+            )
+          }
+          const config = window.jsyaml.load(text)
+          if (!config || !config.backend || !config.collections) {
+            throw new Error('Config YAML parsed but is missing backend/collections.')
+          }
+          status.remove()
+          window.CMS.init({ config: config })
+        } catch (err) {
+          status.innerHTML =
+            '<h1>Editor failed to load</h1><p>' +
+            (err && err.message ? err.message : String(err)) +
+            '</p><p>See <code>docs/ADMIN-SETUP.md</code>.</p>'
+        }
+      })()
+    </script>
   </body>
 </html>
