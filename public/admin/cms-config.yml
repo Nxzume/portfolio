@@ -18,7 +18,7 @@ logo_url: /favicon.svg
 locale: en
 
 collections:
-  - name: pages
+  - name: site_content
     label: Site pages
     description: Homepage text your visitors see first
     files:
@@ -132,14 +132,12 @@ collections:
               - { label: Title, name: title, widget: string }
               - { label: Mood / subtitle, name: mood, widget: string }
               - { label: BPM, name: bpm, widget: number, value_type: int, default: 100 }
-              - {
-                  label: Audio file path,
-                  name: audio,
-                  widget: string,
-                  required: false,
-                  hint: "Put files in public/audio/ then enter /audio/my-track.mp3 — leave empty for a placeholder tone",
-                  default: "",
-                }
+              - label: Audio file path
+                name: audio
+                widget: string
+                required: false
+                default: ""
+                hint: Put files in public/audio then enter /audio/my-track.mp3. Leave empty for a placeholder tone.
               - { label: Placeholder base frequency (optional), name: baseFreq, widget: number, required: false, value_type: float }
               - label: Placeholder note pattern (optional)
                 name: pattern
@@ -147,7 +145,7 @@ collections:
                 required: false
                 field: { label: Semitone, name: step, widget: number, value_type: int }
 
-  - name: projects
+  - name: game_projects
     label: Projects
     label_singular: Project
     description: Games and case studies — each gets its own page

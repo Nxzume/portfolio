@@ -24,27 +24,40 @@
   <body>
     <div class="cms-boot" id="cms-status">Loading editor…</div>
     <script>
-      // Load config ourselves so /admin (no trailing slash) still works.
+      // Prevent Decap from auto-loading /admin/config.yml (would double-register collections).
       window.CMS_MANUAL_INIT = true
     </script>
     <script src="https://unpkg.com/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
-    <script src="https://unpkg.com/decap-cms@^3.8.0/dist/decap-cms.js"></script>
+    <script src="https://unpkg.com/decap-cms@3.8.3/dist/decap-cms.js"></script>
     <script>
       ;(async function boot() {
+        if (window.__PORTFOLIO_CMS_BOOTED__) return
+        window.__PORTFOLIO_CMS_BOOTED__ = true
+
         const status = document.getElementById('cms-status')
         try {
-          const res = await fetch('/admin/config.yml', { cache: 'no-store' })
-          if (!res.ok) throw new Error('Could not load /admin/config.yml (' + res.status + ')')
+          // Intentionally NOT named config.yml — avoids Decap auto-load + our init both registering collections.
+          const res = await fetch('/admin/cms-config.yml', { cache: 'no-store' })
+          if (!res.ok) throw new Error('Could not load /admin/cms-config.yml (' + res.status + ')')
           const text = await res.text()
           if (text.trim().startsWith('<!')) {
             throw new Error(
-              'Got HTML instead of YAML for config.yml. Check Vercel rewrites so /admin/config.yml is a static file.',
+              'Got HTML instead of YAML for cms-config.yml. Check Vercel rewrites for /admin/* static files.',
             )
           }
           const config = window.jsyaml.load(text)
-          if (!config || !config.backend || !config.collections) {
+          if (!config || !config.backend || !Array.isArray(config.collections)) {
             throw new Error('Config YAML parsed but is missing backend/collections.')
           }
+
+          // Guard against accidental duplicate collection names.
+          const seen = new Set()
+          config.collections = config.collections.filter(function (collection) {
+            if (!collection || !collection.name || seen.has(collection.name)) return false
+            seen.add(collection.name)
+            return true
+          })
+
           status.remove()
           window.CMS.init({ config: config })
         } catch (err) {

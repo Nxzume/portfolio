@@ -11,7 +11,7 @@
   ],
   "headers": [
     {
-      "source": "/admin/config.yml",
+      "source": "/admin/cms-config.yml",
       "headers": [{ "key": "Content-Type", "value": "text/yaml; charset=utf-8" }]
     }
   ]
