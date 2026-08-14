@@ -6,11 +6,11 @@ import { Hero } from '../components/Hero'
 import { Nav } from '../components/Nav'
 import { Projects } from '../components/Projects'
 import { ScoreDesk } from '../components/ScoreDesk'
-import { sketches, type FocusId } from '../data/content'
+import { focuses, sketches, type FocusId } from '../content'
 import { useSketchPlayer } from '../hooks/useSketchPlayer'
 
 export function HomePage() {
-  const [focus, setFocus] = useState<FocusId>('compose')
+  const [focus, setFocus] = useState<FocusId>(focuses[0]?.id ?? 'compose')
   const { activeId, intensity, play } = useSketchPlayer()
 
   return (

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { about } from '../data/content'
+import { about } from '../content'
 
 export function About() {
   return (
@@ -12,7 +12,7 @@ export function About() {
           viewport={{ once: true, amount: 0.35 }}
           transition={{ duration: 0.8 }}
         >
-          <img src="/images/portrait.png" alt="Alexandre Guichet" />
+          <img src={about.portrait} alt={about.portraitAlt} />
         </motion.div>
         <div className="about__copy">
           <p className="eyebrow">About</p>
@@ -20,10 +20,7 @@ export function About() {
           {about.body.map((p) => (
             <p key={p}>{p}</p>
           ))}
-          <p className="about__note">
-            Earlier copy mentioned UBC studies and a Bosch internship with ML feature-selection work.
-            That history remains part of the story; Azure DevOps and game composition are the forward focus.
-          </p>
+          {about.note ? <p className="about__note">{about.note}</p> : null}
         </div>
       </div>
     </section>

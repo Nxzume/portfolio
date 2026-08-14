@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { focuses, type FocusId } from '../data/content'
+import { focuses, type FocusId } from '../content'
 
 type Props = {
   active: FocusId

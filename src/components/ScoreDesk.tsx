@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { sketches } from '../data/content'
+import { score, sketches } from '../content'
 import { WaveformCanvas } from './WaveformCanvas'
 
 type Props = {
@@ -12,12 +12,9 @@ export function ScoreDesk({ activeId, intensity, onPlay }: Props) {
   return (
     <section className="section score" id="compose">
       <div className="section__head">
-        <p className="eyebrow">Score desk</p>
-        <h2>Interactive sketches</h2>
-        <p className="section__lede">
-          Placeholder motifs you can audition in-browser. Real tracks and stems will replace these
-          generative sketches as Alexandre updates the portfolio.
-        </p>
+        <p className="eyebrow">{score.eyebrow}</p>
+        <h2>{score.title}</h2>
+        <p className="section__lede">{score.lede}</p>
       </div>
 
       <div className="score__stage">
@@ -44,7 +41,10 @@ export function ScoreDesk({ activeId, intensity, onPlay }: Props) {
                   </span>
                   <span className="score__meta">
                     <span className="score__title">{sketch.title}</span>
-                    <span className="score__mood">{sketch.mood}</span>
+                    <span className="score__mood">
+                      {sketch.mood}
+                      {sketch.audio ? ' · audio file' : ' · generative'}
+                    </span>
                   </span>
                   <span className="score__bpm">{sketch.bpm} BPM</span>
                 </button>
