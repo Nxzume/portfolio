@@ -536,6 +536,11 @@
   margin: 0;
 }
 
+.footer code {
+  font-size: 0.85em;
+  color: var(--brass-soft);
+}
+
 @media (max-width: 860px) {
   .nav__links {
     gap: 0.85rem;

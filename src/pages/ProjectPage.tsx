@@ -1,7 +1,7 @@
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { Footer } from '../components/Contact'
 import { Nav } from '../components/Nav'
-import { getProject, projects } from '../data/content'
+import { getProject, projects } from '../content'
 
 export function ProjectPage() {
   const { slug } = useParams()

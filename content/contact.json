@@ -1,0 +1,22 @@
+{
+  "eyebrow": "Contact",
+  "title": "Let’s talk scores, levels, or Azure.",
+  "lede": "Reach out for game composition, level design collaboration, or DevOps conversations.",
+  "actions": [
+    {
+      "label": "Email Alexandre",
+      "href": "mailto:alexandre.g007@gmail.com",
+      "style": "primary"
+    },
+    {
+      "label": "itch.io",
+      "href": "https://alexandreguichet.itch.io/level",
+      "style": "ghost"
+    },
+    {
+      "label": "GitHub",
+      "href": "https://github.com/alexandreguichet/Level-Unity-CSharp",
+      "style": "ghost"
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+[
+  {
+    "id": "overture",
+    "title": "Overture — Title Screen",
+    "mood": "Warm brass · slow pulse",
+    "bpm": 72,
+    "audio": "",
+    "baseFreq": 110,
+    "pattern": [
+      0,
+      4,
+      7,
+      11,
+      7,
+      4
+    ]
+  },
+  {
+    "id": "arena-floor",
+    "title": "Arena Floor I",
+    "mood": "Tense · dual-character motif",
+    "bpm": 96,
+    "audio": "",
+    "baseFreq": 146.83,
+    "pattern": [
+      0,
+      3,
+      7,
+      10,
+      7,
+      3,
+      0,
+      7
+    ]
+  },
+  {
+    "id": "tilt",
+    "title": "Tilt & Token",
+    "mood": "Curious · puzzle sparkle",
+    "bpm": 108,
+    "audio": "",
+    "baseFreq": 196,
+    "pattern": [
+      0,
+      2,
+      5,
+      7,
+      9,
+      7,
+      5,
+      2
+    ]
+  },
+  {
+    "id": "bosch-night",
+    "title": "Night Shift Sketch",
+    "mood": "Ambient · late-lab calm",
+    "bpm": 60,
+    "audio": "",
+    "baseFreq": 82.41,
+    "pattern": [
+      0,
+      5,
+      7,
+      12,
+      7,
+      5
+    ]
+  }
+]

@@ -1,16 +1,14 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { projects } from '../data/content'
+import { projects, projectsSection } from '../content'
 
 export function Projects() {
   return (
     <section className="section projects" id="projects">
       <div className="section__head">
-        <p className="eyebrow">Level design</p>
-        <h2>Personal projects</h2>
-        <p className="section__lede">
-          Open a project for the full write-up — carried forward from the original portfolio site.
-        </p>
+        <p className="eyebrow">{projectsSection.eyebrow}</p>
+        <h2>{projectsSection.title}</h2>
+        <p className="section__lede">{projectsSection.lede}</p>
       </div>
 
       <div className="projects__grid">

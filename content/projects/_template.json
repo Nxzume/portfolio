@@ -1,0 +1,36 @@
+{
+  "id": "my-project",
+  "slug": "my-project",
+  "order": 10,
+  "title": "My Project",
+  "subtitle": "Genre · Engine",
+  "image": "/images/your-cover.png",
+  "gallery": [
+    "/images/your-cover.png"
+  ],
+  "summary": "One or two sentences for the home card.",
+  "highlights": [
+    "Highlight one",
+    "Highlight two"
+  ],
+  "links": [
+    {
+      "label": "Play",
+      "href": "https://example.com"
+    }
+  ],
+  "intro": [
+    "Opening paragraphs on the project page."
+  ],
+  "sections": [
+    {
+      "id": "overview",
+      "title": "Overview",
+      "paragraphs": [
+        "Write the story of the project here."
+      ],
+      "image": "/images/your-cover.png",
+      "imageAlt": "Optional caption"
+    }
+  ]
+}

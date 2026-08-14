@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { hero } from '../content'
 import { WaveformCanvas } from './WaveformCanvas'
 
 type Props = {
@@ -9,12 +10,7 @@ export function Hero({ intensity }: Props) {
   return (
     <section className="hero" id="top">
       <div className="hero__media" aria-hidden>
-        <img
-          className="hero__image"
-          src="/images/level-gameplay.png"
-          alt=""
-          fetchPriority="high"
-        />
+        <img className="hero__image" src={hero.image} alt="" fetchPriority="high" />
         <div className="hero__veil" />
         <WaveformCanvas className="hero__wave" intensity={Math.max(intensity, 0.28)} />
       </div>
@@ -26,14 +22,14 @@ export function Hero({ intensity }: Props) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1 }}
         >
-          Alexandre Guichet
+          {hero.brand}
         </motion.p>
         <motion.h1
           initial={{ opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.85, delay: 0.22 }}
         >
-          Music for worlds players inhabit.
+          {hero.headline}
         </motion.h1>
         <motion.p
           className="hero__lede"
@@ -41,7 +37,7 @@ export function Hero({ intensity }: Props) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.36 }}
         >
-          Composer for video games — also crafting level design and Azure DevOps systems.
+          {hero.lede}
         </motion.p>
         <motion.div
           className="hero__cta"
@@ -49,11 +45,11 @@ export function Hero({ intensity }: Props) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.75, delay: 0.48 }}
         >
-          <a className="btn btn--primary" href="#compose">
-            Hear sketches
+          <a className="btn btn--primary" href={hero.primaryCta.href}>
+            {hero.primaryCta.label}
           </a>
-          <a className="btn btn--ghost" href="#projects">
-            View projects
+          <a className="btn btn--ghost" href={hero.secondaryCta.href}>
+            {hero.secondaryCta.label}
           </a>
         </motion.div>
       </div>
