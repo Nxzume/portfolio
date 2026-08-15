@@ -1,25 +1,44 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
+import path from 'node:path'
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 
-/** Serve Decap’s /admin/index.html for /admin and /admin/ (Vite SPA would otherwise win). */
-function adminIndexPlugin(): Plugin {
-  const rewrite = (req: { url?: string }) => {
+const DIST = 'dist'
+
+/**
+ * Serve Decap’s /admin/index.html for /admin and /admin/ (Vite SPA would
+ * otherwise win), and in preview mirror how the host resolves the prerendered
+ * pages: a real file first, then the 404 page.
+ */
+function staticRoutingPlugin(): Plugin {
+  const rewriteAdmin = (req: { url?: string }) => {
     if (req.url === '/admin' || req.url === '/admin/') {
       req.url = '/admin/index.html'
     }
   }
+
   return {
-    name: 'admin-index',
+    name: 'static-routing',
     configureServer(server) {
       server.middlewares.use((req, _res, next) => {
-        rewrite(req)
+        rewriteAdmin(req)
         next()
       })
     },
     configurePreviewServer(server) {
       server.middlewares.use((req, _res, next) => {
-        rewrite(req)
+        rewriteAdmin(req)
+
+        const pathname = (req.url || '/').split('?')[0]
+        if (req.url?.startsWith('/admin') || path.extname(pathname)) return next()
+
+        const nested = path.join(DIST, pathname, 'index.html')
+        if (existsSync(nested)) {
+          req.url = `${pathname.replace(/\/$/, '')}/index.html`
+        } else if (pathname !== '/' && existsSync(path.join(DIST, '404.html'))) {
+          req.url = '/404.html'
+        }
+
         next()
       })
     },
@@ -68,5 +87,5 @@ function headPlugin(): Plugin {
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), adminIndexPlugin(), headPlugin()],
+  plugins: [react(), staticRoutingPlugin(), headPlugin()],
 })

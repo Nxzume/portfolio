@@ -7,7 +7,7 @@
     { "source": "/admin/", "destination": "/admin/index.html" },
     {
       "source": "/((?!api/|admin/).*)",
-      "destination": "/index.html"
+      "destination": "/404.html"
     }
   ],
   "headers": [
