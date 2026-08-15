@@ -55,7 +55,7 @@
     return h(
       'div',
       { className: 'pv' },
-      hint('Live preview · Top of homepage'),
+      hint('Live preview · Top of homepage (name & tagline come from Name and links)'),
       h(
         'div',
         { className: 'pv-hero' },
@@ -68,9 +68,9 @@
         h(
           'div',
           { className: 'pv-hero__content' },
-          h('p', { className: 'pv-brand' }, d.brand || 'Your name'),
+          h('p', { className: 'pv-brand' }, 'Your name (sitewide)'),
           h('h1', { className: 'pv-headline' }, d.headline || 'Main headline'),
-          h('p', { className: 'pv-lede' }, d.lede || ''),
+          h('p', { className: 'pv-lede' }, 'One-line description from Name and links'),
           h(
             'div',
             { className: 'pv-cta-row' },
@@ -111,27 +111,19 @@
 
   function ContactPreview({ entry }) {
     const d = dataOf(entry)
-    const actions = asList(d.actions)
     return h(
       'div',
       { className: 'pv pv-section' },
-      hint('Live preview · Contact'),
+      hint('Live preview · Contact (buttons use email & links from Name and links)'),
       h('p', { className: 'pv-eyebrow' }, d.eyebrow || ''),
       h('h2', { className: 'pv-title' }, d.title || 'Contact title'),
       h('p', { className: 'pv-lede' }, d.lede || ''),
       h(
         'div',
         { className: 'pv-cta-row' },
-        actions.map((a, i) =>
-          h(
-            'span',
-            {
-              key: i,
-              className: 'pv-btn ' + (a.style === 'primary' ? 'pv-btn--primary' : 'pv-btn--ghost'),
-            },
-            a.label || 'Button',
-          ),
-        ),
+        h('span', { className: 'pv-btn pv-btn--primary' }, d.emailButtonText || 'Email…'),
+        h('span', { className: 'pv-btn pv-btn--ghost' }, 'itch.io'),
+        h('span', { className: 'pv-btn pv-btn--ghost' }, 'GitHub'),
       ),
     )
   }
@@ -142,7 +134,7 @@
     return h(
       'div',
       { className: 'pv pv-section' },
-      hint('Live preview · Name and links'),
+      hint('Live preview · Name and links — updates nav, hero, footer, contact buttons'),
       h('p', { className: 'pv-brand' }, d.name || 'Your name'),
       h('p', { className: 'pv-lede' }, d.tagline || ''),
       h('p', { className: 'pv-meta' }, d.email || ''),

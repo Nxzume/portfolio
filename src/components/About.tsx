@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { about } from '../content'
+import { about, site } from '../content'
 
 export function About() {
   return (
@@ -7,21 +7,26 @@ export function About() {
       <div className="about__grid">
         <motion.div
           className="about__portrait"
-          initial={{ opacity: 0, scale: 1.04 }}
+          initial={{ opacity: 0, scale: 0.96 }}
           whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, amount: 0.35 }}
-          transition={{ duration: 0.8 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.7 }}
         >
-          <img src={about.portrait} alt={about.portraitAlt} />
+          <img src={about.portrait} alt={about.portraitAlt || site.name} />
         </motion.div>
-        <div className="about__copy">
-          <p className="eyebrow">About</p>
+        <motion.div
+          className="about__copy"
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.35 }}
+          transition={{ duration: 0.7, delay: 0.08 }}
+        >
           <h2>{about.lead}</h2>
           {about.body.map((p) => (
-            <p key={p}>{p}</p>
+            <p key={p.slice(0, 24)}>{p}</p>
           ))}
           {about.note ? <p className="about__note">{about.note}</p> : null}
-        </div>
+        </motion.div>
       </div>
     </section>
   )

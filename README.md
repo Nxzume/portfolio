@@ -20,6 +20,8 @@ npm run preview
 
 Open **`/admin/`** on the live site, sign in with GitHub, edit, then **Publish**.
 
+Edit **Name and links (sitewide)** once for your name, tagline, email, and social URLs — they update the nav, hero, footer, and contact buttons together.
+
 Locally (no OAuth):
 
 ```bash
