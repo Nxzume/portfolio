@@ -1,5 +1,5 @@
 # Visual editor for people who don’t write code.
-# Open https://YOUR-SITE/admin after setup (see docs/EDITING.md).
+# Open /admin/ on the live site after GitHub OAuth is configured (see README).
 
 backend:
   name: github

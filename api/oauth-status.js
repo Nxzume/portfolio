@@ -1,6 +1,5 @@
 /**
  * Safe status check — no secrets returned.
- * Short machine-readable status only; setup docs stay in docs/ADMIN-SETUP.md.
  */
 import { resolveClientId } from './_githubOAuth.js'
 

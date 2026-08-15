@@ -6,7 +6,6 @@
  * 2) public/admin/oauth-public.json (safe to commit — Client ID is public)
  *
  * Client Secret must stay in Vercel as GITHUB_CLIENT_SECRET (used by /api/callback).
- * Owner setup steps live in docs/ADMIN-SETUP.md — not on this page.
  */
 import { resolveClientId } from './_githubOAuth.js'
 
