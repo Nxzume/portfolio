@@ -1,12 +1,11 @@
-# Visual editor for people who don’t write code.
-# Open /admin/ on the live site after GitHub OAuth is configured (see README).
+# Edit your site at /admin/ (after GitHub login — see README).
+# Tip: use the form on the LEFT. The RIGHT side is a live look-ahead only.
 
 backend:
   name: github
   repo: Nxzume/portfolio
   branch: master
   # base_url + auth_endpoint are set at runtime from the current site origin
-  # so the editor works on any host (Vercel, Netlify, custom domain, localhost)
   base_url: /
   auth_endpoint: api/auth
 
@@ -25,117 +24,76 @@ locale: en
 
 collections:
   - name: site_content
-    label: Site pages
-    description: Shared identity first — name, email, and links update the whole site
-    # Click text in the preview to jump to that field in the form.
+    label: Homepage & shared text
+    description: "Edit the left-hand form. The right side only shows a preview — it is not clickable."
     editor:
       preview: true
-      visualEditing: true
+      visualEditing: false
     files:
       - name: site
-        label: Name and links (sitewide)
+        label: Your name, email & links
         file: content/site.json
         fields:
-          - { label: Your name, name: name, widget: string, hint: "Used in the nav, hero, footer, photo alt text, and page title" }
-          - { label: One-line description, name: tagline, widget: string, hint: "Shown under your name on the homepage" }
-          - { label: Email address, name: email, widget: string, hint: "Powers the Contact email button" }
-          - label: Website links
+          - { label: Your name, name: name, widget: string, hint: "Shows in the nav, homepage, footer, and browser tab" }
+          - { label: Short tagline under your name, name: tagline, widget: string }
+          - { label: Email address, name: email, widget: string, hint: "Used by the Contact email button" }
+          - label: Links
             name: links
             widget: object
+            collapsed: false
             fields:
-              - { label: itch.io page, name: itch, widget: string, required: false, hint: "Contact button + shared link" }
-              - { label: The Arena on GitHub, name: githubArena, widget: string, required: false }
-              - { label: Level on GitHub, name: githubLevel, widget: string, required: false, hint: "Also used as the Contact GitHub button" }
+              - { label: itch.io URL, name: itch, widget: string, required: false }
+              - { label: Arena GitHub URL, name: githubArena, widget: string, required: false }
+              - { label: Level GitHub URL, name: githubLevel, widget: string, required: false, hint: "Also used for the Contact GitHub button" }
 
       - name: hero
-        label: Top of homepage
+        label: Homepage — top banner
         file: content/hero.json
         fields:
-          - { label: Main headline, name: headline, widget: string }
+          - { label: Headline, name: headline, widget: string }
           - label: Background photo
             name: image
             widget: image
             choose_url: false
-            hint: "Upload or pick from the media library"
           - label: Main button
             name: primaryCta
             widget: object
             fields:
               - { label: Button text, name: label, widget: string }
-              - { label: Where it goes, name: href, widget: string, hint: "Examples: #compose, #projects, or https://…" }
+              - { label: Link, name: href, widget: string, hint: "Examples: #compose  #projects  or a full https:// link" }
           - label: Second button
             name: secondaryCta
             widget: object
             fields:
               - { label: Button text, name: label, widget: string }
-              - { label: Where it goes, name: href, widget: string }
-
-      - name: about
-        label: About me
-        file: content/about.json
-        fields:
-          - label: Your photo
-            name: portrait
-            widget: image
-            choose_url: false
-            required: false
-            hint: "Upload or pick from the media library"
-          - { label: Photo description, name: portraitAlt, widget: string, required: false, hint: "Describes the photo for screen readers. Leave blank to use your name." }
-          - { label: About headline, name: lead, widget: string, required: false }
-          - label: Bio paragraphs
-            name: body
-            label_singular: paragraph
-            widget: list
-            required: false
-            default: []
-            summary: "{{fields.paragraph}}"
-            fields:
-              - { label: Paragraph, name: paragraph, widget: text }
-          - { label: Small note under the bio (optional), name: note, widget: text, required: false }
-
-      - name: contact
-        label: Contact
-        file: content/contact.json
-        fields:
-          - { label: Tiny label above the title, name: eyebrow, widget: string, required: false }
-          - { label: Contact title, name: title, widget: string, required: false }
-          - { label: Short description, name: lede, widget: text, required: false }
-          - { label: Email button text, name: emailButtonText, widget: string, required: false, hint: "Buttons for email / itch / GitHub come from Name and links" }
-
-      - name: score
-        label: Music section heading
-        file: content/score.json
-        fields:
-          - { label: Tiny label above the title, name: eyebrow, widget: string, required: false }
-          - { label: Section title, name: title, widget: string, required: false }
-          - { label: Short description, name: lede, widget: text, required: false }
-
-      - name: projects_section
-        label: Projects section heading
-        file: content/projects-section.json
-        fields:
-          - { label: Tiny label above the title, name: eyebrow, widget: string, required: false }
-          - { label: Section title, name: title, widget: string, required: false }
-          - { label: Short description, name: lede, widget: text, required: false }
+              - { label: Link, name: href, widget: string }
 
       - name: focuses
-        label: Compose / Levels / Azure tabs
+        label: Homepage — focus tabs
         file: content/focuses.json
-        description: Keep at least one tab — the homepage hides this block if you delete them all
         fields:
           - label: Tabs
             name: tabs
             label_singular: tab
             widget: list
             summary: "{{fields.label}}"
+            collapsed: true
             fields:
-              - { label: Tab button text, name: label, widget: string }
-              - { label: Headline when selected, name: headline, widget: string, required: false }
-              - { label: Paragraph when selected, name: body, widget: text, required: false }
-              - { label: Internal name (no spaces), name: id, widget: string, required: false, hint: "Only used behind the scenes. Leave blank and one is made from the tab text." }
+              - { label: Tab label, name: label, widget: string }
+              - { label: Headline, name: headline, widget: string, required: false }
+              - { label: Text, name: body, widget: text, required: false }
+              - { name: id, widget: hidden, default: "" }
+
+      - name: score
+        label: Homepage — music section title
+        file: content/score.json
+        fields:
+          - { label: Small label above the title, name: eyebrow, widget: string, required: false }
+          - { label: Title, name: title, widget: string, required: false }
+          - { label: Short intro text, name: lede, widget: text, required: false }
 
       - name: sketches
-        label: Music tracks
+        label: Homepage — music tracks
         file: content/sketches.json
         fields:
           - label: Tracks
@@ -143,40 +101,76 @@ collections:
             label_singular: track
             widget: list
             summary: "{{fields.title}}"
+            collapsed: true
             fields:
-              - { label: Track title, name: title, widget: string }
-              - { label: Short description, name: mood, widget: string, required: false, hint: "Optional line under the title (e.g. “Warm brass · slow pulse”)" }
-              - { label: Internal name (no spaces), name: id, widget: string, required: false, hint: "Only used behind the scenes. Leave blank and one is made from the title." }
-              - label: Music file
+              - { label: Title, name: title, widget: string }
+              - { label: Line under the title (optional), name: mood, widget: string, required: false }
+              - label: Audio file
                 name: audio
                 widget: file
                 required: false
                 choose_url: false
-                # From repo-root global media (public/images): ../audio → public/audio
                 media_folder: ../audio
                 public_folder: /audio
-                hint: "Upload mp3/wav/ogg (best browser support). FLAC often fails in browsers. Leave empty for a placeholder tone."
-              - label: Placeholder tempo (optional)
-                name: bpm
-                widget: number
-                value_type: int
-                required: false
-                hint: "Only used when Music file is empty — sets the placeholder tone speed. Leave blank if unused."
-              - { label: Placeholder starting pitch (optional), name: baseFreq, widget: number, required: false, value_type: float, hint: "Only used when Music file is blank. Example: 110" }
-              - label: Placeholder note steps (optional)
+                hint: "Prefer mp3, wav, or ogg. Leave empty to use a simple placeholder tone."
+              - { name: id, widget: hidden, default: "" }
+              - { label: "Advanced: tone speed (BPM) if no audio file", name: bpm, widget: number, value_type: int, required: false, hint: "Ignore this if you uploaded an audio file" }
+              - { label: "Advanced: tone pitch if no audio file", name: baseFreq, widget: number, required: false, value_type: float, hint: "Ignore this if you uploaded an audio file" }
+              - label: "Advanced: tone melody steps if no audio file"
                 name: pattern
                 label_singular: step
                 widget: list
                 required: false
+                collapsed: true
                 summary: "{{fields.step}}"
-                hint: "Only used when Music file is blank. Numbers like 0, 4, 7 make a simple melody."
+                hint: "Ignore this if you uploaded an audio file. Numbers like 0, 4, 7 make a simple melody."
                 fields:
-                  - { label: Note step, name: step, widget: number, value_type: int }
+                  - { label: Step, name: step, widget: number, value_type: int }
+
+      - name: projects_section
+        label: Homepage — projects section title
+        file: content/projects-section.json
+        fields:
+          - { label: Small label above the title, name: eyebrow, widget: string, required: false }
+          - { label: Title, name: title, widget: string, required: false }
+          - { label: Short intro text, name: lede, widget: text, required: false }
+
+      - name: about
+        label: Homepage — about me
+        file: content/about.json
+        fields:
+          - label: Photo
+            name: portrait
+            widget: image
+            choose_url: false
+            required: false
+          - { label: Photo description (optional), name: portraitAlt, widget: string, required: false, hint: "For screen readers. Leave blank to use your name." }
+          - { label: Headline, name: lead, widget: string, required: false }
+          - label: Bio text
+            name: body
+            label_singular: paragraph
+            widget: list
+            required: false
+            default: []
+            collapsed: true
+            summary: "{{fields.paragraph | truncate(80)}}"
+            fields:
+              - { label: Text, name: paragraph, widget: text }
+          - { label: Small note at the bottom (optional), name: note, widget: text, required: false }
+
+      - name: contact
+        label: Homepage — contact
+        file: content/contact.json
+        fields:
+          - { label: Small label above the title, name: eyebrow, widget: string, required: false }
+          - { label: Title, name: title, widget: string, required: false }
+          - { label: Short intro text, name: lede, widget: text, required: false }
+          - { label: Email button text (optional), name: emailButtonText, widget: string, required: false, hint: "Email / itch / GitHub destinations come from “Your name, email & links”" }
 
   - name: game_projects
-    label: Projects
+    label: Project pages
     label_singular: Project
-    description: Games and case studies — each gets its own page at /projects/your-link-name after you publish (wait for the site to rebuild)
+    description: "Each project is a card on the homepage and its own page. Edit with the left form — right side is preview only. After Publish, wait for the site to rebuild."
     folder: content/projects
     create: true
     slug: "{{slug}}"
@@ -185,81 +179,89 @@ collections:
     summary: "{{title}}"
     editor:
       preview: true
-      visualEditing: true
+      visualEditing: false
     fields:
-      - { label: Project title, name: title, widget: string }
-      - { label: Small label above the title, name: subtitle, widget: string, required: false, default: "", hint: "Example: 2D top-down RPG · in development" }
+      - { label: Title, name: title, widget: string }
+      - { label: Small label above the title, name: subtitle, widget: string, required: false, default: "", hint: "Example: Puzzle · Unity" }
       - label: Cover photo
         name: image
         widget: image
         choose_url: false
         required: false
-        hint: "Upload or pick from the media library. Leave blank for a plain card."
-      - { label: Short card summary, name: summary, widget: text, required: false, default: "", hint: "Shown on the homepage project card" }
-      - { label: Page web address, name: slug, widget: string, hint: "The page becomes /projects/this — lowercase, no spaces (example: arena). Must be different from other projects." }
-      - { label: Homepage order, name: order, widget: number, value_type: int, default: 10, required: false, hint: "Lower numbers show first" }
+        hint: "Shown on the homepage card and project page. Leave blank for a plain card."
+      - { label: Short summary on the homepage card, name: summary, widget: text, required: false, default: "" }
+      - { label: Page address, name: slug, widget: string, hint: "Becomes /projects/this-name — lowercase, no spaces. Must be unique (example: arena)." }
+      - { label: Sort order on homepage, name: order, widget: number, value_type: int, default: 10, required: false, hint: "Lower numbers appear first" }
+      - { name: id, widget: hidden, default: "" }
       - label: Extra photos
         name: gallery
         label_singular: photo
         widget: list
         required: false
         default: []
-        summary: "{{fields.image}}"
+        collapsed: true
+        summary: "Photo"
         fields:
           - label: Photo
             name: image
             widget: image
             choose_url: false
-      - label: Bullet highlights
+      - label: Highlight bullets
         name: highlights
-        label_singular: highlight
+        label_singular: bullet
         widget: list
         required: false
         default: []
-        summary: "{{fields.item}}"
+        collapsed: true
+        summary: "{{fields.item | truncate(60)}}"
         fields:
-          - { label: Bullet point, name: item, widget: string }
-      - label: Buttons (Play, GitHub…)
+          - { label: Bullet text, name: item, widget: string }
+      - label: Buttons
         name: links
         label_singular: button
         widget: list
         required: false
         default: []
+        collapsed: true
         summary: "{{fields.label}}"
         fields:
           - { label: Button text, name: label, widget: string }
-          - { label: Web address, name: href, widget: string, hint: "Full link like https://example.com — or #contact to jump down this page" }
-      - label: Opening paragraphs
+          - { label: Link, name: href, widget: string, hint: "Full https:// link, or #contact for a jump on this site" }
+      - label: Opening text
         name: intro
         label_singular: paragraph
         widget: list
         required: false
         default: []
-        summary: "{{fields.paragraph}}"
+        collapsed: true
+        summary: "{{fields.paragraph | truncate(80)}}"
         fields:
-          - { label: Paragraph, name: paragraph, widget: text }
-      - label: Page chapters
+          - { label: Text, name: paragraph, widget: text }
+      - label: Chapters
         name: sections
         label_singular: chapter
         widget: list
         required: false
         default: []
+        collapsed: true
         summary: "{{fields.title}}"
         fields:
           - { label: Chapter title, name: title, widget: string }
+          - { name: id, widget: hidden, default: "" }
           - { label: Quote (optional), name: quote, widget: text, required: false }
-          - label: Paragraphs
+          - label: Chapter text
             name: paragraphs
             label_singular: paragraph
             widget: list
             required: false
             default: []
-            summary: "{{fields.paragraph}}"
+            collapsed: true
+            summary: "{{fields.paragraph | truncate(80)}}"
             fields:
-              - { label: Paragraph, name: paragraph, widget: text }
-          - label: Photo (optional)
+              - { label: Text, name: paragraph, widget: text }
+          - label: Chapter photo (optional)
             name: image
             widget: image
             required: false
             choose_url: false
-          - { label: Photo description, name: imageAlt, widget: string, required: false }
+          - { label: Photo description (optional), name: imageAlt, widget: string, required: false }
