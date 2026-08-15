@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { hero, site } from '../content'
 import { WaveformCanvas } from './WaveformCanvas'
 
@@ -11,37 +11,43 @@ export function Hero({ intensity }: Props) {
     <section className="hero" id="top">
       <div className="hero__media" aria-hidden>
         {hero.image ? (
-          <img className="hero__image" src={hero.image} alt="" fetchPriority="high" />
+          <img
+            className="hero__image"
+            src={hero.image}
+            alt=""
+            fetchPriority="high"
+            decoding="async"
+          />
         ) : null}
         <div className="hero__veil" />
         <WaveformCanvas className="hero__wave" intensity={Math.max(intensity, 0.28)} />
       </div>
 
       <div className="hero__content">
-        <motion.p
+        <m.p
           className="hero__brand"
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1 }}
         >
           {site.name}
-        </motion.p>
-        <motion.h1
+        </m.p>
+        <m.h1
           initial={{ opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.85, delay: 0.22 }}
         >
           {hero.headline}
-        </motion.h1>
-        <motion.p
+        </m.h1>
+        <m.p
           className="hero__lede"
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.36 }}
         >
           {site.tagline}
-        </motion.p>
-        <motion.div
+        </m.p>
+        <m.div
           className="hero__cta"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -53,7 +59,7 @@ export function Hero({ intensity }: Props) {
           <a className="btn btn--ghost" href={hero.secondaryCta.href}>
             {hero.secondaryCta.label}
           </a>
-        </motion.div>
+        </m.div>
       </div>
     </section>
   )

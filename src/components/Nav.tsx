@@ -1,7 +1,8 @@
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, m } from 'framer-motion'
 import { useEffect, useId, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { site } from '../content'
+import { useDialog } from '../hooks/useDialog'
 
 type Props = {
   variant?: 'home' | 'page'
@@ -16,10 +17,9 @@ const homeLinks = [
 
 const MOBILE_MQ = '(max-width: 720px)'
 
+/** Starts false so prerendered and hydrated markup match, then syncs on mount. */
 function useIsMobile() {
-  const [mobile, setMobile] = useState(() =>
-    typeof window !== 'undefined' ? window.matchMedia(MOBILE_MQ).matches : false,
-  )
+  const [mobile, setMobile] = useState(false)
 
   useEffect(() => {
     const mq = window.matchMedia(MOBILE_MQ)
@@ -39,6 +39,7 @@ export function Nav({ variant = 'home' }: Props) {
   const location = useLocation()
   const isMobile = useIsMobile()
   const menuTitleId = useId()
+  const sheetRef = useDialog<HTMLDivElement>(menuOpen, () => setMenuOpen(false))
 
   useEffect(() => {
     const onScroll = () => {
@@ -54,28 +55,15 @@ export function Nav({ variant = 'home' }: Props) {
   useEffect(() => {
     if (location.hash) {
       const id = location.hash.slice(1)
+      const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
       requestAnimationFrame(() => {
-        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+        document.getElementById(id)?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' })
       })
     } else if (variant === 'page') {
       window.scrollTo(0, 0)
     }
     setMenuOpen(false)
   }, [location, variant])
-
-  useEffect(() => {
-    if (!menuOpen) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMenuOpen(false)
-    }
-    window.addEventListener('keydown', onKey)
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      window.removeEventListener('keydown', onKey)
-      document.body.style.overflow = prev
-    }
-  }, [menuOpen])
 
   useEffect(() => {
     if (!isMobile) setMenuOpen(false)
@@ -85,7 +73,11 @@ export function Nav({ variant = 'home' }: Props) {
 
   return (
     <>
-      <motion.header
+      <a className="skip-link" href="#main">
+        Skip to content
+      </a>
+
+      <m.header
         className={`nav ${scrolled || variant === 'page' ? 'nav--solid' : ''} ${
           showDock ? 'nav--away' : ''
         }`}
@@ -103,11 +95,11 @@ export function Nav({ variant = 'home' }: Props) {
             </Link>
           ))}
         </nav>
-      </motion.header>
+      </m.header>
 
       <AnimatePresence>
         {showDock && !menuOpen ? (
-          <motion.div
+          <m.div
             key="nav-dock"
             className="nav-dock-wrap"
             initial={{ y: 28, opacity: 0 }}
@@ -126,18 +118,15 @@ export function Nav({ variant = 'home' }: Props) {
               <span className="nav-dock__mark" aria-hidden />
               Menu
             </button>
-          </motion.div>
+          </m.div>
         ) : null}
       </AnimatePresence>
 
       <AnimatePresence>
         {menuOpen ? (
-          <motion.div
+          <m.div
             key="nav-sheet"
             className="nav-sheet"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={menuTitleId}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -147,10 +136,15 @@ export function Nav({ variant = 'home' }: Props) {
               type="button"
               className="nav-sheet__backdrop"
               aria-label="Close menu"
+              tabIndex={-1}
               onClick={() => setMenuOpen(false)}
             />
-            <motion.div
+            <m.div
+              ref={sheetRef}
               className="nav-sheet__panel"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={menuTitleId}
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
@@ -174,8 +168,8 @@ export function Nav({ variant = 'home' }: Props) {
                   </Link>
                 ))}
               </nav>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         ) : null}
       </AnimatePresence>
     </>

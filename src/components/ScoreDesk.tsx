@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import type { CSSProperties, MouseEvent } from 'react'
 import { score, sketches } from '../content'
 import { formatClock } from '../hooks/useSketchPlayer'
@@ -62,7 +62,7 @@ export function ScoreDesk({
             const playingThis = selected && isPlaying
             const showSeek = selected && Boolean(sketch.audio?.trim())
             return (
-              <motion.li
+              <m.li
                 key={sketch.id}
                 initial={{ opacity: 0, x: -12 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -113,7 +113,7 @@ export function ScoreDesk({
                     </div>
                   ) : null}
                 </div>
-              </motion.li>
+              </m.li>
             )
           })}
         </ul>
