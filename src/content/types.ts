@@ -41,6 +41,8 @@ export type SiteContent = {
   name: string
   tagline: string
   email: string
+  /** Public address of the live site, without a trailing slash. Used for canonical and share links. */
+  url: string
   links: Record<string, string>
 }
 
