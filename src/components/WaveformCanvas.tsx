@@ -3,9 +3,11 @@ import { useEffect, useRef } from 'react'
 type Props = {
   intensity?: number
   className?: string
+  /** Fill the parent box (Score desk). Hero wave keeps its own CSS height. */
+  fill?: boolean
 }
 
-export function WaveformCanvas({ intensity = 0.25, className }: Props) {
+export function WaveformCanvas({ intensity = 0.25, className, fill = false }: Props) {
   const ref = useRef<HTMLCanvasElement>(null)
   const intensityRef = useRef(intensity)
 
@@ -24,13 +26,22 @@ export function WaveformCanvas({ intensity = 0.25, className }: Props) {
 
     const resize = () => {
       const parent = canvas.parentElement
-      const bounds = parent?.getBoundingClientRect() ?? canvas.getBoundingClientRect()
-      const cssWidth = Math.max(1, Math.floor(bounds.width))
-      // Prefer explicit CSS height on the canvas; fall back to parent / min size.
-      const cssHeight = Math.max(
-        1,
-        Math.floor(canvas.clientHeight || bounds.height || 280),
-      )
+      const parentBounds = parent?.getBoundingClientRect()
+
+      let cssWidth: number
+      let cssHeight: number
+
+      if (fill && parentBounds) {
+        cssWidth = Math.max(1, Math.floor(parentBounds.width))
+        cssHeight = Math.max(1, Math.floor(parentBounds.height))
+      } else {
+        // Temporarily clear inline size so stylesheet height (e.g. 18%) can apply.
+        canvas.style.width = ''
+        canvas.style.height = ''
+        const self = canvas.getBoundingClientRect()
+        cssWidth = Math.max(1, Math.floor(self.width || parentBounds?.width || 1))
+        cssHeight = Math.max(1, Math.floor(self.height || 140))
+      }
 
       // Lock layout size in CSS so bitmap width/height attrs cannot inflate the page.
       canvas.style.width = `${cssWidth}px`
@@ -50,19 +61,20 @@ export function WaveformCanvas({ intensity = 0.25, className }: Props) {
       const height = canvas.clientHeight
       ctx.clearRect(0, 0, width, height)
 
-      const amp = 18 + intensityRef.current * 42
-      const lines = 3
-      for (let l = 0; l < lines; l++) {
+      const amp = Math.min(height * 0.12, 16 + intensityRef.current * 36)
+      const bands = fill ? 5 : 3
+      for (let l = 0; l < bands; l++) {
         ctx.beginPath()
-        const alpha = 0.35 - l * 0.08
+        const alpha = 0.32 - l * 0.045
         ctx.strokeStyle =
-          l === 0 ? `rgba(212, 168, 75, ${alpha})` : `rgba(61, 155, 143, ${alpha * 0.9})`
-        ctx.lineWidth = l === 0 ? 2 : 1.25
+          l % 2 === 0 ? `rgba(212, 168, 75, ${alpha})` : `rgba(61, 155, 143, ${alpha * 0.95})`
+        ctx.lineWidth = l === 0 ? 2 : 1.2
+        const mid = height * (0.22 + (l / Math.max(bands - 1, 1)) * 0.56)
         for (let x = 0; x <= width; x += 4) {
           const n =
             Math.sin(x * 0.012 + t * 0.0018 + l) * amp +
             Math.sin(x * 0.035 - t * 0.0025 + l * 1.7) * (amp * 0.35)
-          const y = height * 0.55 + n * (1 - l * 0.18)
+          const y = mid + n * (1 - l * 0.08)
           if (x === 0) ctx.moveTo(x, y)
           else ctx.lineTo(x, y)
         }
@@ -77,7 +89,7 @@ export function WaveformCanvas({ intensity = 0.25, className }: Props) {
       window.removeEventListener('resize', resize)
       ro.disconnect()
     }
-  }, [])
+  }, [fill])
 
   return <canvas ref={ref} className={className} aria-hidden />
 }

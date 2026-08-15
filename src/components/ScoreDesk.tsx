@@ -18,7 +18,9 @@ export function ScoreDesk({ activeId, intensity, onPlay }: Props) {
       </div>
 
       <div className="score__stage">
-        <WaveformCanvas className="score__wave" intensity={activeId ? intensity : 0.2} />
+        <div className="score__wave-frame" aria-hidden>
+          <WaveformCanvas className="score__wave" fill intensity={activeId ? intensity : 0.2} />
+        </div>
         <ul className="score__list">
           {sketches.map((sketch, i) => {
             const playing = activeId === sketch.id

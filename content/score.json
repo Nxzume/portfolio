@@ -1,5 +1,5 @@
 {
   "eyebrow": "Score desk",
   "title": "Interactive sketches",
-  "lede": "Add tracks in content/sketches.json. Use audio files in public/audio for real music, or leave audio empty to keep the generative placeholder tones."
+  "lede": "Press play to hear generative placeholders — swap in real tracks anytime."
 }
