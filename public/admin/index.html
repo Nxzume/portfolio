@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Edit this site</title>
     <base href="/admin/" />
+    <link rel="stylesheet" href="/admin/editor.css" />
     <style>
       body {
         margin: 0;
@@ -61,23 +62,30 @@
           config.backend.base_url = origin
           config.backend.auth_endpoint = 'api/auth'
 
-          // Local editing needs no OAuth / no Vercel — just npm run cms.
+          // Local editing: talk to `npm run cms` (decap-server on :8081). No OAuth.
           if (isLocal) {
             config.local_backend = true
+            config.backend = {
+              name: 'proxy',
+              proxy_url: 'http://' + (host === '127.0.0.1' ? '127.0.0.1' : 'localhost') + ':8081/api/v1',
+              branch: (config.backend && config.backend.branch) || 'master',
+            }
           }
 
           // Preview on the right is view-only. Edit with the form on the left.
           // (Decap “visualEditing” click-to-edit is unreliable for this setup.)
-          config.editor = Object.assign({ preview: true, visualEditing: false }, config.editor || {})
-          config.editor.preview = true
+          // On narrow screens, hide the preview pane entirely so the form fits.
+          const isNarrow = window.matchMedia('(max-width: 900px)').matches
+          config.editor = Object.assign({ preview: !isNarrow, visualEditing: false }, config.editor || {})
+          config.editor.preview = !isNarrow
           config.editor.visualEditing = false
           ;(config.collections || []).forEach(function (collection) {
             if (!collection || typeof collection !== 'object') return
             collection.editor = Object.assign(
-              { preview: true, visualEditing: false },
+              { preview: !isNarrow, visualEditing: false },
               collection.editor || {},
             )
-            collection.editor.preview = true
+            collection.editor.preview = !isNarrow
             collection.editor.visualEditing = false
           })
 

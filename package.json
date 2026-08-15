@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "cms": "npx decap-server"
+    "cms": "npx --yes decap-server"
   },
   "dependencies": {
     "framer-motion": "^13.1.0",

@@ -25,7 +25,7 @@ locale: en
 collections:
   - name: site_content
     label: Homepage & shared text
-    description: "Edit the left-hand form. The right side only shows a preview — it is not clickable."
+    description: "Pick a section below to edit. On phones the form fills the screen (preview is desktop-only)."
     editor:
       preview: true
       visualEditing: false
@@ -37,14 +37,14 @@ collections:
           - { label: Your name, name: name, widget: string, hint: "Shows in the nav, homepage, footer, and browser tab" }
           - { label: Short tagline under your name, name: tagline, widget: string }
           - { label: Email address, name: email, widget: string, hint: "Used by the Contact email button" }
-          - label: Links
+          - label: Links (shown on Contact)
             name: links
             widget: object
             collapsed: false
+            hint: "Project Play / itch / GitHub buttons are edited on each Project page — not here."
             fields:
-              - { label: itch.io URL, name: itch, widget: string, required: false }
-              - { label: Arena GitHub URL, name: githubArena, widget: string, required: false }
-              - { label: Level GitHub URL, name: githubLevel, widget: string, required: false, hint: "Also used for the Contact GitHub button" }
+              - { label: GitHub profile URL, name: github, widget: string, required: false, hint: "Your personal profile, e.g. https://github.com/alexandreguichet" }
+              - { label: LinkedIn URL, name: linkedin, widget: string, required: false, hint: "Paste your LinkedIn profile when you have one" }
 
       - name: hero
         label: Homepage — top banner

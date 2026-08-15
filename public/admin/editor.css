@@ -1,0 +1,43 @@
+/**
+ * Decap CMS chrome on small screens.
+ * Decap assumes desktop widths: a fixed 250px sidebar with a 280px gutter on the
+ * collection list, and a min-width: 800px entry editor. Both clip on phones.
+ */
+@media (max-width: 900px) {
+  /* Collection list: sidebar becomes a normal block above the entries */
+  [class*='SidebarContainer'] {
+    position: static !important;
+    width: auto !important;
+    min-width: 0 !important;
+    margin-bottom: 16px !important;
+  }
+
+  [class*='CollectionMain'] {
+    padding-left: 0 !important;
+    min-width: 0 !important;
+  }
+
+  /* Entry editor: drop the 800px floor so the form fits the viewport */
+  [class*='AppHeaderContent'],
+  [class*='EditorContainer'],
+  [class*='ToolbarContainer'],
+  [class*='NoPreviewContainer'],
+  [class*='PreviewPaneContainer'],
+  [class*='ControlPaneContainer'] {
+    min-width: 0 !important;
+  }
+
+  /* Preview column is unreadable when squeezed — form only */
+  .SplitPane.vertical {
+    min-width: 0 !important;
+  }
+
+  .SplitPane.vertical > .Pane1 {
+    width: 100% !important;
+  }
+
+  .SplitPane.vertical > .Pane2,
+  .SplitPane.vertical > .Resizer {
+    display: none !important;
+  }
+}
