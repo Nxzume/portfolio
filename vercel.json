@@ -1,0 +1,18 @@
+{
+  "redirects": [
+    { "source": "/admin", "destination": "/admin/", "permanent": false }
+  ],
+  "rewrites": [
+    { "source": "/admin/", "destination": "/admin/index.html" },
+    {
+      "source": "/((?!api/|admin/).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/admin/cms-config.yml",
+      "headers": [{ "key": "Content-Type", "value": "text/yaml; charset=utf-8" }]
+    }
+  ]
+}

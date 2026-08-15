@@ -1,0 +1,50 @@
+{
+  "id": "arena",
+  "slug": "arena",
+  "order": 2,
+  "title": "The Arena",
+  "subtitle": "2D top-down RPG · in development",
+  "image": "/images/arena-gameplay.png",
+  "gallery": [
+    "/images/arena-gameplay.png",
+    "/images/arena-detail-1.png"
+  ],
+  "summary": "A succession of floors with their own mechanics. The player controls two characters with different abilities and must combine their skills to solve puzzles and defeat enemies.",
+  "highlights": [
+    "Dual-character puzzle combat",
+    "Floor-based mechanical variety",
+    "First floor nearly complete in the original build"
+  ],
+  "links": [
+    {
+      "label": "GitHub",
+      "href": "https://github.com/keeganland/the-arena-agda"
+    }
+  ],
+  "intro": [
+    "The Arena is a 2D top-down RPG still in development. The aim is a succession of floors, each with its own mechanics. The first floor is nearly done.",
+    "The player controls two characters with different abilities and must combine both skill sets to solve puzzles and defeat enemies."
+  ],
+  "sections": [
+    {
+      "id": "level-design",
+      "title": "Level design",
+      "image": "/images/arena-gameplay.png",
+      "imageAlt": "The Arena gameplay — dual characters in combat",
+      "paragraphs": [
+        "Floors are designed as distinct mechanical chapters rather than copies of the same combat loop.",
+        "Spaces ask players to read the arena, switch characters, and sequence abilities — puzzles and fights share the same dual-character grammar."
+      ]
+    },
+    {
+      "id": "game-design",
+      "title": "Game design",
+      "image": "/images/arena-detail-1.png",
+      "imageAlt": "The Arena scene detail",
+      "paragraphs": [
+        "Two characters means two toolkits. Progress comes from combination, not from a single overpowered kit.",
+        "This write-up is carried forward from the original portfolio and will expand as the project continues."
+      ]
+    }
+  ]
+}

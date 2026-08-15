@@ -1,0 +1,2 @@
+# Keep real audio files here (mp3, wav, ogg).
+# Reference them from content/sketches.json as "/audio/your-file.mp3".

@@ -1,0 +1,282 @@
+/* Live preview pane — mirrors the portfolio look (simplified). */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Figtree:wght@400;500;600;700&display=swap');
+
+:root {
+  --ink: #0c1017;
+  --paper: #e8e4dc;
+  --paper-dim: #b9b3a8;
+  --brass: #d4a84b;
+  --brass-soft: #e6c478;
+  --teal: #3d9b8f;
+  --line: rgba(232, 228, 220, 0.12);
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Figtree', sans-serif;
+}
+
+html,
+body {
+  margin: 0;
+  background: #0a0e14;
+  color: var(--paper);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.pv {
+  padding: 1.25rem;
+  min-height: 100%;
+  background:
+    radial-gradient(700px 400px at 80% -10%, rgba(61, 155, 143, 0.16), transparent 55%),
+    radial-gradient(500px 360px at -10% 20%, rgba(212, 168, 75, 0.1), transparent 50%),
+    linear-gradient(180deg, #0a0e14 0%, var(--ink) 45%, #0e1420 100%);
+}
+
+.pv-hint {
+  margin: 0 0 1rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--paper-dim);
+}
+
+.pv-hero {
+  position: relative;
+  min-height: 70vh;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  border-radius: 0;
+  margin: -1.25rem;
+  padding: 0;
+}
+
+.pv-hero__media {
+  position: absolute;
+  inset: 0;
+}
+
+.pv-hero__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.85) contrast(1.05);
+}
+
+.pv-hero__veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(8, 10, 14, 0.35) 0%, rgba(8, 10, 14, 0.92) 100%);
+}
+
+.pv-hero__content {
+  position: relative;
+  z-index: 1;
+  padding: 2.5rem 1.5rem 2rem;
+  width: 100%;
+}
+
+.pv-brand {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 8vw, 3.4rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  margin: 0 0 0.75rem;
+}
+
+.pv-headline {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 500;
+  color: var(--brass-soft);
+  margin: 0 0 0.65rem;
+  max-width: 18ch;
+}
+
+.pv-lede {
+  color: var(--paper-dim);
+  margin: 0 0 1.25rem;
+  max-width: 32rem;
+}
+
+.pv-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.pv-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--line);
+  font-size: 0.92rem;
+}
+
+.pv-btn--primary {
+  background: var(--brass);
+  color: #1a1408;
+  border-color: transparent;
+  font-weight: 600;
+}
+
+.pv-btn--ghost {
+  color: var(--paper);
+}
+
+.pv-section {
+  max-width: 40rem;
+}
+
+.pv-eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+.pv-title {
+  font-family: var(--font-display);
+  font-size: 1.85rem;
+  margin: 0 0 0.65rem;
+  letter-spacing: -0.02em;
+}
+
+.pv-copy p {
+  color: var(--paper-dim);
+  margin: 0 0 0.85rem;
+}
+
+.pv-note {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--line);
+  color: var(--paper-dim);
+  font-size: 0.92rem;
+}
+
+.pv-portrait {
+  width: min(220px, 100%);
+  margin: 0 0 1.25rem;
+  border: 1px solid var(--line);
+}
+
+.pv-portrait img {
+  width: 100%;
+  display: block;
+}
+
+.pv-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.pv-tab {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--line);
+  color: var(--paper-dim);
+  font-size: 0.88rem;
+}
+
+.pv-tab.is-on {
+  border-color: var(--brass);
+  color: var(--brass-soft);
+}
+
+.pv-track {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem 0.85rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid var(--line);
+  background: rgba(20, 26, 36, 0.65);
+}
+
+.pv-track__play {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  color: var(--brass);
+  font-size: 0.75rem;
+}
+
+.pv-track__title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.pv-track__mood {
+  margin: 0.15rem 0 0;
+  color: var(--paper-dim);
+  font-size: 0.85rem;
+}
+
+.pv-track__bpm {
+  color: var(--paper-dim);
+  font-size: 0.8rem;
+}
+
+.pv-card {
+  border: 1px solid var(--line);
+  background: rgba(20, 26, 36, 0.65);
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.pv-card img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.pv-card__body {
+  padding: 1rem;
+}
+
+.pv-card__sub {
+  color: var(--brass-soft);
+  font-size: 0.88rem;
+  margin: 0.2rem 0 0.55rem;
+}
+
+.pv-bullets {
+  margin: 0.75rem 0 0;
+  padding-left: 1.1rem;
+  color: var(--paper-dim);
+}
+
+.pv-chapter {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+.pv-chapter img {
+  width: 100%;
+  margin: 0.75rem 0;
+  border: 1px solid var(--line);
+}
+
+.pv-meta {
+  color: var(--paper-dim);
+  font-size: 0.85rem;
+  margin: 0.35rem 0;
+}
+
+.pv-empty {
+  color: var(--paper-dim);
+  font-style: italic;
+}

@@ -1,0 +1,202 @@
+# Visual editor for people who don’t write code.
+# Open /admin/ on the live site after GitHub OAuth is configured (see README).
+
+backend:
+  name: github
+  repo: Nxzume/portfolio
+  branch: master
+  # base_url + auth_endpoint are set at runtime from the current site origin
+  # so the editor works on any host (Vercel, Netlify, custom domain, localhost)
+  base_url: /
+  auth_endpoint: api/auth
+
+# Uncomment for local editing with: npx decap-server
+# local_backend: true
+
+media_folder: public/images
+public_folder: /images
+
+logo_url: /favicon.svg
+locale: en
+
+collections:
+  - name: site_content
+    label: Site pages
+    description: Homepage text your visitors see first
+    files:
+      - name: hero
+        label: Top of homepage
+        file: content/hero.json
+        fields:
+          - { label: Your name, name: brand, widget: string }
+          - { label: Main headline, name: headline, widget: string }
+          - { label: Short line under the headline, name: lede, widget: text }
+          - { label: Background photo, name: image, widget: image }
+          - label: Main button
+            name: primaryCta
+            widget: object
+            fields:
+              - { label: Button text, name: label, widget: string }
+              - { label: Where it goes, name: href, widget: string, hint: "Examples: #compose, #projects, or https://…" }
+          - label: Second button
+            name: secondaryCta
+            widget: object
+            fields:
+              - { label: Button text, name: label, widget: string }
+              - { label: Where it goes, name: href, widget: string }
+
+      - name: about
+        label: About me
+        file: content/about.json
+        fields:
+          - { label: Your photo, name: portrait, widget: image }
+          - { label: Short photo description, name: portraitAlt, widget: string, hint: "For people who can’t see the image — usually your name" }
+          - { label: About headline, name: lead, widget: string }
+          - label: Bio paragraphs
+            name: body
+            widget: list
+            field: { label: Paragraph, name: paragraph, widget: text }
+          - { label: Small note under the bio (optional), name: note, widget: text, required: false }
+
+      - name: contact
+        label: Contact
+        file: content/contact.json
+        fields:
+          - { label: Tiny label above the title, name: eyebrow, widget: string }
+          - { label: Contact title, name: title, widget: string }
+          - { label: Short description, name: lede, widget: text }
+          - label: Buttons
+            name: actions
+            widget: list
+            fields:
+              - { label: Button text, name: label, widget: string }
+              - { label: Email or web address, name: href, widget: string, hint: "Examples: mailto:you@email.com or https://…" }
+              - label: Button look
+                name: style
+                widget: select
+                options:
+                  - { label: Strong (filled), value: primary }
+                  - { label: Quiet (outline), value: ghost }
+                default: ghost
+
+      - name: site
+        label: Name and links
+        file: content/site.json
+        fields:
+          - { label: Your name, name: name, widget: string }
+          - { label: One-line description, name: tagline, widget: string }
+          - { label: Email address, name: email, widget: string }
+          - label: Website links
+            name: links
+            widget: object
+            fields:
+              - { label: itch.io page, name: itch, widget: string, required: false }
+              - { label: The Arena on GitHub, name: githubArena, widget: string, required: false }
+              - { label: Level on GitHub, name: githubLevel, widget: string, required: false }
+
+      - name: score
+        label: Music section heading
+        file: content/score.json
+        fields:
+          - { label: Tiny label above the title, name: eyebrow, widget: string }
+          - { label: Section title, name: title, widget: string }
+          - { label: Short description, name: lede, widget: text }
+
+      - name: projects_section
+        label: Projects section heading
+        file: content/projects-section.json
+        fields:
+          - { label: Tiny label above the title, name: eyebrow, widget: string }
+          - { label: Section title, name: title, widget: string }
+          - { label: Short description, name: lede, widget: text }
+
+      - name: focuses
+        label: Compose / Levels / Azure tabs
+        file: content/focuses.json
+        fields:
+          - label: Tabs
+            name: tabs
+            widget: list
+            fields:
+              - { label: Short tab name (no spaces), name: id, widget: string, hint: "Use compose, levels, or azure" }
+              - { label: Tab button text, name: label, widget: string }
+              - { label: Headline when selected, name: headline, widget: string }
+              - { label: Paragraph when selected, name: body, widget: text }
+
+      - name: sketches
+        label: Music tracks
+        file: content/sketches.json
+        fields:
+          - label: Tracks
+            name: tracks
+            widget: list
+            summary: "{{title}}"
+            fields:
+              - { label: Short track name (no spaces), name: id, widget: string }
+              - { label: Track title, name: title, widget: string }
+              - { label: Mood line, name: mood, widget: string, hint: "Short flavor text under the title" }
+              - { label: Tempo (beats per minute), name: bpm, widget: number, value_type: int, default: 100 }
+              - label: Music file
+                name: audio
+                widget: string
+                required: false
+                default: ""
+                hint: "Put a file in public/audio, then type /audio/my-track.mp3. Leave blank for a simple placeholder sound."
+              - { label: Placeholder starting pitch (optional), name: baseFreq, widget: number, required: false, value_type: float, hint: "Only used when Music file is blank. Example: 110" }
+              - label: Placeholder note steps (optional)
+                name: pattern
+                widget: list
+                required: false
+                hint: "Only used when Music file is blank. Numbers like 0, 4, 7 make a simple melody."
+                field: { label: Note step, name: step, widget: number, value_type: int }
+
+  - name: game_projects
+    label: Projects
+    label_singular: Project
+    description: Games and case studies — each gets its own page
+    folder: content/projects
+    create: true
+    slug: "{{slug}}"
+    extension: json
+    format: json
+    summary: "{{title}}"
+    fields:
+      - { label: Short project name (no spaces), name: id, widget: string, hint: "Example: arena" }
+      - { label: Page link name, name: slug, widget: string, hint: "Becomes /projects/your-name — lowercase, no spaces (example: arena)" }
+      - { label: Homepage order, name: order, widget: number, value_type: int, default: 10, hint: "Lower numbers show first" }
+      - { label: Project title, name: title, widget: string }
+      - { label: One-line subtitle, name: subtitle, widget: string }
+      - { label: Cover photo, name: image, widget: image }
+      - label: Extra photos
+        name: gallery
+        widget: list
+        field: { label: Photo, name: image, widget: image }
+      - { label: Short card summary, name: summary, widget: text, hint: "Shown on the homepage project card" }
+      - label: Bullet highlights
+        name: highlights
+        widget: list
+        field: { label: Bullet point, name: item, widget: string }
+      - label: Buttons (Play, GitHub…)
+        name: links
+        widget: list
+        fields:
+          - { label: Button text, name: label, widget: string }
+          - { label: Web address, name: href, widget: string }
+      - label: Opening paragraphs
+        name: intro
+        widget: list
+        field: { label: Paragraph, name: paragraph, widget: text }
+      - label: Page chapters
+        name: sections
+        widget: list
+        summary: "{{title}}"
+        fields:
+          - { label: Short chapter name (no spaces), name: id, widget: string, hint: "Example: level-design" }
+          - { label: Chapter title, name: title, widget: string }
+          - { label: Quote (optional), name: quote, widget: text, required: false }
+          - label: Paragraphs
+            name: paragraphs
+            widget: list
+            field: { label: Paragraph, name: paragraph, widget: text }
+          - { label: Photo (optional), name: image, widget: image, required: false }
+          - { label: Photo description, name: imageAlt, widget: string, required: false }
