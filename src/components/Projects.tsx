@@ -21,7 +21,7 @@ export function Projects() {
             transition={{ delay: i * 0.08, duration: 0.45 }}
           >
             <Link className="projects__card" to={`/projects/${p.slug}`}>
-              <img src={p.image} alt="" />
+              {p.image ? <img src={p.image} alt="" /> : <div className="projects__card-noimg" />}
               <div className="projects__card-body">
                 <h3>{p.title}</h3>
                 <p className="projects__card-sub">{p.subtitle}</p>

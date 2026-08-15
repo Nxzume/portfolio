@@ -72,8 +72,59 @@ function normalizeSection(raw: unknown, index: number): Project['sections'][numb
   }
 }
 
+function str(value: unknown, fallback = ''): string {
+  return typeof value === 'string' ? value : fallback
+}
+
+function slugify(value: unknown, fallback: string): string {
+  const raw = typeof value === 'string' ? value.trim() : ''
+  if (!raw) return fallback
+  const cleaned = raw
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  return cleaned || fallback
+}
+
+function sectionCopy(raw: unknown): SectionCopy {
+  const row = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>
+  return {
+    eyebrow: str(row.eyebrow),
+    title: str(row.title),
+    lede: str(row.lede),
+  }
+}
+
+function normalizeContact(raw: unknown): ContactContent {
+  const row = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>
+  return {
+    eyebrow: str(row.eyebrow),
+    title: str(row.title),
+    lede: str(row.lede),
+    emailButtonText: str(row.emailButtonText).trim() || undefined,
+  }
+}
+
+function normalizeCta(raw: unknown, fallbackLabel: string): { label: string; href: string } {
+  const row = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>
+  return {
+    label: str(row.label, fallbackLabel),
+    href: str(row.href, '#'),
+  }
+}
+
+function normalizeHero(raw: unknown): HeroContent {
+  const row = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>
+  return {
+    headline: str(row.headline),
+    image: str(row.image).trim(),
+    primaryCta: normalizeCta(row.primaryCta, 'Listen'),
+    secondaryCta: normalizeCta(row.secondaryCta, 'Projects'),
+  }
+}
+
 /** Decap new entries often omit lists; list widgets may save objects instead of strings. */
-function normalizeProject(raw: Record<string, unknown>): Project {
+function normalizeProject(raw: Record<string, unknown>, index: number): Project {
   const links = asList(raw.links)
     .map((item) => {
       if (!item || typeof item !== 'object') return null
@@ -93,15 +144,16 @@ function normalizeProject(raw: Record<string, unknown>): Project {
     if (Number.isFinite(n)) order = n
   }
 
+  const fallbackId = `project-${index + 1}`
   return {
-    id: typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim() : 'project',
-    slug: typeof raw.slug === 'string' && raw.slug.trim() ? raw.slug.trim() : 'project',
+    id: slugify(raw.id, slugify(raw.slug, fallbackId)),
+    slug: slugify(raw.slug, slugify(raw.id, fallbackId)),
     order,
-    title: typeof raw.title === 'string' ? raw.title : 'Untitled project',
-    subtitle: typeof raw.subtitle === 'string' ? raw.subtitle : '',
-    image: typeof raw.image === 'string' ? raw.image : '',
+    title: str(raw.title, 'Untitled project'),
+    subtitle: str(raw.subtitle),
+    image: str(raw.image).trim(),
     gallery: galleryItems(raw.gallery),
-    summary: typeof raw.summary === 'string' ? raw.summary : '',
+    summary: str(raw.summary),
     highlights: textItems(raw.highlights),
     links,
     intro: textItems(raw.intro),
@@ -110,19 +162,70 @@ function normalizeProject(raw: Record<string, unknown>): Project {
 }
 
 function loadProjects(): Project[] {
+  const seen = new Set<string>()
   return Object.entries(projectModules)
     .filter(([path]) => !path.includes('/_'))
-    .map(([, data]) => normalizeProject(data && typeof data === 'object' ? data : {}))
+    .map(([, data], i) => normalizeProject(data && typeof data === 'object' ? data : {}, i))
+    .map((project) => {
+      // Two projects sharing a slug would make one page unreachable.
+      if (!seen.has(project.slug)) {
+        seen.add(project.slug)
+        return project
+      }
+      let n = 2
+      while (seen.has(`${project.slug}-${n}`)) n += 1
+      const slug = `${project.slug}-${n}`
+      seen.add(slug)
+      return { ...project, slug }
+    })
     .sort((a, b) => (a.order ?? 99) - (b.order ?? 99))
 }
 
-export const site = siteJson as SiteContent
-export const about = aboutJson as AboutContent
-export const focuses = (Array.isArray(focusesJson)
+const siteRaw = (siteJson && typeof siteJson === 'object' ? siteJson : {}) as Record<string, unknown>
+const linksRaw = (siteRaw.links && typeof siteRaw.links === 'object'
+  ? siteRaw.links
+  : {}) as Record<string, unknown>
+
+export const site: SiteContent = {
+  name: str(siteRaw.name, 'Your name'),
+  tagline: str(siteRaw.tagline),
+  email: str(siteRaw.email),
+  links: Object.fromEntries(
+    Object.entries(linksRaw).filter(
+      (entry): entry is [string, string] => typeof entry[1] === 'string' && entry[1].trim() !== '',
+    ),
+  ),
+}
+
+const aboutRaw = (aboutJson && typeof aboutJson === 'object' ? aboutJson : {}) as Record<
+  string,
+  unknown
+>
+export const about: AboutContent = {
+  portrait: str(aboutRaw.portrait).trim(),
+  portraitAlt: str(aboutRaw.portraitAlt).trim() || undefined,
+  lead: str(aboutRaw.lead),
+  body: textItems(aboutRaw.body),
+  note: str(aboutRaw.note).trim() || undefined,
+}
+
+const focusesRaw = Array.isArray(focusesJson)
   ? focusesJson
-  : (focusesJson as { tabs: Focus[] }).tabs) as Focus[]
+  : ((focusesJson as { tabs?: unknown }).tabs ?? [])
+export const focuses: Focus[] = asList(focusesRaw)
+  .map((item, i) => {
+    const row = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>
+    const label = str(row.label, `Tab ${i + 1}`)
+    return {
+      id: slugify(row.id, slugify(label, `tab-${i + 1}`)),
+      label,
+      headline: str(row.headline),
+      body: str(row.body),
+    }
+  })
+  .filter((tab) => tab.label.trim() !== '' || tab.headline.trim() !== '')
 /** Decap number widgets often save cleared fields as "" — coerce before typing. */
-function normalizeSketch(raw: Record<string, unknown>): Sketch {
+function normalizeSketch(raw: Record<string, unknown>, index: number): Sketch {
   const num = (v: unknown): number | undefined => {
     if (typeof v === 'number' && Number.isFinite(v)) return v
     if (typeof v === 'string' && v.trim() !== '') {
@@ -131,19 +234,20 @@ function normalizeSketch(raw: Record<string, unknown>): Sketch {
     }
     return undefined
   }
-  const str = (v: unknown): string | undefined =>
+  const optional = (v: unknown): string | undefined =>
     typeof v === 'string' && v.trim() !== '' ? v : undefined
   const patternRaw = raw.pattern
   const pattern = Array.isArray(patternRaw)
     ? patternRaw.map((step) => num(step)).filter((n): n is number => n != null)
     : undefined
+  const title = str(raw.title)
 
   return {
-    id: String(raw.id ?? ''),
-    title: String(raw.title ?? ''),
-    mood: str(raw.mood),
+    id: slugify(raw.id, slugify(title, `track-${index + 1}`)),
+    title,
+    mood: optional(raw.mood),
     bpm: num(raw.bpm),
-    audio: str(raw.audio),
+    audio: optional(raw.audio),
     baseFreq: num(raw.baseFreq),
     pattern: pattern?.length ? pattern : undefined,
   }
@@ -152,13 +256,25 @@ function normalizeSketch(raw: Record<string, unknown>): Sketch {
 const sketchesRaw = Array.isArray(sketchesJson)
   ? sketchesJson
   : (sketchesJson as { tracks: unknown[] }).tracks
-export const sketches = (Array.isArray(sketchesRaw) ? sketchesRaw : []).map((t) =>
-  normalizeSketch((t && typeof t === 'object' ? t : {}) as Record<string, unknown>),
-)
-export const score = scoreJson as SectionCopy
-export const contact = contactJson as ContactContent
-export const hero = heroJson as HeroContent
-export const projectsSection = projectsSectionJson as SectionCopy
+const sketchesSeen = new Set<string>()
+export const sketches = (Array.isArray(sketchesRaw) ? sketchesRaw : [])
+  .map((t, i) => normalizeSketch((t && typeof t === 'object' ? t : {}) as Record<string, unknown>, i))
+  .map((track) => {
+    // Play state is keyed by id, so duplicates would highlight the wrong row.
+    if (!sketchesSeen.has(track.id)) {
+      sketchesSeen.add(track.id)
+      return track
+    }
+    let n = 2
+    while (sketchesSeen.has(`${track.id}-${n}`)) n += 1
+    const id = `${track.id}-${n}`
+    sketchesSeen.add(id)
+    return { ...track, id }
+  })
+export const score = sectionCopy(scoreJson)
+export const contact = normalizeContact(contactJson)
+export const hero = normalizeHero(heroJson)
+export const projectsSection = sectionCopy(projectsSectionJson)
 export const projects = loadProjects()
 
 export function getProject(slug: string) {

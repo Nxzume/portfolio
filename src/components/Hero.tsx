@@ -10,7 +10,9 @@ export function Hero({ intensity }: Props) {
   return (
     <section className="hero" id="top">
       <div className="hero__media" aria-hidden>
-        <img className="hero__image" src={hero.image} alt="" fetchPriority="high" />
+        {hero.image ? (
+          <img className="hero__image" src={hero.image} alt="" fetchPriority="high" />
+        ) : null}
         <div className="hero__veil" />
         <WaveformCanvas className="hero__wave" intensity={Math.max(intensity, 0.28)} />
       </div>

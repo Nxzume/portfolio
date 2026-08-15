@@ -4,6 +4,19 @@ import { Footer } from '../components/Contact'
 import { Nav } from '../components/Nav'
 import { getProject, projects } from '../content'
 
+/** Editors often type "google.com" or an in-page "#anchor" instead of a full URL. */
+function isExternal(href: string) {
+  return /^(https?:)?\/\//i.test(href) || /^[\w.-]+\.[a-z]{2,}(\/|$)/i.test(href)
+}
+
+function normalizeHref(href: string) {
+  const value = href.trim()
+  if (!value) return '#'
+  if (/^(https?:|mailto:|tel:|#|\/)/i.test(value)) return value
+  if (isExternal(value)) return `https://${value}`
+  return value
+}
+
 export function ProjectPage() {
   const { slug } = useParams()
   const project = slug ? getProject(slug) : undefined
@@ -36,7 +49,7 @@ export function ProjectPage() {
       <main className="project-page">
         <header className="project-page__hero">
           <div className="project-page__hero-media" aria-hidden>
-            <img src={project.image} alt="" />
+            {project.image ? <img src={project.image} alt="" /> : null}
             <div className="project-page__hero-veil" />
           </div>
           <div className="project-page__hero-content">
@@ -47,17 +60,20 @@ export function ProjectPage() {
             <h1>{project.title}</h1>
             <p className="project-page__summary">{project.summary}</p>
             <div className="projects__links">
-              {project.links.map((link) => (
-                <a
-                  key={link.href + link.label}
-                  className={link.label.toLowerCase().includes('play') ? 'btn btn--primary' : 'btn btn--ghost'}
-                  href={link.href.startsWith('http') ? link.href : `https://${link.href}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {link.label}
-                </a>
-              ))}
+              {project.links.map((link, i) => {
+                const external = isExternal(link.href)
+                return (
+                  <a
+                    key={`${i}-${link.href}`}
+                    className={link.label.toLowerCase().includes('play') ? 'btn btn--primary' : 'btn btn--ghost'}
+                    href={normalizeHref(link.href)}
+                    target={external ? '_blank' : undefined}
+                    rel={external ? 'noreferrer' : undefined}
+                  >
+                    {link.label}
+                  </a>
+                )
+              })}
             </div>
           </div>
         </header>
@@ -122,9 +138,9 @@ export function ProjectPage() {
               <section className="project-page__gallery" id="gallery">
                 <h2>Gallery</h2>
                 <div className="project-page__gallery-grid">
-                  {project.gallery.map((src) => (
+                  {project.gallery.map((src, i) => (
                     <button
-                      key={src}
+                      key={`${i}-${src}`}
                       type="button"
                       className="project-page__gallery-item"
                       onClick={() => setLightbox(src)}
@@ -142,8 +158,8 @@ export function ProjectPage() {
                 <h2>More projects</h2>
                 <div className="projects__grid">
                   {others.map((p) => (
-                    <Link key={p.id} className="projects__card" to={`/projects/${p.slug}`}>
-                      <img src={p.image} alt="" />
+                    <Link key={p.slug} className="projects__card" to={`/projects/${p.slug}`}>
+                      {p.image ? <img src={p.image} alt="" /> : <div className="projects__card-noimg" />}
                       <div className="projects__card-body">
                         <h3>{p.title}</h3>
                         <p className="projects__card-sub">{p.subtitle}</p>

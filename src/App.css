@@ -401,6 +401,15 @@
   display: block;
 }
 
+.projects__card-noimg {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background:
+    radial-gradient(circle at 30% 35%, rgba(61, 155, 143, 0.25), transparent 55%),
+    radial-gradient(circle at 70% 65%, rgba(212, 168, 75, 0.18), transparent 50%),
+    rgba(255, 255, 255, 0.03);
+}
+
 .projects__card-body {
   padding: 1.2rem 1.25rem 1.4rem;
   background: var(--ink-2);
