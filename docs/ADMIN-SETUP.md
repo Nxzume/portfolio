@@ -2,64 +2,79 @@
 
 Live site: **https://portfolio-five-steel-37.vercel.app/**
 
-The visual editor works on this domain, other hosts, or fully offline on a laptop. Content saves to GitHub.
+## Why you still see `Missing GITHUB_CLIENT_ID`
 
-## 1. Invite your friend on GitHub
+Almost always one of these:
 
-1. Open https://github.com/Nxzume/portfolio  
-2. **Settings → Collaborators → Add people**  
-3. Invite Alexandre (write access) and have them accept  
+1. Env vars were saved but you **did not Redeploy** afterward  
+2. Vars were added on a **different** Vercel project (must be the one for `portfolio-five-steel-37`)  
+3. GitHub OAuth callback still points at an **old** `*.vercel.app` URL  
+4. Production is still serving an **old deployment**
 
-## 2. Local editing (no OAuth needed)
+**Saving env vars alone does nothing** until you Redeploy.
+
+## What you must do in Vercel
+
+Only the **Client Secret** is required in Vercel (Client ID can live in the repo).
+
+1. Open the Vercel project that owns **portfolio-five-steel-37.vercel.app**  
+2. **Settings → Environment Variables**  
+3. Add:
+
+| Key | Value | Environments |
+| --- | --- | --- |
+| `GITHUB_CLIENT_SECRET` | from GitHub OAuth App → Generate a new client secret | Production **and** Preview |
+
+Optional: also set `GITHUB_CLIENT_ID` there. Not required if you fill `public/admin/oauth-public.json`.
+
+4. Click **Save**  
+5. Go to **Deployments** → open the latest production deployment → **⋯ → Redeploy** (do **not** skip build cache if unsure — Redeploy is fine)
+
+### Also check (common blockers)
+
+- **Deployment Protection / Vercel Authentication**: if Preview or Production requires a Vercel login, turn it off for this project (or allow public access to `/api/*`), otherwise GitHub cannot complete OAuth.  
+- Confirm you edited the **same** Vercel project as the URL you open in the browser.
+
+## Fastest full fix
+
+### 1) GitHub OAuth App
+
+GitHub → Settings → Developer settings → OAuth Apps → New (or edit existing):
+
+- Homepage: `https://portfolio-five-steel-37.vercel.app`  
+- Callback: `https://portfolio-five-steel-37.vercel.app/api/callback`
+
+### 2) Put Client ID in the repo (Client ID is public)
+
+Edit `public/admin/oauth-public.json`:
+
+```json
+{
+  "githubClientId": "Ov23liXXXXXXXX"
+}
+```
+
+Commit + push to `master` (or merge the PR that adds this file).
+
+### 3) Put Client Secret only in Vercel
+
+See table above → Save → **Redeploy**.
+
+### 4) Verify
+
+1. https://portfolio-five-steel-37.vercel.app/api/oauth-status  
+   Expect `hasClientId: true` and `hasClientSecret: true`  
+2. https://portfolio-five-steel-37.vercel.app/admin/ → Login with GitHub  
+
+## Local editing (no Vercel env needed)
 
 ```bash
-npm install
 npm run dev
-# other terminal:
 npm run cms
 ```
 
 Open http://localhost:5173/admin/
 
-## 3. Online editing on the live site
+## Invite Alexandre
 
-### A. GitHub OAuth App
-
-1. GitHub → **Settings → Developer settings → OAuth Apps → New OAuth App**  
-2. Use **this** site (must match exactly):
-   - **Homepage URL:** `https://portfolio-five-steel-37.vercel.app`  
-   - **Authorization callback URL:** `https://portfolio-five-steel-37.vercel.app/api/callback`  
-3. Create → copy **Client ID** → generate **Client Secret**
-
-If the OAuth App still points at an old `*.vercel.app` URL, edit it to the URLs above.
-
-### B. Vercel env vars (same project as this site)
-
-In Vercel → project for **portfolio-five-steel-37** → **Settings → Environment Variables**:
-
-| Key | Value |
-| --- | --- |
-| `GITHUB_CLIENT_ID` | OAuth Client ID |
-| `GITHUB_CLIENT_SECRET` | OAuth Client Secret |
-
-- Turn **Sensitive** on for the secret  
-- Environments: **Production** and **Preview**  
-- Click **Save**
-
-### C. Redeploy (required)
-
-Env vars do **not** apply until a new deployment:
-
-Vercel → Deployments → … on latest → **Redeploy**
-
-### D. Verify
-
-1. Open https://portfolio-five-steel-37.vercel.app/api/oauth-status  
-   You want `"hasClientId": true` and `"hasClientSecret": true`  
-2. Open https://portfolio-five-steel-37.vercel.app/admin/  
-3. **Login with GitHub** → edit → Publish  
-
-## Notes
-
-- `/admin` picks up the current domain automatically (`base_url` is set in the browser).  
-- Wrong Vercel project / skipped Redeploy is the usual reason for `Missing GITHUB_CLIENT_ID`.
+GitHub repo → Settings → Collaborators → add with write access.
