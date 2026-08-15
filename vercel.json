@@ -1,4 +1,5 @@
 {
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ':!public/images' ':!public/audio'",
   "redirects": [
     { "source": "/admin", "destination": "/admin/", "permanent": false }
   ],
