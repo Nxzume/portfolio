@@ -13,10 +13,8 @@ function contactActions() {
     },
   ]
 
-  const github =
-    site.links.github || site.links.githubLevel || site.links.githubArena || ''
-  if (github) {
-    actions.push({ label: 'GitHub', href: github, style: 'ghost' })
+  if (site.links.github) {
+    actions.push({ label: 'GitHub', href: site.links.github, style: 'ghost' })
   }
   if (site.links.linkedin) {
     actions.push({ label: 'LinkedIn', href: site.links.linkedin, style: 'ghost' })
@@ -54,7 +52,8 @@ export function Contact() {
 export function Footer() {
   return (
     <footer className="footer">
-      <p>
+      {/* Baked at build time, refreshed on hydration — they differ over New Year. */}
+      <p suppressHydrationWarning>
         © {new Date().getFullYear()} {site.name}
       </p>
     </footer>
