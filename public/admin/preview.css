@@ -1,4 +1,4 @@
-/* Live preview pane — mirrors the portfolio look (simplified). */
+/* Live preview pane — mirrors the portfolio look; fields are click-to-edit. */
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Figtree:wght@400;500;600;700&display=swap');
 
 :root {
@@ -44,13 +44,126 @@ body {
   color: var(--paper-dim);
 }
 
+/* Click-to-edit affordance */
+.pv-edit {
+  position: relative;
+  outline: 1px dashed transparent;
+  outline-offset: 3px;
+  border-radius: 2px;
+  transition: outline-color 0.15s ease, background-color 0.15s ease;
+  cursor: text;
+  min-width: 0.75rem;
+  min-height: 1.1em;
+}
+
+.pv-edit:hover,
+.pv-edit:focus-within {
+  outline-color: rgba(212, 168, 75, 0.55);
+  background: rgba(212, 168, 75, 0.06);
+}
+
+.pv-edit--bleed {
+  cursor: pointer;
+}
+
+.pv-edit--bleed:hover,
+.pv-edit--bleed:focus-within {
+  outline-offset: 0;
+}
+
+.pv-edit img,
+.pv-edit--bleed img,
+.pv-edit--media img,
+.pv-edit--portrait img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+}
+
+.pv-edit--brand,
+.pv-brand-static {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 8vw, 3.4rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  margin: 0 0 0.75rem;
+}
+
+.pv-edit--headline {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 500;
+  color: var(--brass-soft);
+  margin: 0 0 0.65rem;
+  max-width: 18ch;
+}
+
+.pv-edit--title {
+  font-family: var(--font-display);
+  font-size: 1.85rem;
+  margin: 0 0 0.65rem;
+  letter-spacing: -0.02em;
+}
+
+.pv-edit--eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+.pv-edit--lede,
+.pv-lede-static {
+  color: var(--paper-dim);
+  margin: 0 0 1.25rem;
+  max-width: 32rem;
+}
+
+.pv-edit--note {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--line);
+  color: var(--paper-dim);
+  font-size: 0.92rem;
+}
+
+.pv-edit--meta {
+  color: var(--paper-dim);
+  font-size: 0.85rem;
+  margin: 0.35rem 0;
+}
+
+.pv-edit--inline {
+  display: inline-block;
+  vertical-align: baseline;
+}
+
+.pv-edit--portrait {
+  width: min(220px, 100%);
+  margin: 0 0 1.25rem;
+  border: 1px solid var(--line);
+}
+
+.pv-edit--track-title {
+  font-weight: 600;
+  margin: 0;
+}
+
+.pv-edit--track-mood {
+  margin: 0.15rem 0 0;
+  color: var(--paper-dim);
+  font-size: 0.85rem;
+}
+
 .pv-hero {
   position: relative;
   min-height: 70vh;
   display: flex;
   align-items: flex-end;
   overflow: hidden;
-  border-radius: 0;
   margin: -1.25rem;
   padding: 0;
 }
@@ -60,16 +173,21 @@ body {
   inset: 0;
 }
 
+.pv-hero__media .pv-edit,
 .pv-hero__media img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.pv-hero__media img {
   filter: saturate(0.85) contrast(1.05);
 }
 
 .pv-hero__veil {
   position: absolute;
   inset: 0;
+  pointer-events: none;
   background: linear-gradient(180deg, rgba(8, 10, 14, 0.35) 0%, rgba(8, 10, 14, 0.92) 100%);
 }
 
@@ -78,30 +196,6 @@ body {
   z-index: 1;
   padding: 2.5rem 1.5rem 2rem;
   width: 100%;
-}
-
-.pv-brand {
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 8vw, 3.4rem);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 0.95;
-  margin: 0 0 0.75rem;
-}
-
-.pv-headline {
-  font-family: var(--font-display);
-  font-size: 1.35rem;
-  font-weight: 500;
-  color: var(--brass-soft);
-  margin: 0 0 0.65rem;
-  max-width: 18ch;
-}
-
-.pv-lede {
-  color: var(--paper-dim);
-  margin: 0 0 1.25rem;
-  max-width: 32rem;
 }
 
 .pv-cta-row {
@@ -133,43 +227,12 @@ body {
   max-width: 40rem;
 }
 
-.pv-eyebrow {
-  margin: 0 0 0.35rem;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--teal);
-}
-
-.pv-title {
-  font-family: var(--font-display);
-  font-size: 1.85rem;
-  margin: 0 0 0.65rem;
-  letter-spacing: -0.02em;
-}
-
-.pv-copy p {
+.pv-copy {
   color: var(--paper-dim);
+}
+
+.pv-copy .pv-edit {
   margin: 0 0 0.85rem;
-}
-
-.pv-note {
-  margin-top: 1rem;
-  padding-top: 0.85rem;
-  border-top: 1px solid var(--line);
-  color: var(--paper-dim);
-  font-size: 0.92rem;
-}
-
-.pv-portrait {
-  width: min(220px, 100%);
-  margin: 0 0 1.25rem;
-  border: 1px solid var(--line);
-}
-
-.pv-portrait img {
-  width: 100%;
-  display: block;
 }
 
 .pv-tabs {
@@ -191,65 +254,114 @@ body {
   color: var(--brass-soft);
 }
 
+.pv-focus-block {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.pv-focus-block:last-child {
+  border-bottom: 0;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
 .pv-track {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 0.75rem;
-  align-items: center;
-  padding: 0.75rem 0.85rem;
-  margin-bottom: 0.5rem;
+  align-items: start;
+  padding: 0.85rem 0.95rem;
+  margin-bottom: 0.65rem;
   border: 1px solid var(--line);
+  border-radius: 0.9rem;
   background: rgba(20, 26, 36, 0.65);
 }
 
 .pv-track__play {
-  width: 2rem;
-  height: 2rem;
+  width: 2.15rem;
+  height: 2.15rem;
   border-radius: 999px;
-  border: 1px solid var(--line);
+  background: rgba(61, 155, 143, 0.2);
+  color: var(--teal);
   display: grid;
   place-items: center;
-  color: var(--brass);
+}
+
+.pv-icon {
+  width: 0.9rem;
+  height: 0.9rem;
+  display: block;
+}
+
+.pv-track__meta {
+  min-width: 0;
+}
+
+.pv-track__seek {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.65rem;
+}
+
+.pv-track__bar {
+  height: 0.3rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.pv-track__time {
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
-}
-
-.pv-track__title {
-  margin: 0;
-  font-weight: 600;
-}
-
-.pv-track__mood {
-  margin: 0.15rem 0 0;
   color: var(--paper-dim);
-  font-size: 0.85rem;
 }
 
 .pv-track__bpm {
   color: var(--paper-dim);
   font-size: 0.8rem;
+  white-space: nowrap;
+  padding-top: 0.35rem;
 }
 
-.pv-card {
-  border: 1px solid var(--line);
-  background: rgba(20, 26, 36, 0.65);
+.pv-project-hero {
+  position: relative;
+  min-height: 52vh;
+  display: flex;
+  align-items: flex-end;
   overflow: hidden;
-  margin-bottom: 1rem;
+  margin: -1.25rem -1.25rem 1.25rem;
 }
 
-.pv-card img {
+.pv-project-hero__media {
+  position: absolute;
+  inset: 0;
+}
+
+.pv-project-hero__media .pv-edit,
+.pv-project-hero__media img {
   width: 100%;
-  aspect-ratio: 16 / 10;
+  height: 100%;
   object-fit: cover;
 }
 
-.pv-card__body {
-  padding: 1rem;
+.pv-project-hero__veil {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(8, 10, 14, 0.25) 0%, rgba(8, 10, 14, 0.9) 100%);
 }
 
-.pv-card__sub {
-  color: var(--brass-soft);
-  font-size: 0.88rem;
-  margin: 0.2rem 0 0.55rem;
+.pv-project-hero__content {
+  position: relative;
+  z-index: 1;
+  padding: 2rem 1.5rem 1.75rem;
+  width: 100%;
+}
+
+.pv-project-body {
+  max-width: 40rem;
 }
 
 .pv-bullets {
@@ -264,19 +376,83 @@ body {
   border-top: 1px solid var(--line);
 }
 
-.pv-chapter img {
+.pv-chapter img,
+.pv-edit--media img {
   width: 100%;
   margin: 0.75rem 0;
   border: 1px solid var(--line);
 }
 
+.pv-gallery {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+.pv-eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+.pv-gallery__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.pv-gallery__item {
+  border: 1px solid var(--line);
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+}
+
+.pv-gallery__item .pv-edit,
+.pv-gallery__item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pv-link-stack {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.pv-link-row {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.pv-link-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
 .pv-meta {
   color: var(--paper-dim);
   font-size: 0.85rem;
-  margin: 0.35rem 0;
+  margin: 1rem 0 0;
 }
 
 .pv-empty {
   color: var(--paper-dim);
   font-style: italic;
+}
+
+/* Soften Decap’s default widget chrome inside our preview */
+.pv input,
+.pv textarea {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  width: 100%;
+  padding: 0;
+  resize: vertical;
 }

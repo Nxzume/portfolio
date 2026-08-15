@@ -1,6 +1,6 @@
 /**
  * Live preview templates for Decap CMS.
- * Uses Decap's global `h` (Preact createElement) — updates as you type.
+ * Uses widgetFor / widgetsFor so you can click the preview to edit fields.
  */
 ;(function registerPortfolioPreviews() {
   if (!window.CMS || typeof window.h !== 'function') return
@@ -18,67 +18,87 @@
     }
   }
 
-  function asset(getAsset, path) {
-    if (!path) return ''
-    try {
-      const a = getAsset(path)
-      return a ? String(a) : String(path)
-    } catch {
-      return String(path)
-    }
-  }
-
-  function asList(value) {
-    if (!value) return []
-    if (Array.isArray(value)) return value
-    return []
-  }
-
-  function paragraphText(item) {
-    if (item == null) return ''
-    if (typeof item === 'string') return item
-    if (typeof item === 'object') {
-      return item.paragraph || item.item || item.label || ''
-    }
-    return String(item)
-  }
-
   function hint(text) {
     return h('p', { className: 'pv-hint' }, text)
   }
 
-  function HeroPreview({ entry, getAsset }) {
-    const d = dataOf(entry)
-    const img = asset(getAsset, d.image)
-    const primary = d.primaryCta || {}
-    const secondary = d.secondaryCta || {}
+  function edit(className, node) {
+    if (node == null) return null
+    return h('div', { className: 'pv-edit' + (className ? ' ' + className : '') }, node)
+  }
+
+  function listWidgets(widgetsFor, name) {
+    try {
+      const items = widgetsFor(name)
+      if (!items || typeof items.map !== 'function') return []
+      return items
+    } catch {
+      return []
+    }
+  }
+
+  function objectWidgets(widgetsFor, name) {
+    try {
+      return widgetsFor(name) || null
+    } catch {
+      return null
+    }
+  }
+
+  function PlayIcon() {
+    return h(
+      'svg',
+      {
+        className: 'pv-icon',
+        viewBox: '0 0 24 24',
+        'aria-hidden': 'true',
+        focusable: 'false',
+      },
+      h('path', {
+        fill: 'currentColor',
+        d: 'M8.2 5.1a1 1 0 0 1 1.52-.86l10.1 6.4a1 1 0 0 1 0 1.72l-10.1 6.4A1 1 0 0 1 8.2 18V5.1Z',
+      }),
+    )
+  }
+
+  function HeroPreview({ widgetFor, widgetsFor }) {
+    const primary = objectWidgets(widgetsFor, 'primaryCta')
+    const secondary = objectWidgets(widgetsFor, 'secondaryCta')
     return h(
       'div',
       { className: 'pv' },
-      hint('Live preview · Top of homepage (name & tagline come from Name and links)'),
+      hint('Click text or the photo in the preview to edit — layout matches the homepage top'),
       h(
         'div',
         { className: 'pv-hero' },
         h(
           'div',
           { className: 'pv-hero__media' },
-          img ? h('img', { src: img, alt: '' }) : null,
+          edit('pv-edit--bleed', widgetFor('image')),
           h('div', { className: 'pv-hero__veil' }),
         ),
         h(
           'div',
           { className: 'pv-hero__content' },
-          h('p', { className: 'pv-brand' }, 'Your name (sitewide)'),
-          h('h1', { className: 'pv-headline' }, d.headline || 'Main headline'),
-          h('p', { className: 'pv-lede' }, 'One-line description from Name and links'),
+          h('p', { className: 'pv-brand-static' }, 'Your name (from Name and links)'),
+          edit('pv-edit--headline', widgetFor('headline')),
+          h('p', { className: 'pv-lede-static' }, 'Tagline comes from Name and links'),
           h(
             'div',
             { className: 'pv-cta-row' },
-            primary.label
-              ? h('span', { className: 'pv-btn pv-btn--primary' }, primary.label)
+            primary
+              ? h(
+                  'span',
+                  { className: 'pv-btn pv-btn--primary' },
+                  edit(null, primary.getIn(['widgets', 'label'])),
+                )
               : null,
-            secondary.label
-              ? h('span', { className: 'pv-btn pv-btn--ghost' }, secondary.label)
+            secondary
+              ? h(
+                  'span',
+                  { className: 'pv-btn pv-btn--ghost' },
+                  edit(null, secondary.getIn(['widgets', 'label'])),
+                )
               : null,
           ),
         ),
@@ -86,211 +106,283 @@
     )
   }
 
-  function AboutPreview({ entry, getAsset }) {
-    const d = dataOf(entry)
-    const img = asset(getAsset, d.portrait)
-    const paragraphs = asList(d.body).map(paragraphText).filter(Boolean)
+  function AboutPreview({ widgetFor, widgetsFor }) {
+    const paragraphs = listWidgets(widgetsFor, 'body')
     return h(
       'div',
       { className: 'pv pv-section' },
-      hint('Live preview · About me'),
-      img
-        ? h('div', { className: 'pv-portrait' }, h('img', { src: img, alt: d.portraitAlt || '' }))
-        : null,
-      h('h2', { className: 'pv-title' }, d.lead || 'About headline'),
+      hint('Click the photo or text to edit this About block'),
+      edit('pv-edit--portrait', widgetFor('portrait')),
+      edit('pv-edit--title', widgetFor('lead')),
       h(
         'div',
         { className: 'pv-copy' },
-        paragraphs.length
-          ? paragraphs.map((p, i) => h('p', { key: i }, p))
-          : h('p', { className: 'pv-empty' }, 'Add bio paragraphs…'),
+        paragraphs.size
+          ? paragraphs.map((item, i) =>
+              h('div', { key: i, className: 'pv-edit' }, item.getIn(['widgets', 'paragraph'])),
+            )
+          : h('p', { className: 'pv-empty' }, 'Add bio paragraphs in the form or keep typing here once added'),
       ),
-      d.note ? h('p', { className: 'pv-note' }, d.note) : null,
+      edit('pv-edit--note', widgetFor('note')),
     )
   }
 
-  function ContactPreview({ entry }) {
-    const d = dataOf(entry)
+  function ContactPreview({ widgetFor }) {
     return h(
       'div',
       { className: 'pv pv-section' },
-      hint('Live preview · Contact (buttons use email & links from Name and links)'),
-      h('p', { className: 'pv-eyebrow' }, d.eyebrow || ''),
-      h('h2', { className: 'pv-title' }, d.title || 'Contact title'),
-      h('p', { className: 'pv-lede' }, d.lede || ''),
+      hint('Click labels to edit — email / itch / GitHub buttons use Name and links'),
+      edit('pv-edit--eyebrow', widgetFor('eyebrow')),
+      edit('pv-edit--title', widgetFor('title')),
+      edit('pv-edit--lede', widgetFor('lede')),
       h(
         'div',
         { className: 'pv-cta-row' },
-        h('span', { className: 'pv-btn pv-btn--primary' }, d.emailButtonText || 'Email…'),
+        h(
+          'span',
+          { className: 'pv-btn pv-btn--primary' },
+          edit(null, widgetFor('emailButtonText')),
+        ),
         h('span', { className: 'pv-btn pv-btn--ghost' }, 'itch.io'),
         h('span', { className: 'pv-btn pv-btn--ghost' }, 'GitHub'),
       ),
     )
   }
 
-  function SitePreview({ entry }) {
-    const d = dataOf(entry)
-    const links = d.links || {}
+  function SitePreview({ widgetFor, widgetsFor }) {
+    const links = objectWidgets(widgetsFor, 'links')
     return h(
       'div',
       { className: 'pv pv-section' },
-      hint('Live preview · Name and links — updates nav, hero, footer, contact buttons'),
-      h('p', { className: 'pv-brand' }, d.name || 'Your name'),
-      h('p', { className: 'pv-lede' }, d.tagline || ''),
-      h('p', { className: 'pv-meta' }, d.email || ''),
+      hint('Click to edit — these values appear in the nav, hero, footer, and contact buttons'),
+      edit('pv-edit--brand', widgetFor('name')),
+      edit('pv-edit--lede', widgetFor('tagline')),
+      edit('pv-edit--meta', widgetFor('email')),
       h(
         'div',
-        { className: 'pv-copy' },
-        links.itch ? h('p', null, 'itch.io: ', links.itch) : null,
-        links.githubArena ? h('p', null, 'Arena: ', links.githubArena) : null,
-        links.githubLevel ? h('p', null, 'Level: ', links.githubLevel) : null,
+        { className: 'pv-link-stack' },
+        links
+          ? [
+              h(
+                'div',
+                { key: 'itch', className: 'pv-link-row' },
+                h('span', { className: 'pv-link-label' }, 'itch.io'),
+                edit(null, links.getIn(['widgets', 'itch'])),
+              ),
+              h(
+                'div',
+                { key: 'arena', className: 'pv-link-row' },
+                h('span', { className: 'pv-link-label' }, 'Arena GitHub'),
+                edit(null, links.getIn(['widgets', 'githubArena'])),
+              ),
+              h(
+                'div',
+                { key: 'level', className: 'pv-link-row' },
+                h('span', { className: 'pv-link-label' }, 'Level GitHub'),
+                edit(null, links.getIn(['widgets', 'githubLevel'])),
+              ),
+            ]
+          : null,
       ),
     )
   }
 
   function SectionHeadingPreview(label) {
-    return function Preview({ entry }) {
-      const d = dataOf(entry)
+    return function Preview({ widgetFor }) {
       return h(
         'div',
         { className: 'pv pv-section' },
-        hint('Live preview · ' + label),
-        h('p', { className: 'pv-eyebrow' }, d.eyebrow || ''),
-        h('h2', { className: 'pv-title' }, d.title || 'Section title'),
-        h('p', { className: 'pv-lede' }, d.lede || ''),
+        hint('Click to edit the ' + label + ' as it appears on the homepage'),
+        edit('pv-edit--eyebrow', widgetFor('eyebrow')),
+        edit('pv-edit--title', widgetFor('title')),
+        edit('pv-edit--lede', widgetFor('lede')),
       )
     }
   }
 
-  function FocusesPreview({ entry }) {
-    const d = dataOf(entry)
-    const tabs = asList(d.tabs)
-    const active = tabs[0] || {}
+  function FocusesPreview({ widgetsFor }) {
+    const tabs = listWidgets(widgetsFor, 'tabs')
     return h(
       'div',
       { className: 'pv pv-section' },
-      hint('Live preview · Focus tabs'),
-      h(
-        'div',
-        { className: 'pv-tabs' },
-        tabs.map((t, i) =>
-          h('span', { key: i, className: 'pv-tab' + (i === 0 ? ' is-on' : '') }, t.label || t.id || 'Tab'),
-        ),
-      ),
-      h('h2', { className: 'pv-title' }, active.headline || 'Headline'),
-      h('p', { className: 'pv-lede' }, active.body || ''),
-      tabs.length > 1
-        ? h('p', { className: 'pv-meta' }, 'Showing first tab; all ' + tabs.length + ' tabs update live.')
-        : null,
-    )
-  }
-
-  function SketchesPreview({ entry }) {
-    const d = dataOf(entry)
-    const tracks = asList(d.tracks)
-    return h(
-      'div',
-      { className: 'pv' },
-      hint('Live preview · Music tracks'),
-      tracks.length
-        ? tracks.map((t, i) =>
-            h(
+      hint('Click a tab label or its headline/body to edit — every tab shows below'),
+      tabs.size
+        ? tabs.map(function (tab, i) {
+            return h(
               'div',
-              { key: i, className: 'pv-track' },
-              h('div', { className: 'pv-track__play' }, '▶'),
+              { key: i, className: 'pv-focus-block' },
               h(
                 'div',
-                null,
-                h('p', { className: 'pv-track__title' }, t.title || 'Track title'),
-                t.mood ? h('p', { className: 'pv-track__mood' }, t.mood) : null,
+                { className: 'pv-tabs' },
+                h(
+                  'span',
+                  { className: 'pv-tab is-on' },
+                  edit(null, tab.getIn(['widgets', 'label'])),
+                ),
               ),
-              t.audio
-                ? null
-                : h('div', { className: 'pv-track__bpm' }, (t.bpm || 100) + ' BPM'),
-            ),
-          )
-        : h('p', { className: 'pv-empty' }, 'Add a track to preview it here.'),
+              edit('pv-edit--title', tab.getIn(['widgets', 'headline'])),
+              edit('pv-edit--lede', tab.getIn(['widgets', 'body'])),
+            )
+          })
+        : h('p', { className: 'pv-empty' }, 'Add a focus tab to preview it here'),
     )
   }
 
-  function ProjectPreview({ entry, getAsset }) {
+  function SketchesPreview({ widgetsFor }) {
+    const tracks = listWidgets(widgetsFor, 'tracks')
+    return h(
+      'div',
+      { className: 'pv' },
+      hint('Click a track title or description to edit — matches the music list on the site'),
+      tracks.size
+        ? tracks.map(function (track, i) {
+            const hasAudio = Boolean(track.getIn(['data', 'audio']))
+            return h(
+              'div',
+              { key: i, className: 'pv-track' },
+              h('div', { className: 'pv-track__play' }, PlayIcon()),
+              h(
+                'div',
+                { className: 'pv-track__meta' },
+                edit('pv-edit--track-title', track.getIn(['widgets', 'title'])),
+                edit('pv-edit--track-mood', track.getIn(['widgets', 'mood'])),
+                hasAudio
+                  ? h(
+                      'div',
+                      { className: 'pv-track__seek' },
+                      h('span', { className: 'pv-track__time' }, '0:00'),
+                      h('div', { className: 'pv-track__bar' }),
+                      h('span', { className: 'pv-track__time' }, '—:—'),
+                    )
+                  : null,
+              ),
+              hasAudio
+                ? null
+                : h(
+                    'div',
+                    { className: 'pv-track__bpm' },
+                    edit(null, track.getIn(['widgets', 'bpm'])),
+                    ' BPM',
+                  ),
+            )
+          })
+        : h('p', { className: 'pv-empty' }, 'Add a track to preview it here'),
+    )
+  }
+
+  function ProjectPreview({ entry, widgetFor, widgetsFor }) {
     const d = dataOf(entry)
-    const cover = asset(getAsset, d.image)
-    const highlights = asList(d.highlights).map(paragraphText).filter(Boolean)
-    const intro = asList(d.intro).map(paragraphText).filter(Boolean)
-    const links = asList(d.links).filter(Boolean)
-    const sections = asList(d.sections).filter((s) => s && typeof s === 'object')
-    const gallery = asList(d.gallery).filter((g) => g != null && g !== '')
+    const highlights = listWidgets(widgetsFor, 'highlights')
+    const intro = listWidgets(widgetsFor, 'intro')
+    const links = listWidgets(widgetsFor, 'links')
+    const sections = listWidgets(widgetsFor, 'sections')
+    const gallery = listWidgets(widgetsFor, 'gallery')
 
     return h(
       'div',
       { className: 'pv' },
-      hint('Live preview · Project page'),
+      hint('Click any part of the page preview to edit — this is /projects/' + (d.slug || '…')),
       h(
         'div',
-        { className: 'pv-card' },
-        cover ? h('img', { src: cover, alt: '' }) : null,
+        { className: 'pv-project-hero' },
         h(
           'div',
-          { className: 'pv-card__body' },
-          h('h2', { className: 'pv-title' }, d.title || 'Project title'),
-          h('p', { className: 'pv-card__sub' }, d.subtitle || ''),
-          h('p', { className: 'pv-lede' }, d.summary || ''),
-          h('p', { className: 'pv-meta' }, 'Page: /projects/' + (d.slug || '…')),
-          highlights.length
-            ? h(
-                'ul',
-                { className: 'pv-bullets' },
-                highlights.map((item, i) => h('li', { key: i }, item)),
-              )
-            : null,
+          { className: 'pv-project-hero__media' },
+          edit('pv-edit--bleed', widgetFor('image')),
+          h('div', { className: 'pv-project-hero__veil' }),
+        ),
+        h(
+          'div',
+          { className: 'pv-project-hero__content' },
+          edit('pv-edit--eyebrow', widgetFor('subtitle')),
+          edit('pv-edit--title', widgetFor('title')),
+          edit('pv-edit--lede', widgetFor('summary')),
           h(
             'div',
-            { className: 'pv-cta-row', style: { marginTop: '0.85rem' } },
-            links.map((l, i) =>
-              h('span', { key: i, className: 'pv-btn pv-btn--ghost' }, (l && l.label) || 'Link'),
-            ),
+            { className: 'pv-cta-row' },
+            links.size
+              ? links.map(function (link, i) {
+                  return h(
+                    'span',
+                    { key: i, className: 'pv-btn pv-btn--ghost' },
+                    edit(null, link.getIn(['widgets', 'label'])),
+                  )
+                })
+              : null,
           ),
         ),
       ),
-      intro.length
-        ? h(
-            'div',
-            { className: 'pv-copy pv-section' },
-            intro.map((p, i) => h('p', { key: i }, p)),
-          )
-        : null,
-      gallery.length
-        ? h(
-            'div',
-            { className: 'pv-section' },
-            h('p', { className: 'pv-eyebrow' }, 'Extra photos'),
-            gallery.map((g, i) => {
-              const path = typeof g === 'string' ? g : g && g.image
-              const src = path ? asset(getAsset, path) : ''
-              return src
-                ? h('img', {
-                    key: i,
-                    src: src,
-                    alt: '',
-                    style: { marginBottom: '0.5rem', border: '1px solid var(--line)' },
-                  })
-                : null
-            }),
-          )
-        : null,
-      sections.map((s, i) => {
-        const paras = asList(s.paragraphs).map(paragraphText).filter(Boolean)
-        const img = s.image ? asset(getAsset, s.image) : ''
-        return h(
+      h(
+        'div',
+        { className: 'pv-project-body' },
+        h(
           'div',
-          { key: i, className: 'pv-chapter' },
-          h('h3', { className: 'pv-title' }, s.title || 'Chapter'),
-          s.quote ? h('p', { className: 'pv-note' }, '“' + s.quote + '”') : null,
-          paras.map((p, j) => h('p', { key: j, className: 'pv-lede' }, p)),
-          img ? h('img', { src: img, alt: s.imageAlt || '' }) : null,
-        )
-      }),
+          { className: 'pv-copy' },
+          intro.size
+            ? intro.map(function (item, i) {
+                return h(
+                  'div',
+                  { key: i, className: 'pv-edit' },
+                  item.getIn(['widgets', 'paragraph']),
+                )
+              })
+            : null,
+          highlights.size
+            ? h(
+                'ul',
+                { className: 'pv-bullets' },
+                highlights.map(function (item, i) {
+                  return h(
+                    'li',
+                    { key: i },
+                    edit(null, item.getIn(['widgets', 'item'])),
+                  )
+                }),
+              )
+            : null,
+        ),
+        sections.size
+          ? sections.map(function (section, i) {
+              const paraWidget = section.getIn(['widgets', 'paragraphs'])
+
+              return h(
+                'div',
+                { key: i, className: 'pv-chapter' },
+                edit('pv-edit--title', section.getIn(['widgets', 'title'])),
+                edit('pv-edit--note', section.getIn(['widgets', 'quote'])),
+                paraWidget ? h('div', { className: 'pv-copy' }, paraWidget) : null,
+                edit('pv-edit--media', section.getIn(['widgets', 'image'])),
+                edit('pv-edit--meta', section.getIn(['widgets', 'imageAlt'])),
+              )
+            })
+          : null,
+        gallery.size
+          ? h(
+              'div',
+              { className: 'pv-gallery' },
+              h('p', { className: 'pv-eyebrow' }, 'Gallery'),
+              h(
+                'div',
+                { className: 'pv-gallery__grid' },
+                gallery.map(function (item, i) {
+                  return h(
+                    'div',
+                    { key: i, className: 'pv-gallery__item' },
+                    edit('pv-edit--bleed', item.getIn(['widgets', 'image'])),
+                  )
+                }),
+              ),
+            )
+          : null,
+      ),
+      h(
+        'p',
+        { className: 'pv-meta' },
+        'Page link name (slug): ',
+        edit('pv-edit--inline', widgetFor('slug')),
+        ' · short id: ',
+        edit('pv-edit--inline', widgetFor('id')),
+      ),
     )
   }
 
