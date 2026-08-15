@@ -12,7 +12,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1rem clamp(1.25rem, 4vw, 2.5rem);
+  padding: 1.35rem clamp(1.5rem, 4.5vw, 2.75rem);
   transition: background 0.3s var(--ease), backdrop-filter 0.3s var(--ease), border-color 0.3s var(--ease);
   border-bottom: 1px solid transparent;
 }
@@ -32,7 +32,7 @@
 
 .nav__links {
   display: flex;
-  gap: 1.25rem;
+  gap: clamp(1rem, 2.5vw, 1.75rem);
   font-size: 0.92rem;
   color: var(--paper-dim);
 }
@@ -45,7 +45,6 @@
 .hero {
   position: relative;
   min-height: 100svh;
-  max-height: 100svh;
   display: grid;
   align-items: end;
   padding: 0;
@@ -79,19 +78,24 @@
   position: absolute;
   inset: auto 0 0;
   width: 100%;
-  height: 38%;
-  max-height: 280px;
-  opacity: 0.9;
+  height: 18%;
+  max-height: 140px;
+  opacity: 0.55;
   display: block;
   pointer-events: none;
+  z-index: 1;
 }
 
 .hero__content {
   position: relative;
   z-index: 2;
-  width: min(1120px, calc(100% - 2.5rem));
+  width: min(1120px, calc(100% - clamp(2.5rem, 8vw, 5rem)));
   margin: 0 auto;
-  padding: 6.5rem 0 3.25rem;
+  /* Top clears fixed nav; bottom clears the decorative waveform */
+  padding:
+    clamp(6.5rem, 14vh, 8.5rem)
+    0
+    clamp(5.75rem, 12vh, 7.5rem);
 }
 
 .hero__brand {
@@ -100,39 +104,41 @@
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 0.95;
-  margin: 0 0 1rem;
+  margin: 0 0 1.25rem;
   color: var(--paper);
   text-shadow: 0 8px 40px rgba(0, 0, 0, 0.45);
 }
 
 .hero h1 {
-  max-width: 14ch;
+  max-width: 16ch;
   font-size: clamp(1.55rem, 3.2vw, 2.35rem);
   font-weight: 500;
+  line-height: 1.2;
   color: var(--brass-soft);
-  margin-bottom: 0.85rem;
+  margin: 0 0 1.15rem;
 }
 
 .hero__lede {
   max-width: 34rem;
   color: var(--paper-dim);
   font-size: 1.08rem;
-  margin-bottom: 1.75rem;
+  line-height: 1.65;
+  margin: 0 0 2.35rem;
 }
 
 .hero__cta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.9rem;
 }
 
 /* Focus switcher */
 .focus {
-  width: min(1120px, calc(100% - 2.5rem));
-  margin: -1.5rem auto 0;
+  width: min(1120px, calc(100% - clamp(2.5rem, 8vw, 5rem)));
+  margin: 2rem auto 0;
   position: relative;
   z-index: 3;
-  padding: 1.25rem;
+  padding: 1.35rem 1.4rem;
   border: 1px solid var(--line);
   border-radius: 1.25rem;
   background: rgba(20, 26, 36, 0.88);
@@ -570,11 +576,16 @@
   }
 
   .hero__content {
-    padding-bottom: 5.5rem;
+    padding-bottom: clamp(6rem, 16vh, 8rem);
+  }
+
+  .hero__wave {
+    height: 14%;
+    max-height: 110px;
   }
 
   .focus {
-    margin-top: -2.5rem;
+    margin-top: 1.5rem;
   }
 }
 
