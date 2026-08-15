@@ -1,10 +1,9 @@
 {
   "tracks": [
     {
-      "bpm": "",
-      "audio": "/audio/alexandre-guichet-10-years.flac",
       "id": "10years",
-      "title": "10 Years"
+      "title": "10 Years",
+      "audio": "/audio/alexandre-guichet-10-years.flac"
     }
   ]
 }
