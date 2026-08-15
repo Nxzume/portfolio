@@ -9,6 +9,8 @@ type Props = {
 export function FocusSwitcher({ active, onChange }: Props) {
   const current = focuses.find((f) => f.id === active) ?? focuses[0]
 
+  if (!current) return null
+
   return (
     <section className="focus" aria-label="Areas of focus">
       <div className="focus__tabs" role="tablist">

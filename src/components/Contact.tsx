@@ -21,7 +21,6 @@ function contactActions() {
   } else if (site.links.githubArena) {
     actions.push({ label: 'GitHub', href: site.links.githubArena, style: 'ghost' })
   }
-
   return actions
 }
 

@@ -12,7 +12,9 @@ export function About() {
           viewport={{ once: true, amount: 0.4 }}
           transition={{ duration: 0.7 }}
         >
-          <img src={about.portrait} alt={about.portraitAlt || site.name} />
+          {about.portrait ? (
+            <img src={about.portrait} alt={about.portraitAlt || site.name} />
+          ) : null}
         </motion.div>
         <motion.div
           className="about__copy"
@@ -22,8 +24,8 @@ export function About() {
           transition={{ duration: 0.7, delay: 0.08 }}
         >
           <h2>{about.lead}</h2>
-          {about.body.map((p) => (
-            <p key={p.slice(0, 24)}>{p}</p>
+          {about.body.map((p, i) => (
+            <p key={`${i}-${p.slice(0, 24)}`}>{p}</p>
           ))}
           {about.note ? <p className="about__note">{about.note}</p> : null}
         </motion.div>
