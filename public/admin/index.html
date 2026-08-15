@@ -81,9 +81,7 @@
         } catch (err) {
           const localHint = isLocal
             ? '<p>For local editing run <code>npm run cms</code> in another terminal, then refresh.</p>'
-            : '<p>On any host, open <code>' +
-              origin +
-              '/admin/</code>. OAuth callback must match this origin (see docs/ADMIN-SETUP.md).</p>'
+            : '<p>If this keeps happening, ask the site owner to finish GitHub login setup.</p>'
           status.innerHTML =
             '<h1>Editor failed to load</h1><p>' +
             (err && err.message ? err.message : String(err)) +

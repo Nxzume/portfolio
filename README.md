@@ -4,18 +4,19 @@ Interactive React portfolio for **Alexandre Guichet**: game composition, level d
 
 **Live:** [portfolio-five-steel-37.vercel.app](https://portfolio-five-steel-37.vercel.app/)
 
-## Edit without coding (any host)
+## Edit without coding
 
-Visual editor at **`/admin/`** — on the live site or locally.
+Open **`/admin/`** on the live site (or locally), sign in with GitHub, edit, Publish.
 
-- **Friend guide:** [docs/EDITING.md](./docs/EDITING.md)
-- **Owner setup:** [docs/ADMIN-SETUP.md](./docs/ADMIN-SETUP.md)
+Friend guide: [docs/EDITING.md](./docs/EDITING.md)
 
 ```bash
 npm run dev   # site
 npm run cms   # local editor backend (other terminal)
 # then open http://localhost:5173/admin/
 ```
+
+Site-owner GitHub login setup (one-time): [docs/ADMIN-SETUP.md](./docs/ADMIN-SETUP.md)
 
 ## Stack
 

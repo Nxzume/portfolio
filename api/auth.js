@@ -6,32 +6,24 @@
  * 2) public/admin/oauth-public.json (safe to commit — Client ID is public)
  *
  * Client Secret must stay in Vercel as GITHUB_CLIENT_SECRET (used by /api/callback).
+ * Owner setup steps live in docs/ADMIN-SETUP.md — not on this page.
  */
-import { requestOrigin, resolveClientId } from './_githubOAuth.js'
+import { resolveClientId } from './_githubOAuth.js'
 
 export default async function handler(req, res) {
   const { clientId } = await resolveClientId(req)
 
   if (!clientId) {
-    const origin = requestOrigin(req)
-    res.statusCode = 500
+    res.statusCode = 503
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     res.end(`<!doctype html>
-<html lang="en"><head><meta charset="utf-8"/><title>OAuth setup needed</title>
-<style>body{font-family:system-ui,sans-serif;max-width:42rem;margin:2rem auto;padding:0 1rem;line-height:1.5}
-code{background:#f4f4f4;padding:.15rem .4rem;border-radius:4px}li{margin:.45rem 0}</style>
+<html lang="en"><head><meta charset="utf-8"/><title>Login unavailable</title>
+<style>body{font-family:system-ui,sans-serif;max-width:28rem;margin:3rem auto;padding:0 1rem;line-height:1.5;color:#1a1a1a}
+a{color:#0b57d0}</style>
 </head><body>
-<h1>GitHub Client ID not found</h1>
-<p>Do <strong>one</strong> of these, then <strong>Redeploy</strong> on Vercel:</p>
-<ol>
-<li><strong>Easiest:</strong> put your OAuth Client ID in
-  <code>public/admin/oauth-public.json</code> as <code>githubClientId</code>, commit, push, redeploy.</li>
-<li><strong>Or</strong> in Vercel → this project → Environment Variables add
-  <code>GITHUB_CLIENT_ID</code> (and <code>GITHUB_CLIENT_SECRET</code>), save, then Redeploy.</li>
-</ol>
-<p>OAuth App callback must be:<br/><code>${origin}/api/callback</code></p>
-<p>Check: <a href="/api/oauth-status"><code>/api/oauth-status</code></a></p>
-<p>Production URL: <code>https://portfolio-five-steel-37.vercel.app</code></p>
+<h1>Login isn’t set up yet</h1>
+<p>Online editing needs a one-time GitHub connection from the site owner.</p>
+<p><a href="/admin/">Back to editor</a> · <a href="/">Back to site</a></p>
 </body></html>`)
     return
   }

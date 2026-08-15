@@ -9,11 +9,16 @@ export default async function handler(req, res) {
   const clientSecret = process.env.GITHUB_CLIENT_SECRET?.trim()
 
   if (!clientId || !clientSecret) {
-    res.statusCode = 500
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8')
-    res.end(
-      `Missing ${!clientId ? 'GITHUB_CLIENT_ID (or public/admin/oauth-public.json)' : ''}${!clientId && !clientSecret ? ' and ' : ''}${!clientSecret ? 'GITHUB_CLIENT_SECRET' : ''}. Fix and redeploy.`,
-    )
+    res.statusCode = 503
+    res.setHeader('Content-Type', 'text/html; charset=utf-8')
+    res.end(`<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><title>Login unavailable</title>
+<style>body{font-family:system-ui,sans-serif;max-width:28rem;margin:3rem auto;padding:0 1rem;line-height:1.5}</style>
+</head><body>
+<h1>Login isn’t set up yet</h1>
+<p>Online editing needs a one-time GitHub connection from the site owner.</p>
+<p><a href="/admin/">Back to editor</a></p>
+</body></html>`)
     return
   }
 
