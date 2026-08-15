@@ -37,29 +37,46 @@ body {
 }
 
 .pv-hint {
-  margin: 0 0 1rem;
+  margin: 0;
   font-size: 0.78rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--paper-dim);
+  color: var(--brass-soft);
+}
+
+.pv-hint-box {
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgba(212, 168, 75, 0.35);
+  border-radius: 0.65rem;
+  background: rgba(212, 168, 75, 0.08);
+}
+
+.pv-hint-sub {
+  margin: 0.35rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  color: var(--paper);
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 /* Click-to-edit affordance */
 .pv-edit {
   position: relative;
-  outline: 1px dashed transparent;
+  outline: 1px dashed rgba(212, 168, 75, 0.28);
   outline-offset: 3px;
   border-radius: 2px;
   transition: outline-color 0.15s ease, background-color 0.15s ease;
-  cursor: text;
+  cursor: pointer;
   min-width: 0.75rem;
   min-height: 1.1em;
 }
 
 .pv-edit:hover,
 .pv-edit:focus-within {
-  outline-color: rgba(212, 168, 75, 0.55);
-  background: rgba(212, 168, 75, 0.06);
+  outline-color: rgba(212, 168, 75, 0.85);
+  background: rgba(212, 168, 75, 0.1);
 }
 
 .pv-edit--bleed {

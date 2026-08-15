@@ -19,7 +19,16 @@
   }
 
   function hint(text) {
-    return h('p', { className: 'pv-hint' }, text)
+    return h(
+      'div',
+      { className: 'pv-hint-box' },
+      h('p', { className: 'pv-hint' }, text),
+      h(
+        'p',
+        { className: 'pv-hint-sub' },
+        'Click text or a photo on the right → the matching field opens on the left so you can type.',
+      ),
+    )
   }
 
   function edit(className, node) {

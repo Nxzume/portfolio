@@ -66,8 +66,22 @@
             config.local_backend = true
           }
 
-          // Live preview pane on the right — click fields in the preview to edit them.
-          config.editor = Object.assign({ preview: true }, config.editor || {})
+          // Preview on the right. Decap reads visualEditing from each collection.
+          config.editor = Object.assign(
+            { preview: true, visualEditing: true },
+            config.editor || {},
+          )
+          config.editor.preview = true
+          config.editor.visualEditing = true
+          ;(config.collections || []).forEach(function (collection) {
+            if (!collection || typeof collection !== 'object') return
+            collection.editor = Object.assign(
+              { preview: true, visualEditing: true },
+              collection.editor || {},
+            )
+            collection.editor.preview = true
+            collection.editor.visualEditing = true
+          })
 
           // One global upload limit for every image/file field (edit upload-limit.json).
           try {
