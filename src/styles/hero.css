@@ -1,0 +1,101 @@
+/* Hero — one composition, brand first, full-bleed media */
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: grid;
+  align-items: end;
+  padding: 0;
+  overflow: hidden;
+}
+
+.hero__media {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.hero__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 35%;
+  transform: scale(1.04);
+  filter: saturate(0.85) contrast(1.05);
+}
+
+.hero__veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(8, 10, 14, 0.35) 0%, rgba(8, 10, 14, 0.55) 45%, rgba(8, 10, 14, 0.92) 100%),
+    linear-gradient(90deg, rgba(8, 10, 14, 0.75) 0%, rgba(8, 10, 14, 0.2) 55%, rgba(8, 10, 14, 0.55) 100%);
+}
+
+.hero__wave {
+  position: absolute;
+  inset: auto 0 0;
+  width: 100%;
+  height: 18%;
+  max-height: 140px;
+  opacity: 0.55;
+  display: block;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hero__content {
+  position: relative;
+  z-index: 2;
+  width: min(1120px, calc(100% - clamp(2.5rem, 8vw, 5rem)));
+  margin: 0 auto;
+  /* Top clears fixed nav; bottom clears the decorative waveform */
+  padding:
+    clamp(6.5rem, 14vh, 8.5rem)
+    0
+    clamp(5.75rem, 12vh, 7.5rem);
+}
+
+.hero__brand {
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 7vw, 5.2rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  margin: 0 0 1.25rem;
+  color: var(--paper);
+  text-shadow: 0 8px 40px rgba(0, 0, 0, 0.45);
+}
+
+.hero h1 {
+  max-width: 16ch;
+  font-size: clamp(1.55rem, 3.2vw, 2.35rem);
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--brass-soft);
+  margin: 0 0 1.15rem;
+}
+
+.hero__lede {
+  max-width: 34rem;
+  color: var(--paper-dim);
+  font-size: 1.08rem;
+  line-height: 1.65;
+  margin: 0 0 2.35rem;
+}
+
+.hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+}
+
+@media (max-width: 860px) {
+  .hero__content {
+    padding-bottom: clamp(6rem, 16vh, 8rem);
+  }
+
+  .hero__wave {
+    height: 14%;
+    max-height: 110px;
+  }
+}

@@ -1,0 +1,37 @@
+.contact__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.footer {
+  width: min(1120px, calc(100% - 2.5rem));
+  margin: 4rem auto 0;
+  padding: 1.75rem 0 2.5rem;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: var(--paper-dim);
+  font-size: 0.9rem;
+}
+
+.footer p {
+  margin: 0;
+}
+
+.footer a {
+  color: var(--brass-soft);
+}
+
+.footer a:hover {
+  color: var(--paper);
+}
+
+/* Clears the floating mobile Menu button. */
+@media (max-width: 720px) {
+  .footer {
+    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+  }
+}

@@ -1,0 +1,49 @@
+.focus {
+  width: min(1120px, calc(100% - clamp(2.5rem, 8vw, 5rem)));
+  margin: 2rem auto 0;
+  position: relative;
+  z-index: 3;
+  padding: 1.35rem 1.4rem;
+  border: 1px solid var(--line);
+  border-radius: 1.25rem;
+  background: rgba(20, 26, 36, 0.88);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow);
+}
+
+.focus__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.focus__tab {
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--paper-dim);
+  transition: background 0.25s var(--ease), color 0.25s var(--ease), border-color 0.25s var(--ease);
+}
+
+.focus__tab.is-active {
+  background: rgba(212, 168, 75, 0.15);
+  border-color: rgba(212, 168, 75, 0.5);
+  color: var(--brass-soft);
+}
+
+.focus__panel h2 {
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+}
+
+.focus__panel p {
+  color: var(--paper-dim);
+  max-width: 48rem;
+  margin: 0;
+}
+
+@media (max-width: 860px) {
+  .focus {
+    margin-top: 1.5rem;
+  }
+}
