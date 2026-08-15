@@ -1,9 +1,18 @@
 {
-  "order": 3,
-  "id": "test",
+  "summary": "test",
   "slug": "test",
-  "title": "test",
+  "order": 3,
   "subtitle": "test",
+  "title": "test",
+  "links": [
+    {
+      "label": "test",
+      "href": "google.com"
+    }
+  ],
+  "id": "test",
   "image": "/images/hf_20260811_031129_e49a7056-7baa-43c7-8680-71758739818c.png",
-  "summary": "test"
+  "highlights": [
+    "test"
+  ]
 }
