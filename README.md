@@ -22,6 +22,8 @@ Open **`/admin/`** on the live site, sign in with GitHub, edit, then **Publish**
 
 Edit **Name and links (sitewide)** once for your name, tagline, email, and social URLs — they update the nav, hero, footer, and contact buttons together.
 
+Photos and music: use the **Upload** button on image/file fields in `/admin/` (saved into `public/images` or `public/audio` on Publish).
+
 Locally (no OAuth):
 
 ```bash
