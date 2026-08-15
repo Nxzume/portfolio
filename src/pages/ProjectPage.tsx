@@ -1,3 +1,4 @@
+import { useEffect, useId, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { Footer } from '../components/Contact'
 import { Nav } from '../components/Nav'
@@ -6,6 +7,22 @@ import { getProject, projects } from '../content'
 export function ProjectPage() {
   const { slug } = useParams()
   const project = slug ? getProject(slug) : undefined
+  const [lightbox, setLightbox] = useState<string | null>(null)
+  const lightboxTitleId = useId()
+
+  useEffect(() => {
+    if (!lightbox) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setLightbox(null)
+    }
+    window.addEventListener('keydown', onKey)
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.body.style.overflow = prev
+    }
+  }, [lightbox])
 
   if (!project) {
     return <Navigate to="/" replace />
@@ -54,6 +71,11 @@ export function ProjectPage() {
                   <a href={`#${section.id}`}>{section.title}</a>
                 </li>
               ))}
+              {project.gallery.length > 0 && (
+                <li>
+                  <a href="#gallery">Gallery</a>
+                </li>
+              )}
             </ul>
           </aside>
 
@@ -78,7 +100,14 @@ export function ProjectPage() {
                 ))}
                 {section.image && (
                   <figure>
-                    <img src={section.image} alt={section.imageAlt ?? ''} />
+                    <button
+                      type="button"
+                      className="project-page__zoom"
+                      onClick={() => setLightbox(section.image!)}
+                      aria-label={`View larger: ${section.imageAlt || section.title}`}
+                    >
+                      <img src={section.image} alt={section.imageAlt ?? ''} />
+                    </button>
                     {section.imageAlt && <figcaption>{section.imageAlt}</figcaption>}
                   </figure>
                 )}
@@ -90,9 +119,15 @@ export function ProjectPage() {
                 <h2>Gallery</h2>
                 <div className="project-page__gallery-grid">
                   {project.gallery.map((src) => (
-                    <figure key={src} className="project-page__gallery-item">
+                    <button
+                      key={src}
+                      type="button"
+                      className="project-page__gallery-item"
+                      onClick={() => setLightbox(src)}
+                      aria-label={`View larger image from ${project.title}`}
+                    >
                       <img src={src} alt={`${project.title} screenshot`} />
-                    </figure>
+                    </button>
                   ))}
                 </div>
               </section>
@@ -105,9 +140,10 @@ export function ProjectPage() {
                   {others.map((p) => (
                     <Link key={p.id} className="projects__card" to={`/projects/${p.slug}`}>
                       <img src={p.image} alt="" />
-                      <div>
+                      <div className="projects__card-body">
                         <h3>{p.title}</h3>
-                        <p>{p.subtitle}</p>
+                        <p className="projects__card-sub">{p.subtitle}</p>
+                        <span className="projects__card-cta">Read more →</span>
                       </div>
                     </Link>
                   ))}
@@ -118,6 +154,29 @@ export function ProjectPage() {
         </div>
       </main>
       <Footer />
+
+      {lightbox ? (
+        <div
+          className="lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={lightboxTitleId}
+          onClick={() => setLightbox(null)}
+        >
+          <p id={lightboxTitleId} className="visually-hidden">
+            Enlarged image
+          </p>
+          <button type="button" className="lightbox__close" aria-label="Close">
+            Close
+          </button>
+          <img
+            className="lightbox__img"
+            src={lightbox}
+            alt=""
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      ) : null}
     </div>
   )
 }
