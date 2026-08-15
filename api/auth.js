@@ -1,43 +1,37 @@
 /**
  * GitHub OAuth start — Decap CMS.
- * Classic Vercel Node handler so env vars are reliably available.
  *
- * Required env (Vercel project → Settings → Environment Variables):
- *   GITHUB_CLIENT_ID
- *   GITHUB_CLIENT_SECRET  (used by /api/callback)
+ * Client ID resolution order:
+ * 1) process.env.GITHUB_CLIENT_ID  (Vercel env)
+ * 2) public/admin/oauth-public.json (safe to commit — Client ID is public)
+ *
+ * Client Secret must stay in Vercel as GITHUB_CLIENT_SECRET (used by /api/callback).
  */
-export default function handler(req, res) {
-  const clientId = process.env.GITHUB_CLIENT_ID?.trim()
+import { requestOrigin, resolveClientId } from './_githubOAuth.js'
+
+export default async function handler(req, res) {
+  const { clientId } = await resolveClientId(req)
 
   if (!clientId) {
-    const host = req.headers['x-forwarded-host'] || req.headers.host || 'YOUR-DOMAIN'
-    const origin = `https://${host}`
+    const origin = requestOrigin(req)
     res.statusCode = 500
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     res.end(`<!doctype html>
 <html lang="en"><head><meta charset="utf-8"/><title>OAuth setup needed</title>
-<style>body{font-family:system-ui,sans-serif;max-width:40rem;margin:2rem auto;padding:0 1rem;line-height:1.5}
-code{background:#f4f4f4;padding:.1rem .35rem;border-radius:4px}li{margin:.4rem 0}</style>
+<style>body{font-family:system-ui,sans-serif;max-width:42rem;margin:2rem auto;padding:0 1rem;line-height:1.5}
+code{background:#f4f4f4;padding:.15rem .4rem;border-radius:4px}li{margin:.45rem 0}</style>
 </head><body>
-<h1>Missing <code>GITHUB_CLIENT_ID</code></h1>
-<p>Add it on the <strong>same Vercel project</strong> that serves this site, then redeploy.</p>
+<h1>GitHub Client ID not found</h1>
+<p>Do <strong>one</strong> of these, then <strong>Redeploy</strong> on Vercel:</p>
 <ol>
-<li>GitHub → Settings → Developer settings → <strong>OAuth Apps</strong> → New OAuth App</li>
-<li>Homepage URL: <code>${origin}</code></li>
-<li>Authorization callback URL: <code>${origin}/api/callback</code></li>
-<li>Copy Client ID + generate Client Secret</li>
-<li>Vercel → this project → Settings → Environment Variables:
-  <ul>
-    <li><code>GITHUB_CLIENT_ID</code> = Client ID</li>
-    <li><code>GITHUB_CLIENT_SECRET</code> = Client Secret</li>
-  </ul>
-  Environments: Production <em>and</em> Preview
-</li>
-<li><strong>Redeploy</strong> (env vars only apply to new deployments)</li>
-<li>Open <code>${origin}/admin/</code> again</li>
+<li><strong>Easiest:</strong> put your OAuth Client ID in
+  <code>public/admin/oauth-public.json</code> as <code>githubClientId</code>, commit, push, redeploy.</li>
+<li><strong>Or</strong> in Vercel → this project → Environment Variables add
+  <code>GITHUB_CLIENT_ID</code> (and <code>GITHUB_CLIENT_SECRET</code>), save, then Redeploy.</li>
 </ol>
-<p>Until then, edit locally with <code>npm run dev</code> + <code>npm run cms</code> → <code>http://localhost:5173/admin/</code></p>
-<p><a href="/api/oauth-status">Check /api/oauth-status</a></p>
+<p>OAuth App callback must be:<br/><code>${origin}/api/callback</code></p>
+<p>Check: <a href="/api/oauth-status"><code>/api/oauth-status</code></a></p>
+<p>Production URL: <code>https://portfolio-five-steel-37.vercel.app</code></p>
 </body></html>`)
     return
   }

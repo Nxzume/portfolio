@@ -2,15 +2,17 @@
  * GitHub OAuth callback — Decap CMS.
  * Classic Vercel Node handler so env vars are reliably available.
  */
+import { resolveClientId } from './_githubOAuth.js'
+
 export default async function handler(req, res) {
-  const clientId = process.env.GITHUB_CLIENT_ID?.trim()
+  const { clientId } = await resolveClientId(req)
   const clientSecret = process.env.GITHUB_CLIENT_SECRET?.trim()
 
   if (!clientId || !clientSecret) {
     res.statusCode = 500
     res.setHeader('Content-Type', 'text/plain; charset=utf-8')
     res.end(
-      `Missing ${!clientId ? 'GITHUB_CLIENT_ID' : ''}${!clientId && !clientSecret ? ' and ' : ''}${!clientSecret ? 'GITHUB_CLIENT_SECRET' : ''}. Add both in Vercel env vars and redeploy.`,
+      `Missing ${!clientId ? 'GITHUB_CLIENT_ID (or public/admin/oauth-public.json)' : ''}${!clientId && !clientSecret ? ' and ' : ''}${!clientSecret ? 'GITHUB_CLIENT_SECRET' : ''}. Fix and redeploy.`,
     )
     return
   }
