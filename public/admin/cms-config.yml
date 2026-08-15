@@ -49,9 +49,6 @@ collections:
             widget: image
             choose_url: false
             hint: "Upload or pick from the media library"
-            media_library:
-              config:
-                max_file_size: 15000000
           - label: Main button
             name: primaryCta
             widget: object
@@ -74,9 +71,6 @@ collections:
             widget: image
             choose_url: false
             hint: "Upload or pick from the media library"
-            media_library:
-              config:
-                max_file_size: 15000000
           - { label: About headline, name: lead, widget: string }
           - label: Bio paragraphs
             name: body
@@ -143,9 +137,6 @@ collections:
                 media_folder: public/audio
                 public_folder: /audio
                 hint: "Upload an mp3/wav here, or leave empty for a simple placeholder sound."
-                media_library:
-                  config:
-                    max_file_size: 15000000
               - { label: Placeholder starting pitch (optional), name: baseFreq, widget: number, required: false, value_type: float, hint: "Only used when Music file is blank. Example: 110" }
               - label: Placeholder note steps (optional)
                 name: pattern
@@ -175,9 +166,6 @@ collections:
         widget: image
         choose_url: false
         hint: "Upload or pick from the media library"
-        media_library:
-          config:
-            max_file_size: 15000000
       - label: Extra photos
         name: gallery
         widget: list
@@ -187,9 +175,6 @@ collections:
           name: image
           widget: image
           choose_url: false
-          media_library:
-            config:
-              max_file_size: 15000000
       - { label: Short card summary, name: summary, widget: text, hint: "Shown on the homepage project card" }
       - label: Bullet highlights
         name: highlights
@@ -222,7 +207,4 @@ collections:
             widget: image
             required: false
             choose_url: false
-            media_library:
-              config:
-                max_file_size: 15000000
           - { label: Photo description, name: imageAlt, widget: string, required: false }
