@@ -1,77 +1,43 @@
 # How to edit the portfolio (no coding)
 
-You do **not** need to touch code. Use the visual editor.
-
-The editor works:
-- on the **live website** (any host — Vercel, Netlify, custom domain)
-- or on your **computer** (no hosting required)
+Live site: **https://portfolio-five-steel-37.vercel.app/**
 
 ## Option A — Edit on the live site
 
-1. Open: `https://YOUR-SITE/admin/`  
-   (ask the site owner for the exact link)
-2. Click **Login with GitHub**
-3. Edit sections like **About me**, **Music tracks**, **Projects**
-4. Click **Publish**
-5. Wait for the site to rebuild, then refresh the public page
+1. Open https://portfolio-five-steel-37.vercel.app/admin/  
+2. **Login with GitHub**  
+3. Edit About / music / projects → **Publish**  
+4. Wait for Vercel to rebuild, then refresh the public site  
 
-You need a free GitHub account with access to the portfolio repo (the owner invites you once).
+(First-time GitHub login setup is done by the site owner — `docs/ADMIN-SETUP.md`.)
 
-## Option B — Edit on your computer (no Vercel needed)
-
-1. Install Node.js (LTS) if you don’t have it  
-2. Clone the portfolio repo and open a terminal in that folder  
-3. Run:
+## Option B — Edit on your computer (no Vercel login needed)
 
 ```bash
 npm install
 npm run dev
-```
-
-4. In a second terminal:
-
-```bash
+# other terminal:
 npm run cms
 ```
 
-5. Open http://localhost:5173/admin/  
-6. Edit → Publish  
-7. Ask the owner to push/deploy, or push yourself if you have access  
+Open http://localhost:5173/admin/
 
 ## What to edit
 
-| I want to… | In the editor, open… |
+| I want to… | Open… |
 | --- | --- |
-| Change my intro / photo | **Site pages → About me** |
-| Change the big homepage headline | **Site pages → Hero** |
-| Add or update music | **Site pages → Music tracks** |
-| Add a new game / project | **Projects → New project** |
-| Change contact buttons | **Site pages → Contact** |
-| Change Compose / Levels / Azure text | **Site pages → Compose / Levels / Azure tabs** |
+| Intro / photo | **Site pages → About me** |
+| Homepage headline | **Site pages → Hero** |
+| Music | **Site pages → Music tracks** |
+| New game / project | **Projects → New project** |
+| Contact buttons | **Site pages → Contact** |
+| Compose / Levels / Azure tabs | **Site pages → Compose / Levels / Azure tabs** |
 
-### Adding a photo
+### Photos
+Use the image picker → Publish.
 
-Use the image picker in the form → choose a file → Publish.
+### Music
+Put a file in `public/audio/`, set path like `/audio/my-song.mp3`, Publish.
 
-### Adding music
-
-1. Put an mp3/wav in `public/audio/` (or ask the owner once)  
-2. In **Music tracks**, set **Audio file path** to `/audio/my-song.mp3`  
-3. Publish  
-
-Empty audio path = short placeholder tone.
-
-### Adding a project
-
-1. **Projects → New project**  
-2. Fill title, summary, images, sections  
-3. Set **URL slug** (example: `new-game` → `/projects/new-game`)  
-4. Publish  
-
-## Tips
-
-- Write normally; short paragraphs work best  
-- Publishing cannot “break” the React app — worst case, revert a GitHub commit  
-- If the live `/admin` login fails, use Option B on your computer  
-
-Setup details for the site owner: `docs/ADMIN-SETUP.md`.
+### New project
+Fill title, slug (`/projects/your-slug`), images, sections → Publish.

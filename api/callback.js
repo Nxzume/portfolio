@@ -1,32 +1,28 @@
 /**
- * GitHub OAuth callback for Decap CMS.
- * Portable across hosts that can run this function (Vercel /api or Netlify functions).
- * Env: GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET
+ * GitHub OAuth callback — Decap CMS.
+ * Classic Vercel Node handler so env vars are reliably available.
  */
-export async function handler(event) {
-  const url = event.rawUrl || `https://${event.headers.host}${event.path}?${event.rawQuery || ''}`
-  return handleCallback(url)
-}
-
-export async function GET(request) {
-  return handleCallback(request.url)
-}
-
-async function handleCallback(requestUrlString) {
-  const clientId = process.env.GITHUB_CLIENT_ID
-  const clientSecret = process.env.GITHUB_CLIENT_SECRET
+export default async function handler(req, res) {
+  const clientId = process.env.GITHUB_CLIENT_ID?.trim()
+  const clientSecret = process.env.GITHUB_CLIENT_SECRET?.trim()
 
   if (!clientId || !clientSecret) {
-    return new Response('Missing GITHUB_CLIENT_ID or GITHUB_CLIENT_SECRET', { status: 500 })
+    res.statusCode = 500
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8')
+    res.end(
+      `Missing ${!clientId ? 'GITHUB_CLIENT_ID' : ''}${!clientId && !clientSecret ? ' and ' : ''}${!clientSecret ? 'GITHUB_CLIENT_SECRET' : ''}. Add both in Vercel env vars and redeploy.`,
+    )
+    return
   }
 
-  const requestUrl = new URL(requestUrlString)
+  const host = req.headers['x-forwarded-host'] || req.headers.host
+  const proto = req.headers['x-forwarded-proto'] || 'https'
+  const requestUrl = new URL(req.url || '/', `${proto}://${host}`)
   const code = requestUrl.searchParams.get('code')
   const oauthError = requestUrl.searchParams.get('error')
 
   if (oauthError || !code) {
-    const message = oauthError || 'Missing code'
-    return html(`authorization:github:error:${JSON.stringify({ message })}`)
+    return sendPostMessage(res, `authorization:github:error:${JSON.stringify({ message: oauthError || 'Missing code' })}`)
   }
 
   try {
@@ -46,10 +42,11 @@ async function handleCallback(requestUrlString) {
 
     if (!tokenJson.access_token) {
       const message = tokenJson.error_description || tokenJson.error || 'No access token'
-      return html(`authorization:github:error:${JSON.stringify({ message })}`)
+      return sendPostMessage(res, `authorization:github:error:${JSON.stringify({ message })}`)
     }
 
-    return html(
+    return sendPostMessage(
+      res,
       `authorization:github:success:${JSON.stringify({
         token: tokenJson.access_token,
         provider: 'github',
@@ -57,13 +54,14 @@ async function handleCallback(requestUrlString) {
     )
   } catch (err) {
     const message = err instanceof Error ? err.message : 'OAuth failed'
-    return html(`authorization:github:error:${JSON.stringify({ message })}`)
+    return sendPostMessage(res, `authorization:github:error:${JSON.stringify({ message })}`)
   }
 }
 
-function html(message) {
-  return new Response(
-    `<!doctype html>
+function sendPostMessage(res, message) {
+  res.statusCode = 200
+  res.setHeader('Content-Type', 'text/html; charset=utf-8')
+  res.end(`<!doctype html>
 <html lang="en">
   <head><meta charset="utf-8" /><title>Login</title></head>
   <body>
@@ -78,7 +76,5 @@ function html(message) {
       })();
     </script>
   </body>
-</html>`,
-    { headers: { 'Content-Type': 'text/html; charset=utf-8' } },
-  )
+</html>`)
 }
