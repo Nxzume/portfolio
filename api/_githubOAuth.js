@@ -3,10 +3,28 @@
  * Client ID is public; Client Secret must stay in env.
  */
 import { readFile } from 'node:fs/promises'
+import { readFileSync } from 'node:fs'
 import path from 'node:path'
 
+/** Only used when a request arrives without a Host header. */
+function configuredSiteUrl() {
+  for (const candidate of ['content/site.json', '../content/site.json']) {
+    try {
+      const raw = readFileSync(path.join(process.cwd(), candidate), 'utf8')
+      const url = String(JSON.parse(raw).url || '').trim().replace(/\/+$/, '')
+      if (url) return url
+    } catch {
+      /* try next */
+    }
+  }
+  return ''
+}
+
+const FALLBACK_ORIGIN = configuredSiteUrl()
+
 export function requestOrigin(req) {
-  const host = req.headers['x-forwarded-host'] || req.headers.host || 'portfolio-five-steel-37.vercel.app'
+  const host = req.headers['x-forwarded-host'] || req.headers.host
+  if (!host) return FALLBACK_ORIGIN
   const proto = req.headers['x-forwarded-proto'] || 'https'
   return `${proto}://${host}`
 }
@@ -47,6 +65,7 @@ async function readClientIdFromDisk() {
 async function readClientIdFromPublicUrl(req) {
   try {
     const origin = requestOrigin(req)
+    if (!origin) return ''
     const response = await fetch(`${origin}/admin/oauth-public.json`, { cache: 'no-store' })
     if (!response.ok) return ''
     const data = await response.json()

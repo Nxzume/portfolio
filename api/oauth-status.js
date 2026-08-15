@@ -2,6 +2,7 @@
  * Safe status check — no secrets returned.
  */
 import { resolveClientId } from './_githubOAuth.js'
+import { oauthScope } from './_oauthCore.js'
 
 export default async function handler(req, res) {
   const { clientId, source } = await resolveClientId(req)
@@ -18,6 +19,7 @@ export default async function handler(req, res) {
         hasClientId,
         hasClientSecret,
         clientIdSource: source,
+        scope: oauthScope(),
       },
       null,
       2,
