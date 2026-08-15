@@ -1,24 +1,22 @@
 # Content files
 
-Prefer the **visual editor** — no coding required:
+Prefer the **visual editor** (works on any host + locally):
 
-→ **[docs/EDITING.md](../docs/EDITING.md)** (for Alexandre)  
-→ **[docs/ADMIN-SETUP.md](../docs/ADMIN-SETUP.md)** (one-time setup for the site owner)
+→ **[docs/EDITING.md](../docs/EDITING.md)**  
+→ **[docs/ADMIN-SETUP.md](../docs/ADMIN-SETUP.md)**
 
-Live editor: `/admin` on the Vercel site.
+Open `/admin/` on whatever domain serves the site, or `http://localhost:5173/admin/` with `npm run cms`.
 
 ---
 
 ## File map (advanced)
 
-Only needed if you edit files directly in GitHub or a code editor.
-
 | What | File |
 | --- | --- |
 | Hero | `hero.json` |
 | About | `about.json` |
-| Music tracks | `sketches.json` → `tracks` array |
-| Focus tabs | `focuses.json` → `tabs` array |
+| Music tracks | `sketches.json` → `tracks` |
+| Focus tabs | `focuses.json` → `tabs` |
 | Contact | `contact.json` |
 | Projects | `projects/<slug>.json` |
 | New project starter | `_templates/project.json` |

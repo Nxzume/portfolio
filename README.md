@@ -2,33 +2,30 @@
 
 Interactive React portfolio for **Alexandre Guichet**: game composition, level design, and Azure DevOps.
 
-**Live:** [portfolio-vercel-1406s-projects.vercel.app](https://portfolio-vercel-1406s-projects.vercel.app)
+## Edit without coding (any host)
 
-## Edit without coding
-
-Use the visual editor (forms, image uploads, Publish button):
+Visual editor at **`/admin/`** — works on Vercel, Netlify, a custom domain, or locally with no cloud host.
 
 - **Friend guide:** [docs/EDITING.md](./docs/EDITING.md)
-- **Owner setup (once):** [docs/ADMIN-SETUP.md](./docs/ADMIN-SETUP.md)
-- **Editor URL:** [/admin](https://portfolio-vercel-1406s-projects.vercel.app/admin)
+- **Owner setup:** [docs/ADMIN-SETUP.md](./docs/ADMIN-SETUP.md)
+
+```bash
+npm run dev   # site
+npm run cms   # local editor backend (other terminal)
+# then open http://localhost:5173/admin/
+```
 
 ## Stack
 
 - Vite + React + TypeScript
 - Framer Motion + React Router
-- Decap CMS admin (GitHub-backed)
-- Hosted on Vercel
-
-## Local development
-
-```bash
-npm install
-npm run dev
-```
+- Decap CMS (GitHub-backed, host-agnostic)
+- Deploy anywhere that can serve the static app (+ optional `/api` for online login)
 
 ## Build
 
 ```bash
+npm install
 npm run build
 npm run preview
 ```

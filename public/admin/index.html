@@ -14,7 +14,8 @@
       }
       .cms-boot {
         padding: 2rem;
-        max-width: 32rem;
+        max-width: 36rem;
+        line-height: 1.5;
       }
       .cms-boot code {
         color: #d4a84b;
@@ -24,34 +25,63 @@
   <body>
     <div class="cms-boot" id="cms-status">Loading editor…</div>
     <script>
-      // Load config ourselves so /admin (no trailing slash) still works.
+      // Prevent Decap auto-load of config.yml (avoids duplicate collections with CMS.init).
       window.CMS_MANUAL_INIT = true
     </script>
     <script src="https://unpkg.com/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
-    <script src="https://unpkg.com/decap-cms@^3.8.0/dist/decap-cms.js"></script>
+    <script src="https://unpkg.com/decap-cms@3.8.3/dist/decap-cms.js"></script>
     <script>
       ;(async function boot() {
+        if (window.__PORTFOLIO_CMS_BOOTED__) return
+        window.__PORTFOLIO_CMS_BOOTED__ = true
+
         const status = document.getElementById('cms-status')
+        const origin = window.location.origin
+        const host = window.location.hostname
+        const isLocal = host === 'localhost' || host === '127.0.0.1'
+
         try {
-          const res = await fetch('/admin/config.yml', { cache: 'no-store' })
-          if (!res.ok) throw new Error('Could not load /admin/config.yml (' + res.status + ')')
+          const res = await fetch('/admin/cms-config.yml', { cache: 'no-store' })
+          if (!res.ok) throw new Error('Could not load /admin/cms-config.yml (' + res.status + ')')
           const text = await res.text()
           if (text.trim().startsWith('<!')) {
-            throw new Error(
-              'Got HTML instead of YAML for config.yml. Check Vercel rewrites so /admin/config.yml is a static file.',
-            )
+            throw new Error('Got HTML instead of YAML for cms-config.yml.')
           }
+
           const config = window.jsyaml.load(text)
-          if (!config || !config.backend || !config.collections) {
-            throw new Error('Config YAML parsed but is missing backend/collections.')
+          if (!config || !config.backend || !Array.isArray(config.collections)) {
+            throw new Error('Config YAML is missing backend/collections.')
           }
+
+          // Host-agnostic: always use the site you opened /admin on.
+          config.backend = config.backend || {}
+          config.backend.name = config.backend.name || 'github'
+          config.backend.base_url = origin
+          config.backend.auth_endpoint = 'api/auth'
+
+          // Local editing needs no OAuth / no Vercel — just npx decap-server.
+          if (isLocal) {
+            config.local_backend = true
+          }
+
+          const seen = new Set()
+          config.collections = config.collections.filter(function (collection) {
+            if (!collection || !collection.name || seen.has(collection.name)) return false
+            seen.add(collection.name)
+            return true
+          })
+
           status.remove()
           window.CMS.init({ config: config })
         } catch (err) {
+          const localHint = isLocal
+            ? '<p>For local editing run <code>npx decap-server</code> in another terminal, then refresh.</p>'
+            : '<p>On any host, open <code>' + origin + '/admin/</code>. OAuth callback must match this origin (see docs/ADMIN-SETUP.md).</p>'
           status.innerHTML =
             '<h1>Editor failed to load</h1><p>' +
             (err && err.message ? err.message : String(err)) +
-            '</p><p>See <code>docs/ADMIN-SETUP.md</code>.</p>'
+            '</p>' +
+            localHint
         }
       })()
     </script>

@@ -1,32 +1,20 @@
 /**
- * GitHub OAuth callback for Decap CMS.
- * Portable across hosts that can run this function (Vercel /api or Netlify functions).
- * Env: GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET
+ * Netlify Function wrapper — same OAuth callback as /api/callback.
  */
 export async function handler(event) {
-  const url = event.rawUrl || `https://${event.headers.host}${event.path}?${event.rawQuery || ''}`
-  return handleCallback(url)
-}
-
-export async function GET(request) {
-  return handleCallback(request.url)
-}
-
-async function handleCallback(requestUrlString) {
   const clientId = process.env.GITHUB_CLIENT_ID
   const clientSecret = process.env.GITHUB_CLIENT_SECRET
 
   if (!clientId || !clientSecret) {
-    return new Response('Missing GITHUB_CLIENT_ID or GITHUB_CLIENT_SECRET', { status: 500 })
+    return { statusCode: 500, body: 'Missing GITHUB_CLIENT_ID or GITHUB_CLIENT_SECRET' }
   }
 
-  const requestUrl = new URL(requestUrlString)
-  const code = requestUrl.searchParams.get('code')
-  const oauthError = requestUrl.searchParams.get('error')
+  const params = event.queryStringParameters || {}
+  const code = params.code
+  const oauthError = params.error
 
   if (oauthError || !code) {
-    const message = oauthError || 'Missing code'
-    return html(`authorization:github:error:${JSON.stringify({ message })}`)
+    return htmlResponse(`authorization:github:error:${JSON.stringify({ message: oauthError || 'Missing code' })}`)
   }
 
   try {
@@ -46,10 +34,10 @@ async function handleCallback(requestUrlString) {
 
     if (!tokenJson.access_token) {
       const message = tokenJson.error_description || tokenJson.error || 'No access token'
-      return html(`authorization:github:error:${JSON.stringify({ message })}`)
+      return htmlResponse(`authorization:github:error:${JSON.stringify({ message })}`)
     }
 
-    return html(
+    return htmlResponse(
       `authorization:github:success:${JSON.stringify({
         token: tokenJson.access_token,
         provider: 'github',
@@ -57,13 +45,15 @@ async function handleCallback(requestUrlString) {
     )
   } catch (err) {
     const message = err instanceof Error ? err.message : 'OAuth failed'
-    return html(`authorization:github:error:${JSON.stringify({ message })}`)
+    return htmlResponse(`authorization:github:error:${JSON.stringify({ message })}`)
   }
 }
 
-function html(message) {
-  return new Response(
-    `<!doctype html>
+function htmlResponse(message) {
+  return {
+    statusCode: 200,
+    headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    body: `<!doctype html>
 <html lang="en">
   <head><meta charset="utf-8" /><title>Login</title></head>
   <body>
@@ -79,6 +69,5 @@ function html(message) {
     </script>
   </body>
 </html>`,
-    { headers: { 'Content-Type': 'text/html; charset=utf-8' } },
-  )
+  }
 }
