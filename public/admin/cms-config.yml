@@ -5,7 +5,9 @@ backend:
   name: github
   repo: Nxzume/portfolio
   branch: master
-  base_url: https://portfolio-vercel-1406s-projects.vercel.app
+  # base_url + auth_endpoint are set at runtime from the current site origin
+  # so the editor works on any host (Vercel, Netlify, custom domain, localhost)
+  base_url: /
   auth_endpoint: api/auth
 
 # Uncomment for local editing with: npx decap-server
