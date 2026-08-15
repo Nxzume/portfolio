@@ -36,7 +36,7 @@ Open http://localhost:5173/admin/
 | “Projects” section titles | **Site pages → Projects section titles** |
 | Compose / Levels / Azure switcher | **Site pages → Compose / Levels / Azure tabs** |
 | Interactive music tracks | **Site pages → Music tracks** |
-| A game write-up page | **Projects →** pick a project (or **New project**) |
+| A game write-up page | **Projects →** pick a project (or **New project**) — set **Page link name** for `/projects/…` |
 
 ### Photos
 Use the image picker → choose or upload → **Publish**.
