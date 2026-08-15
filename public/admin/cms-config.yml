@@ -16,12 +16,6 @@ backend:
 media_folder: public/images
 public_folder: /images
 
-# Uploads go into the GitHub repo via the image/file pickers in admin.
-media_library:
-  name: default
-  config:
-    max_file_size: 15000000 # 15MB
-
 logo_url: /favicon.svg
 locale: en
 
@@ -50,7 +44,14 @@ collections:
         file: content/hero.json
         fields:
           - { label: Main headline, name: headline, widget: string }
-          - { label: Background photo, name: image, widget: image, choose_url: false, hint: "Upload or pick from the media library" }
+          - label: Background photo
+            name: image
+            widget: image
+            choose_url: false
+            hint: "Upload or pick from the media library"
+            media_library:
+              config:
+                max_file_size: 15000000
           - label: Main button
             name: primaryCta
             widget: object
@@ -68,7 +69,14 @@ collections:
         label: About me
         file: content/about.json
         fields:
-          - { label: Your photo, name: portrait, widget: image, choose_url: false, hint: "Upload or pick from the media library" }
+          - label: Your photo
+            name: portrait
+            widget: image
+            choose_url: false
+            hint: "Upload or pick from the media library"
+            media_library:
+              config:
+                max_file_size: 15000000
           - { label: About headline, name: lead, widget: string }
           - label: Bio paragraphs
             name: body
@@ -135,6 +143,9 @@ collections:
                 media_folder: public/audio
                 public_folder: /audio
                 hint: "Upload an mp3/wav here, or leave empty for a simple placeholder sound."
+                media_library:
+                  config:
+                    max_file_size: 15000000
               - { label: Placeholder starting pitch (optional), name: baseFreq, widget: number, required: false, value_type: float, hint: "Only used when Music file is blank. Example: 110" }
               - label: Placeholder note steps (optional)
                 name: pattern
@@ -159,12 +170,26 @@ collections:
       - { label: Homepage order, name: order, widget: number, value_type: int, default: 10, hint: "Lower numbers show first" }
       - { label: Project title, name: title, widget: string }
       - { label: One-line subtitle, name: subtitle, widget: string }
-      - { label: Cover photo, name: image, widget: image, choose_url: false, hint: "Upload or pick from the media library" }
+      - label: Cover photo
+        name: image
+        widget: image
+        choose_url: false
+        hint: "Upload or pick from the media library"
+        media_library:
+          config:
+            max_file_size: 15000000
       - label: Extra photos
         name: gallery
         widget: list
         summary: "{{fields.image}}"
-        field: { label: Photo, name: image, widget: image, choose_url: false }
+        field:
+          label: Photo
+          name: image
+          widget: image
+          choose_url: false
+          media_library:
+            config:
+              max_file_size: 15000000
       - { label: Short card summary, name: summary, widget: text, hint: "Shown on the homepage project card" }
       - label: Bullet highlights
         name: highlights
@@ -192,5 +217,12 @@ collections:
             name: paragraphs
             widget: list
             field: { label: Paragraph, name: paragraph, widget: text }
-          - { label: Photo (optional), name: image, widget: image, required: false, choose_url: false }
+          - label: Photo (optional)
+            name: image
+            widget: image
+            required: false
+            choose_url: false
+            media_library:
+              config:
+                max_file_size: 15000000
           - { label: Photo description, name: imageAlt, widget: string, required: false }
