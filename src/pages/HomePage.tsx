@@ -11,21 +11,31 @@ import { useSketchPlayer } from '../hooks/useSketchPlayer'
 
 export function HomePage() {
   const [focus, setFocus] = useState<FocusId>(focuses[0]?.id ?? 'compose')
-  const { activeId, intensity, play } = useSketchPlayer()
+  const player = useSketchPlayer(sketches)
 
   return (
     <div className="app">
       <Nav variant="home" />
       <main>
-        <Hero intensity={intensity} />
+        <Hero intensity={player.intensity} />
         <FocusSwitcher active={focus} onChange={setFocus} />
         <ScoreDesk
-          activeId={activeId}
-          intensity={intensity}
-          onPlay={(id) => {
+          activeId={player.activeId}
+          activeSketch={player.activeSketch}
+          intensity={player.intensity}
+          isPlaying={player.isPlaying}
+          currentTime={player.currentTime}
+          duration={player.duration}
+          canSeek={player.canSeek}
+          onPlayTrack={(id) => {
             const sketch = sketches.find((s) => s.id === id)
-            if (sketch) void play(sketch)
+            if (sketch) void player.play(sketch)
           }}
+          onTogglePause={() => void player.togglePause()}
+          onStop={player.stop}
+          onSeek={player.seek}
+          onPrev={player.playPrev}
+          onNext={player.playNext}
         />
         <Projects />
         <About />
