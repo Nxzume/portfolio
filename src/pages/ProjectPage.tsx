@@ -49,9 +49,9 @@ export function ProjectPage() {
             <div className="projects__links">
               {project.links.map((link) => (
                 <a
-                  key={link.href}
+                  key={link.href + link.label}
                   className={link.label.toLowerCase().includes('play') ? 'btn btn--primary' : 'btn btn--ghost'}
-                  href={link.href}
+                  href={link.href.startsWith('http') ? link.href : `https://${link.href}`}
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -63,40 +63,44 @@ export function ProjectPage() {
         </header>
 
         <div className="project-page__body">
-          <aside className="project-page__toc">
-            <p className="eyebrow">On this page</p>
-            <ul>
-              {project.sections.map((section) => (
-                <li key={section.id}>
-                  <a href={`#${section.id}`}>{section.title}</a>
-                </li>
-              ))}
-              {project.gallery.length > 0 && (
-                <li>
-                  <a href="#gallery">Gallery</a>
-                </li>
-              )}
-            </ul>
-          </aside>
+          {project.sections.length > 0 || project.gallery.length > 0 ? (
+            <aside className="project-page__toc">
+              <p className="eyebrow">On this page</p>
+              <ul>
+                {project.sections.map((section) => (
+                  <li key={section.id}>
+                    <a href={`#${section.id}`}>{section.title}</a>
+                  </li>
+                ))}
+                {project.gallery.length > 0 && (
+                  <li>
+                    <a href="#gallery">Gallery</a>
+                  </li>
+                )}
+              </ul>
+            </aside>
+          ) : null}
 
           <article className="project-page__article">
             <section className="project-page__intro">
-              {project.intro.map((p) => (
-                <p key={p}>{p}</p>
+              {project.intro.map((p, i) => (
+                <p key={`${i}-${p.slice(0, 24)}`}>{p}</p>
               ))}
-              <ul className="project-page__highlights">
-                {project.highlights.map((h) => (
-                  <li key={h}>{h}</li>
-                ))}
-              </ul>
+              {project.highlights.length > 0 ? (
+                <ul className="project-page__highlights">
+                  {project.highlights.map((h) => (
+                    <li key={h}>{h}</li>
+                  ))}
+                </ul>
+              ) : null}
             </section>
 
             {project.sections.map((section) => (
               <section key={section.id} id={section.id} className="project-page__section">
                 <h2>{section.title}</h2>
                 {section.quote && <blockquote>{section.quote}</blockquote>}
-                {section.paragraphs.map((p) => (
-                  <p key={p}>{p}</p>
+                {section.paragraphs.map((p, i) => (
+                  <p key={`${section.id}-${i}`}>{p}</p>
                 ))}
                 {section.image && (
                   <figure>

@@ -158,7 +158,7 @@ collections:
   - name: game_projects
     label: Projects
     label_singular: Project
-    description: Games and case studies — each gets its own page
+    description: Games and case studies — each gets its own page at /projects/your-link-name after you publish (wait for the site to rebuild)
     folder: content/projects
     create: true
     slug: "{{slug}}"
@@ -167,42 +167,53 @@ collections:
     summary: "{{title}}"
     fields:
       - { label: Short project name (no spaces), name: id, widget: string, hint: "Example: arena" }
-      - { label: Page link name, name: slug, widget: string, hint: "Becomes /projects/your-name — lowercase, no spaces (example: arena)" }
+      - { label: Page link name, name: slug, widget: string, hint: "Becomes /projects/your-name — lowercase, no spaces (example: arena). Required for the project page." }
       - { label: Homepage order, name: order, widget: number, value_type: int, default: 10, hint: "Lower numbers show first" }
       - { label: Project title, name: title, widget: string }
-      - { label: One-line subtitle, name: subtitle, widget: string }
+      - { label: One-line subtitle, name: subtitle, widget: string, required: false, default: "" }
       - label: Cover photo
         name: image
         widget: image
         choose_url: false
+        required: false
         hint: "Upload or pick from the media library"
       - label: Extra photos
         name: gallery
         widget: list
+        required: false
+        default: []
         summary: "{{fields.image}}"
         field:
           label: Photo
           name: image
           widget: image
           choose_url: false
-      - { label: Short card summary, name: summary, widget: text, hint: "Shown on the homepage project card" }
+      - { label: Short card summary, name: summary, widget: text, required: false, default: "", hint: "Shown on the homepage project card" }
       - label: Bullet highlights
         name: highlights
         widget: list
+        required: false
+        default: []
         field: { label: Bullet point, name: item, widget: string }
       - label: Buttons (Play, GitHub…)
         name: links
         widget: list
+        required: false
+        default: []
         fields:
           - { label: Button text, name: label, widget: string }
           - { label: Web address, name: href, widget: string }
       - label: Opening paragraphs
         name: intro
         widget: list
+        required: false
+        default: []
         field: { label: Paragraph, name: paragraph, widget: text }
       - label: Page chapters
         name: sections
         widget: list
+        required: false
+        default: []
         summary: "{{title}}"
         fields:
           - { label: Short chapter name (no spaces), name: id, widget: string, hint: "Example: level-design" }
@@ -211,6 +222,8 @@ collections:
           - label: Paragraphs
             name: paragraphs
             widget: list
+            required: false
+            default: []
             field: { label: Paragraph, name: paragraph, widget: text }
           - label: Photo (optional)
             name: image
