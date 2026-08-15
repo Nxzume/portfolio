@@ -20,7 +20,7 @@ They need **write** access so Publish can save changes.
    - **Authorization callback URL:** `https://portfolio-vercel-1406s-projects.vercel.app/api/callback`  
 3. Register → copy **Client ID** → generate **Client Secret**
 
-If you use a custom domain later, update Homepage + Callback to that domain and change `base_url` in `public/admin/config.yml`.
+If you use a custom domain later, update Homepage + Callback to that domain and change `base_url` in `public/admin/cms-config.yml`.
 
 ## 3. Add secrets in Vercel
 
@@ -48,6 +48,6 @@ npm run dev
 npx decap-server
 ```
 
-Then set `local_backend: true` temporarily in `public/admin/config.yml` and open http://localhost:5173/admin  
+Then set `local_backend: true` temporarily in `public/admin/cms-config.yml` and open http://localhost:5173/admin/  
 
 Remember to turn `local_backend` off again before production use.
