@@ -1,6 +1,33 @@
 import { contact, site } from '../content'
 
+function firstName(fullName: string) {
+  return fullName.trim().split(/\s+/)[0] || fullName
+}
+
+function contactActions() {
+  const actions: { label: string; href: string; style: 'primary' | 'ghost' }[] = [
+    {
+      label: contact.emailButtonText || `Email ${firstName(site.name)}`,
+      href: `mailto:${site.email}`,
+      style: 'primary',
+    },
+  ]
+
+  if (site.links.itch) {
+    actions.push({ label: 'itch.io', href: site.links.itch, style: 'ghost' })
+  }
+  if (site.links.githubLevel) {
+    actions.push({ label: 'GitHub', href: site.links.githubLevel, style: 'ghost' })
+  } else if (site.links.githubArena) {
+    actions.push({ label: 'GitHub', href: site.links.githubArena, style: 'ghost' })
+  }
+
+  return actions
+}
+
 export function Contact() {
+  const actions = contactActions()
+
   return (
     <section className="section contact" id="contact">
       <div className="section__head">
@@ -9,7 +36,7 @@ export function Contact() {
         <p className="section__lede">{contact.lede}</p>
       </div>
       <div className="contact__actions">
-        {contact.actions.map((action) => (
+        {actions.map((action) => (
           <a
             key={action.href + action.label}
             className={`btn ${action.style === 'primary' ? 'btn--primary' : 'btn--ghost'}`}

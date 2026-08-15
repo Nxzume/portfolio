@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { site } from '../content'
 
 type Props = {
   variant?: 'home' | 'page'
@@ -43,7 +44,7 @@ export function Nav({ variant = 'home' }: Props) {
       transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
     >
       <Link className="nav__brand" to="/">
-        Alexandre Guichet
+        {site.name}
       </Link>
       <nav className="nav__links" aria-label="Primary">
         {homeLinks.map((link) => (

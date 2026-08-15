@@ -90,7 +90,9 @@ export function ProjectPage() {
                 <h2>Gallery</h2>
                 <div className="project-page__gallery-grid">
                   {project.gallery.map((src) => (
-                    <img key={src} src={src} alt={`${project.title} screenshot`} />
+                    <figure key={src} className="project-page__gallery-item">
+                      <img src={src} alt={`${project.title} screenshot`} />
+                    </figure>
                   ))}
                 </div>
               </section>

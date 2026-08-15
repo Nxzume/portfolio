@@ -16,22 +16,41 @@ backend:
 media_folder: public/images
 public_folder: /images
 
+# Uploads go into the GitHub repo via the image/file pickers in admin.
+media_library:
+  name: default
+  config:
+    max_file_size: 15000000 # 15MB
+
 logo_url: /favicon.svg
 locale: en
 
 collections:
   - name: site_content
     label: Site pages
-    description: Homepage text your visitors see first
+    description: Shared identity first — name, email, and links update the whole site
     files:
+      - name: site
+        label: Name and links (sitewide)
+        file: content/site.json
+        fields:
+          - { label: Your name, name: name, widget: string, hint: "Used in the nav, hero, footer, photo alt text, and page title" }
+          - { label: One-line description, name: tagline, widget: string, hint: "Shown under your name on the homepage" }
+          - { label: Email address, name: email, widget: string, hint: "Powers the Contact email button" }
+          - label: Website links
+            name: links
+            widget: object
+            fields:
+              - { label: itch.io page, name: itch, widget: string, required: false, hint: "Contact button + shared link" }
+              - { label: The Arena on GitHub, name: githubArena, widget: string, required: false }
+              - { label: Level on GitHub, name: githubLevel, widget: string, required: false, hint: "Also used as the Contact GitHub button" }
+
       - name: hero
         label: Top of homepage
         file: content/hero.json
         fields:
-          - { label: Your name, name: brand, widget: string }
           - { label: Main headline, name: headline, widget: string }
-          - { label: Short line under the headline, name: lede, widget: text }
-          - { label: Background photo, name: image, widget: image }
+          - { label: Background photo, name: image, widget: image, choose_url: false, hint: "Upload or pick from the media library" }
           - label: Main button
             name: primaryCta
             widget: object
@@ -49,8 +68,7 @@ collections:
         label: About me
         file: content/about.json
         fields:
-          - { label: Your photo, name: portrait, widget: image }
-          - { label: Short photo description, name: portraitAlt, widget: string, hint: "For people who can’t see the image — usually your name" }
+          - { label: Your photo, name: portrait, widget: image, choose_url: false, hint: "Upload or pick from the media library" }
           - { label: About headline, name: lead, widget: string }
           - label: Bio paragraphs
             name: body
@@ -65,34 +83,7 @@ collections:
           - { label: Tiny label above the title, name: eyebrow, widget: string }
           - { label: Contact title, name: title, widget: string }
           - { label: Short description, name: lede, widget: text }
-          - label: Buttons
-            name: actions
-            widget: list
-            fields:
-              - { label: Button text, name: label, widget: string }
-              - { label: Email or web address, name: href, widget: string, hint: "Examples: mailto:you@email.com or https://…" }
-              - label: Button look
-                name: style
-                widget: select
-                options:
-                  - { label: Strong (filled), value: primary }
-                  - { label: Quiet (outline), value: ghost }
-                default: ghost
-
-      - name: site
-        label: Name and links
-        file: content/site.json
-        fields:
-          - { label: Your name, name: name, widget: string }
-          - { label: One-line description, name: tagline, widget: string }
-          - { label: Email address, name: email, widget: string }
-          - label: Website links
-            name: links
-            widget: object
-            fields:
-              - { label: itch.io page, name: itch, widget: string, required: false }
-              - { label: The Arena on GitHub, name: githubArena, widget: string, required: false }
-              - { label: Level on GitHub, name: githubLevel, widget: string, required: false }
+          - { label: Email button text, name: emailButtonText, widget: string, required: false, hint: "Buttons for email / itch / GitHub come from Name and links" }
 
       - name: score
         label: Music section heading
@@ -138,10 +129,12 @@ collections:
               - { label: Tempo (beats per minute), name: bpm, widget: number, value_type: int, default: 100 }
               - label: Music file
                 name: audio
-                widget: string
+                widget: file
                 required: false
-                default: ""
-                hint: "Put a file in public/audio, then type /audio/my-track.mp3. Leave blank for a simple placeholder sound."
+                choose_url: false
+                media_folder: public/audio
+                public_folder: /audio
+                hint: "Upload an mp3/wav here, or leave empty for a simple placeholder sound."
               - { label: Placeholder starting pitch (optional), name: baseFreq, widget: number, required: false, value_type: float, hint: "Only used when Music file is blank. Example: 110" }
               - label: Placeholder note steps (optional)
                 name: pattern
@@ -166,11 +159,12 @@ collections:
       - { label: Homepage order, name: order, widget: number, value_type: int, default: 10, hint: "Lower numbers show first" }
       - { label: Project title, name: title, widget: string }
       - { label: One-line subtitle, name: subtitle, widget: string }
-      - { label: Cover photo, name: image, widget: image }
+      - { label: Cover photo, name: image, widget: image, choose_url: false, hint: "Upload or pick from the media library" }
       - label: Extra photos
         name: gallery
         widget: list
-        field: { label: Photo, name: image, widget: image }
+        summary: "{{fields.image}}"
+        field: { label: Photo, name: image, widget: image, choose_url: false }
       - { label: Short card summary, name: summary, widget: text, hint: "Shown on the homepage project card" }
       - label: Bullet highlights
         name: highlights
@@ -198,5 +192,5 @@ collections:
             name: paragraphs
             widget: list
             field: { label: Paragraph, name: paragraph, widget: text }
-          - { label: Photo (optional), name: image, widget: image, required: false }
+          - { label: Photo (optional), name: image, widget: image, required: false, choose_url: false }
           - { label: Photo description, name: imageAlt, widget: string, required: false }

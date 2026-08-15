@@ -44,7 +44,8 @@ export type SiteContent = {
 
 export type AboutContent = {
   portrait: string
-  portraitAlt: string
+  /** Optional; defaults to site.name */
+  portraitAlt?: string
   lead: string
   body: string[]
   note?: string
@@ -64,9 +65,7 @@ export type SectionCopy = {
 }
 
 export type HeroContent = {
-  brand: string
   headline: string
-  lede: string
   image: string
   primaryCta: { label: string; href: string }
   secondaryCta: { label: string; href: string }
@@ -76,5 +75,6 @@ export type ContactContent = {
   eyebrow: string
   title: string
   lede: string
-  actions: { label: string; href: string; style?: 'primary' | 'ghost' }[]
+  /** Button label for mailto; defaults to “Email {first name}” */
+  emailButtonText?: string
 }

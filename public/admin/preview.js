@@ -55,7 +55,7 @@
     return h(
       'div',
       { className: 'pv' },
-      hint('Live preview · Top of homepage'),
+      hint('Live preview · Top of homepage (name & tagline come from Name and links)'),
       h(
         'div',
         { className: 'pv-hero' },
@@ -68,9 +68,9 @@
         h(
           'div',
           { className: 'pv-hero__content' },
-          h('p', { className: 'pv-brand' }, d.brand || 'Your name'),
+          h('p', { className: 'pv-brand' }, 'Your name (sitewide)'),
           h('h1', { className: 'pv-headline' }, d.headline || 'Main headline'),
-          h('p', { className: 'pv-lede' }, d.lede || ''),
+          h('p', { className: 'pv-lede' }, 'One-line description from Name and links'),
           h(
             'div',
             { className: 'pv-cta-row' },
@@ -111,27 +111,19 @@
 
   function ContactPreview({ entry }) {
     const d = dataOf(entry)
-    const actions = asList(d.actions)
     return h(
       'div',
       { className: 'pv pv-section' },
-      hint('Live preview · Contact'),
+      hint('Live preview · Contact (buttons use email & links from Name and links)'),
       h('p', { className: 'pv-eyebrow' }, d.eyebrow || ''),
       h('h2', { className: 'pv-title' }, d.title || 'Contact title'),
       h('p', { className: 'pv-lede' }, d.lede || ''),
       h(
         'div',
         { className: 'pv-cta-row' },
-        actions.map((a, i) =>
-          h(
-            'span',
-            {
-              key: i,
-              className: 'pv-btn ' + (a.style === 'primary' ? 'pv-btn--primary' : 'pv-btn--ghost'),
-            },
-            a.label || 'Button',
-          ),
-        ),
+        h('span', { className: 'pv-btn pv-btn--primary' }, d.emailButtonText || 'Email…'),
+        h('span', { className: 'pv-btn pv-btn--ghost' }, 'itch.io'),
+        h('span', { className: 'pv-btn pv-btn--ghost' }, 'GitHub'),
       ),
     )
   }
@@ -142,7 +134,7 @@
     return h(
       'div',
       { className: 'pv pv-section' },
-      hint('Live preview · Name and links'),
+      hint('Live preview · Name and links — updates nav, hero, footer, contact buttons'),
       h('p', { className: 'pv-brand' }, d.name || 'Your name'),
       h('p', { className: 'pv-lede' }, d.tagline || ''),
       h('p', { className: 'pv-meta' }, d.email || ''),
@@ -227,9 +219,9 @@
     const cover = asset(getAsset, d.image)
     const highlights = asList(d.highlights).map(paragraphText).filter(Boolean)
     const intro = asList(d.intro).map(paragraphText).filter(Boolean)
-    const links = asList(d.links)
-    const sections = asList(d.sections)
-    const gallery = asList(d.gallery)
+    const links = asList(d.links).filter(Boolean)
+    const sections = asList(d.sections).filter((s) => s && typeof s === 'object')
+    const gallery = asList(d.gallery).filter((g) => g != null && g !== '')
 
     return h(
       'div',
@@ -256,7 +248,9 @@
           h(
             'div',
             { className: 'pv-cta-row', style: { marginTop: '0.85rem' } },
-            links.map((l, i) => h('span', { key: i, className: 'pv-btn pv-btn--ghost' }, l.label || 'Link')),
+            links.map((l, i) =>
+              h('span', { key: i, className: 'pv-btn pv-btn--ghost' }, (l && l.label) || 'Link'),
+            ),
           ),
         ),
       ),
@@ -273,14 +267,22 @@
             { className: 'pv-section' },
             h('p', { className: 'pv-eyebrow' }, 'Extra photos'),
             gallery.map((g, i) => {
-              const src = asset(getAsset, typeof g === 'string' ? g : g.image || g)
-              return src ? h('img', { key: i, src: src, alt: '', style: { marginBottom: '0.5rem', border: '1px solid var(--line)' } }) : null
+              const path = typeof g === 'string' ? g : g && g.image
+              const src = path ? asset(getAsset, path) : ''
+              return src
+                ? h('img', {
+                    key: i,
+                    src: src,
+                    alt: '',
+                    style: { marginBottom: '0.5rem', border: '1px solid var(--line)' },
+                  })
+                : null
             }),
           )
         : null,
       sections.map((s, i) => {
         const paras = asList(s.paragraphs).map(paragraphText).filter(Boolean)
-        const img = asset(getAsset, s.image)
+        const img = s.image ? asset(getAsset, s.image) : ''
         return h(
           'div',
           { key: i, className: 'pv-chapter' },

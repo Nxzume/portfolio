@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { hero } from '../content'
+import { hero, site } from '../content'
 import { WaveformCanvas } from './WaveformCanvas'
 
 type Props = {
@@ -22,7 +22,7 @@ export function Hero({ intensity }: Props) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1 }}
         >
-          {hero.brand}
+          {site.name}
         </motion.p>
         <motion.h1
           initial={{ opacity: 0, y: 22 }}
@@ -37,7 +37,7 @@ export function Hero({ intensity }: Props) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.36 }}
         >
-          {hero.lede}
+          {site.tagline}
         </motion.p>
         <motion.div
           className="hero__cta"
