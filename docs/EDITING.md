@@ -175,7 +175,7 @@ Homepage cards + full pages like `/projects/arena`.
 | Field | What it does | Example |
 | --- | --- | --- |
 | **ID** | Unique id, no spaces. | `arena` |
-| **URL slug** | Becomes `/projects/your-slug`. Lowercase, no spaces. | `arena` → `/projects/arena` |
+| **Page link name** | Becomes `/projects/your-name`. Lowercase, no spaces. | `arena` → `/projects/arena` |
 | **Sort order** | Lower numbers appear first on the homepage. | `1` for Level, `2` for Arena |
 | **Title** | Project name. | `The Arena` |
 | **Subtitle** | One-line genre / status under the title. | `2D top-down RPG · in development` |
@@ -201,7 +201,7 @@ Homepage cards + full pages like `/projects/arena`.
 **New project checklist**
 
 1. **Projects → New project**  
-2. Set **ID** + **URL slug** (same simple word is fine, e.g. `my-game`)  
+2. Set **ID** + **Page link name** (same simple word is fine, e.g. `my-game`)  
 3. Add cover image, summary, intro, at least one section  
 4. **Publish** → after deploy, open `/projects/my-game`
 

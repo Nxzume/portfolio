@@ -159,7 +159,7 @@ collections:
     summary: "{{title}}"
     fields:
       - { label: ID (unique, no spaces), name: id, widget: string }
-      - { label: URL slug, name: slug, widget: string, hint: "Appears in /projects/your-slug" }
+      - { label: Page link name, name: slug, widget: string, hint: "Becomes /projects/your-name — lowercase, no spaces (e.g. arena)" }
       - { label: Sort order (lower = first), name: order, widget: number, value_type: int, default: 10 }
       - { label: Title, name: title, widget: string }
       - { label: Subtitle, name: subtitle, widget: string }
