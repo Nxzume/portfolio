@@ -58,11 +58,6 @@ export function Footer() {
       <p>
         © {new Date().getFullYear()} {site.name}
       </p>
-      <p>
-        <a href="/admin">Edit site</a>
-        <span aria-hidden> · </span>
-        Forms-based editor — no coding required
-      </p>
     </footer>
   )
 }
