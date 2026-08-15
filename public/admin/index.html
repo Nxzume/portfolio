@@ -66,21 +66,19 @@
             config.local_backend = true
           }
 
-          // Preview on the right. Decap reads visualEditing from each collection.
-          config.editor = Object.assign(
-            { preview: true, visualEditing: true },
-            config.editor || {},
-          )
+          // Preview on the right is view-only. Edit with the form on the left.
+          // (Decap “visualEditing” click-to-edit is unreliable for this setup.)
+          config.editor = Object.assign({ preview: true, visualEditing: false }, config.editor || {})
           config.editor.preview = true
-          config.editor.visualEditing = true
+          config.editor.visualEditing = false
           ;(config.collections || []).forEach(function (collection) {
             if (!collection || typeof collection !== 'object') return
             collection.editor = Object.assign(
-              { preview: true, visualEditing: true },
+              { preview: true, visualEditing: false },
               collection.editor || {},
             )
             collection.editor.preview = true
-            collection.editor.visualEditing = true
+            collection.editor.visualEditing = false
           })
 
           // One global upload limit for every image/file field (edit upload-limit.json).

@@ -1,4 +1,4 @@
-/* Live preview pane — mirrors the portfolio look; fields are click-to-edit. */
+/* Live preview pane — mirrors the portfolio look (view-only). */
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Figtree:wght@400;500;600;700&display=swap');
 
 :root {
@@ -61,31 +61,13 @@ body {
   letter-spacing: 0;
 }
 
-/* Click-to-edit affordance */
+/* Preview text styles (view-only — not clickable editors) */
 .pv-edit {
-  position: relative;
-  outline: 1px dashed rgba(212, 168, 75, 0.28);
-  outline-offset: 3px;
-  border-radius: 2px;
-  transition: outline-color 0.15s ease, background-color 0.15s ease;
-  cursor: pointer;
-  min-width: 0.75rem;
-  min-height: 1.1em;
-}
-
-.pv-edit:hover,
-.pv-edit:focus-within {
-  outline-color: rgba(212, 168, 75, 0.85);
-  background: rgba(212, 168, 75, 0.1);
+  min-width: 0;
 }
 
 .pv-edit--bleed {
-  cursor: pointer;
-}
-
-.pv-edit--bleed:hover,
-.pv-edit--bleed:focus-within {
-  outline-offset: 0;
+  cursor: default;
 }
 
 .pv-edit img,
