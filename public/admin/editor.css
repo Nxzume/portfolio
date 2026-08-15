@@ -1,8 +1,21 @@
 /**
- * Decap CMS is built for desktop. Two hard-coded widths break phones:
- *   1. AppMainContainer  — min-width / width: 800px
- *   2. SidebarContainer  — position:fixed; CollectionMain padding-left: 280px
- * This stylesheet undoes both below 900px.
+ * Decap CMS chrome overrides.
+ *
+ * Media tab: Decap commits Media Library uploads/deletes straight to master,
+ * which triggers a production deploy outside editorial_workflow. Hide the tab
+ * so editors only add photos/audio via fields on a draft entry (those ride the
+ * draft branch until Publish).
+ */
+header a[href$='/collections/media'],
+header a[href*='#/collections/media'],
+a[class*='AppHeaderNavLink'][href*='/media'],
+li:has(> a[href*='#/collections/media']),
+li:has(> a[href$='/media']) {
+  display: none !important;
+}
+
+/**
+ * Phones: Decap hard-codes an 800px main pane and a fixed 250px sidebar.
  */
 @media (max-width: 900px) {
   html,

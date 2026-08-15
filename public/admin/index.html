@@ -112,6 +112,13 @@
 
           status.remove()
           window.CMS.init({ config: config })
+          // Media Library uploads/deletes always commit to master — hide the tab
+          // so photos/audio are only added via fields on a draft entry.
+          hideMediaNav()
+          new MutationObserver(hideMediaNav).observe(document.body, {
+            childList: true,
+            subtree: true,
+          })
         } catch (err) {
           const localHint = isLocal
             ? '<p>For local editing run <code>npm run cms</code> in another terminal, then refresh.</p>'
@@ -123,6 +130,15 @@
             localHint
         }
       })()
+
+      function hideMediaNav() {
+        document.querySelectorAll('a').forEach(function (a) {
+          var text = (a.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase()
+          if (text !== 'media') return
+          var hide = a.closest('li') || a
+          hide.style.display = 'none'
+        })
+      }
 
       function applyUploadLimit(node, maxBytes) {
         if (!node || typeof node !== 'object') return

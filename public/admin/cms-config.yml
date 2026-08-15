@@ -13,6 +13,10 @@ backend:
 # Save = draft (can make many changes). Publish = live.
 # There is no separate Vercel preview URL — use the form's right-hand look-ahead,
 # then Publish when ready.
+#
+# Media: upload photos/audio from the field on the entry you are editing (not the
+# Media tab). Those files ride along with the draft and only go live on Publish.
+# The Media tab commits straight to master and is hidden for that reason.
 publish_mode: editorial_workflow
 
 site_url: https://portfolio-five-steel-37.vercel.app
@@ -33,7 +37,7 @@ locale: en
 collections:
   - name: site_content
     label: Homepage & shared text
-    description: "Pick a section below to edit. On phones the form fills the screen (preview is desktop-only)."
+    description: "Pick a section below to edit. Upload photos or audio from the fields on that page — they stay in the draft until you Publish."
     editor:
       preview: true
       visualEditing: false
@@ -178,9 +182,10 @@ collections:
   - name: game_projects
     label: Project pages
     label_singular: Project
-    description: "Each project is a card on the homepage and its own page. Edit with the left form — right side is preview only. After Publish, wait for the site to rebuild."
+    description: "Each project is a card on the homepage and its own page. Upload cover/gallery photos on this form so they stay with the draft until Publish. Deleting a live project is disabled here — ask the site owner."
     folder: content/projects
     create: true
+    delete: false
     slug: "{{slug}}"
     extension: json
     format: json
