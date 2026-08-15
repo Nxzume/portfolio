@@ -69,6 +69,20 @@
           // Live preview pane on the right while editing.
           config.editor = Object.assign({ preview: true }, config.editor || {})
 
+          // One global upload limit for every image/file field (edit upload-limit.json).
+          try {
+            const limitRes = await fetch('/admin/upload-limit.json', { cache: 'no-store' })
+            if (limitRes.ok) {
+              const limitData = await limitRes.json()
+              const maxBytes = Number(limitData.maxFileSizeBytes)
+              if (maxBytes > 0) {
+                applyUploadLimit(config, maxBytes)
+              }
+            }
+          } catch (_) {
+            /* keep Decap defaults if limit file is missing */
+          }
+
           const seen = new Set()
           config.collections = config.collections.filter(function (collection) {
             if (!collection || !collection.name || seen.has(collection.name)) return false
@@ -89,6 +103,25 @@
             localHint
         }
       })()
+
+      function applyUploadLimit(node, maxBytes) {
+        if (!node || typeof node !== 'object') return
+        if (Array.isArray(node)) {
+          node.forEach(function (item) {
+            applyUploadLimit(item, maxBytes)
+          })
+          return
+        }
+        if (node.widget === 'image' || node.widget === 'file') {
+          node.media_library = node.media_library || {}
+          node.media_library.config = Object.assign({}, node.media_library.config, {
+            max_file_size: maxBytes,
+          })
+        }
+        Object.keys(node).forEach(function (key) {
+          applyUploadLimit(node[key], maxBytes)
+        })
+      }
     </script>
   </body>
 </html>

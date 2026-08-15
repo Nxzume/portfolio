@@ -16,11 +16,9 @@ backend:
 media_folder: public/images
 public_folder: /images
 
-# Global upload limit for the built-in media library (bytes). Edit this one value sitewide.
-# Do NOT set media_library.name — that breaks the admin (external library error).
-media_library:
-  config:
-    max_file_size: 50000000 # 50 MB — change this number as needed
+# Upload size limit is global via /admin/upload-limit.json (applied at boot).
+# Do not add top-level media_library here — Decap requires media_library.name for
+# external libraries only, which breaks the built-in uploader.
 
 logo_url: /favicon.svg
 locale: en

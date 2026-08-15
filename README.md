@@ -24,6 +24,8 @@ Edit **Name and links (sitewide)** once for your name, tagline, email, and socia
 
 Photos and music: use the **Upload** button on image/file fields in `/admin/` (saved into `public/images` or `public/audio` on Publish).
 
+Upload size limit (all fields): edit `public/admin/upload-limit.json` → `maxFileSizeBytes` (bytes), then redeploy.
+
 Locally (no OAuth):
 
 ```bash
