@@ -238,7 +238,14 @@ function normalizeSketch(raw: Record<string, unknown>, index: number): Sketch {
     typeof v === 'string' && v.trim() !== '' ? v : undefined
   const patternRaw = raw.pattern
   const pattern = Array.isArray(patternRaw)
-    ? patternRaw.map((step) => num(step)).filter((n): n is number => n != null)
+    ? patternRaw
+        .map((step) => {
+          if (step && typeof step === 'object' && 'step' in (step as object)) {
+            return num((step as { step: unknown }).step)
+          }
+          return num(step)
+        })
+        .filter((n): n is number => n != null)
     : undefined
   const title = str(raw.title)
 
