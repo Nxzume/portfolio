@@ -24,13 +24,26 @@ export function WaveformCanvas({ intensity = 0.25, className }: Props) {
 
     const resize = () => {
       const parent = canvas.parentElement
-      const bounds = parent?.getBoundingClientRect() ?? canvas.getBoundingClientRect()
-      const cssWidth = Math.max(1, Math.floor(bounds.width))
-      // Prefer explicit CSS height on the canvas; fall back to parent / min size.
-      const cssHeight = Math.max(
-        1,
-        Math.floor(canvas.clientHeight || bounds.height || 280),
-      )
+      const parentBounds = parent?.getBoundingClientRect()
+      const style = getComputedStyle(canvas)
+      // Score desk: canvas fills its frame (inset 0). Hero: canvas has its own % height.
+      const fillsParent =
+        style.position === 'absolute' && style.top === '0px' && style.bottom === '0px'
+
+      let cssWidth: number
+      let cssHeight: number
+
+      if (fillsParent && parentBounds) {
+        cssWidth = Math.max(1, Math.floor(parentBounds.width))
+        cssHeight = Math.max(1, Math.floor(parentBounds.height))
+      } else {
+        // Temporarily clear inline size so stylesheet height (e.g. 18%) can apply.
+        canvas.style.width = ''
+        canvas.style.height = ''
+        const self = canvas.getBoundingClientRect()
+        cssWidth = Math.max(1, Math.floor(self.width || parentBounds?.width || 1))
+        cssHeight = Math.max(1, Math.floor(self.height || 140))
+      }
 
       // Lock layout size in CSS so bitmap width/height attrs cannot inflate the page.
       canvas.style.width = `${cssWidth}px`
@@ -50,7 +63,7 @@ export function WaveformCanvas({ intensity = 0.25, className }: Props) {
       const height = canvas.clientHeight
       ctx.clearRect(0, 0, width, height)
 
-      const amp = 18 + intensityRef.current * 42
+      const amp = Math.min(height * 0.22, 18 + intensityRef.current * 42)
       const lines = 3
       for (let l = 0; l < lines; l++) {
         ctx.beginPath()
@@ -62,7 +75,7 @@ export function WaveformCanvas({ intensity = 0.25, className }: Props) {
           const n =
             Math.sin(x * 0.012 + t * 0.0018 + l) * amp +
             Math.sin(x * 0.035 - t * 0.0025 + l * 1.7) * (amp * 0.35)
-          const y = height * 0.55 + n * (1 - l * 0.18)
+          const y = height * 0.5 + n * (1 - l * 0.18)
           if (x === 0) ctx.moveTo(x, y)
           else ctx.lineTo(x, y)
         }
