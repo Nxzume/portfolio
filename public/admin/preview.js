@@ -23,15 +23,59 @@
   }
 
   function edit(className, node) {
-    if (node == null) return null
+    if (node == null || node === false) return null
     return h('div', { className: 'pv-edit' + (className ? ' ' + className : '') }, node)
   }
 
+  function safeGetIn(value, path) {
+    if (value == null) return null
+    try {
+      if (typeof value.getIn === 'function') return value.getIn(path)
+      // Plain object fallback
+      let cur = value
+      for (let i = 0; i < path.length; i++) {
+        if (cur == null) return null
+        cur = cur[path[i]]
+      }
+      return cur
+    } catch {
+      return null
+    }
+  }
+
+  function safeGet(value, key) {
+    if (value == null) return null
+    try {
+      if (typeof value.get === 'function') return value.get(key)
+      return value[key]
+    } catch {
+      return null
+    }
+  }
+
+  /** Normalize widgetsFor(list) into a plain array of defined items. */
   function listWidgets(widgetsFor, name) {
     try {
       const items = widgetsFor(name)
-      if (!items || typeof items.map !== 'function') return []
-      return items
+      if (!items) return []
+      const out = []
+      if (typeof items.forEach === 'function') {
+        items.forEach(function (item) {
+          if (item != null) out.push(item)
+        })
+        return out
+      }
+      if (typeof items.toArray === 'function') {
+        return items.toArray().filter(function (item) {
+          return item != null
+        })
+      }
+      if (Array.isArray(items)) {
+        return items.filter(function (item) {
+          return item != null
+        })
+      }
+      return out
     } catch {
       return []
     }
@@ -39,10 +83,48 @@
 
   function objectWidgets(widgetsFor, name) {
     try {
-      return widgetsFor(name) || null
+      const value = widgetsFor(name)
+      return value == null ? null : value
     } catch {
       return null
     }
+  }
+
+  /**
+   * Resolve an editable widget (or plain text fallback) from a list/object item.
+   * Handles Decap single-field lists and legacy plain-string JSON.
+   */
+  function itemField(item, fieldName) {
+    if (item == null) return null
+
+    const fromWidgets = safeGetIn(item, ['widgets', fieldName])
+    if (fromWidgets != null) return fromWidgets
+
+    // Single-field lists sometimes expose the widget directly on `widgets`
+    const widgets = safeGet(item, 'widgets')
+    if (widgets != null && typeof widgets.getIn !== 'function' && typeof widgets.get !== 'function') {
+      // Likely a React element already
+      return widgets
+    }
+
+    const fromData = safeGetIn(item, ['data', fieldName])
+    if (fromData != null && fromData !== '') return String(fromData)
+
+    const data = safeGet(item, 'data')
+    if (typeof data === 'string' && data) return data
+    if (typeof item === 'string' && item) return item
+
+    return null
+  }
+
+  function itemData(item, fieldName) {
+    if (item == null) return null
+    const value = safeGetIn(item, ['data', fieldName])
+    if (value != null) return value
+    const data = safeGet(item, 'data')
+    if (typeof data === 'string') return data
+    if (typeof item === 'string') return item
+    return null
   }
 
   function PlayIcon() {
@@ -90,14 +172,14 @@
               ? h(
                   'span',
                   { className: 'pv-btn pv-btn--primary' },
-                  edit(null, primary.getIn(['widgets', 'label'])),
+                  edit(null, itemField(primary, 'label')),
                 )
               : null,
             secondary
               ? h(
                   'span',
                   { className: 'pv-btn pv-btn--ghost' },
-                  edit(null, secondary.getIn(['widgets', 'label'])),
+                  edit(null, itemField(secondary, 'label')),
                 )
               : null,
           ),
@@ -117,10 +199,10 @@
       h(
         'div',
         { className: 'pv-copy' },
-        paragraphs.size
-          ? paragraphs.map((item, i) =>
-              h('div', { key: i, className: 'pv-edit' }, item.getIn(['widgets', 'paragraph'])),
-            )
+        paragraphs.length
+          ? paragraphs.map(function (item, i) {
+              return h('div', { key: i, className: 'pv-edit' }, itemField(item, 'paragraph'))
+            })
           : h('p', { className: 'pv-empty' }, 'Add bio paragraphs in the form or keep typing here once added'),
       ),
       edit('pv-edit--note', widgetFor('note')),
@@ -167,19 +249,19 @@
                 'div',
                 { key: 'itch', className: 'pv-link-row' },
                 h('span', { className: 'pv-link-label' }, 'itch.io'),
-                edit(null, links.getIn(['widgets', 'itch'])),
+                edit(null, itemField(links, 'itch')),
               ),
               h(
                 'div',
                 { key: 'arena', className: 'pv-link-row' },
                 h('span', { className: 'pv-link-label' }, 'Arena GitHub'),
-                edit(null, links.getIn(['widgets', 'githubArena'])),
+                edit(null, itemField(links, 'githubArena')),
               ),
               h(
                 'div',
                 { key: 'level', className: 'pv-link-row' },
                 h('span', { className: 'pv-link-label' }, 'Level GitHub'),
-                edit(null, links.getIn(['widgets', 'githubLevel'])),
+                edit(null, itemField(links, 'githubLevel')),
               ),
             ]
           : null,
@@ -206,7 +288,7 @@
       'div',
       { className: 'pv pv-section' },
       hint('Click a tab label or its headline/body to edit — every tab shows below'),
-      tabs.size
+      tabs.length
         ? tabs.map(function (tab, i) {
             return h(
               'div',
@@ -217,11 +299,11 @@
                 h(
                   'span',
                   { className: 'pv-tab is-on' },
-                  edit(null, tab.getIn(['widgets', 'label'])),
+                  edit(null, itemField(tab, 'label')),
                 ),
               ),
-              edit('pv-edit--title', tab.getIn(['widgets', 'headline'])),
-              edit('pv-edit--lede', tab.getIn(['widgets', 'body'])),
+              edit('pv-edit--title', itemField(tab, 'headline')),
+              edit('pv-edit--lede', itemField(tab, 'body')),
             )
           })
         : h('p', { className: 'pv-empty' }, 'Add a focus tab to preview it here'),
@@ -234,9 +316,10 @@
       'div',
       { className: 'pv' },
       hint('Click a track title or description to edit — matches the music list on the site'),
-      tracks.size
+      tracks.length
         ? tracks.map(function (track, i) {
-            const hasAudio = Boolean(track.getIn(['data', 'audio']))
+            const audio = itemData(track, 'audio')
+            const hasAudio = Boolean(audio && String(audio).trim())
             return h(
               'div',
               { key: i, className: 'pv-track' },
@@ -244,8 +327,8 @@
               h(
                 'div',
                 { className: 'pv-track__meta' },
-                edit('pv-edit--track-title', track.getIn(['widgets', 'title'])),
-                edit('pv-edit--track-mood', track.getIn(['widgets', 'mood'])),
+                edit('pv-edit--track-title', itemField(track, 'title')),
+                edit('pv-edit--track-mood', itemField(track, 'mood')),
                 hasAudio
                   ? h(
                       'div',
@@ -261,7 +344,7 @@
                 : h(
                     'div',
                     { className: 'pv-track__bpm' },
-                    edit(null, track.getIn(['widgets', 'bpm'])),
+                    edit(null, itemField(track, 'bpm')),
                     ' BPM',
                   ),
             )
@@ -300,12 +383,12 @@
           h(
             'div',
             { className: 'pv-cta-row' },
-            links.size
+            links.length
               ? links.map(function (link, i) {
                   return h(
                     'span',
                     { key: i, className: 'pv-btn pv-btn--ghost' },
-                    edit(null, link.getIn(['widgets', 'label'])),
+                    edit(null, itemField(link, 'label')),
                   )
                 })
               : null,
@@ -318,45 +401,36 @@
         h(
           'div',
           { className: 'pv-copy' },
-          intro.size
+          intro.length
             ? intro.map(function (item, i) {
-                return h(
-                  'div',
-                  { key: i, className: 'pv-edit' },
-                  item.getIn(['widgets', 'paragraph']),
-                )
+                return h('div', { key: i, className: 'pv-edit' }, itemField(item, 'paragraph'))
               })
             : null,
-          highlights.size
+          highlights.length
             ? h(
                 'ul',
                 { className: 'pv-bullets' },
                 highlights.map(function (item, i) {
-                  return h(
-                    'li',
-                    { key: i },
-                    edit(null, item.getIn(['widgets', 'item'])),
-                  )
+                  return h('li', { key: i }, edit(null, itemField(item, 'item')))
                 }),
               )
             : null,
         ),
-        sections.size
+        sections.length
           ? sections.map(function (section, i) {
-              const paraWidget = section.getIn(['widgets', 'paragraphs'])
-
+              const paraWidget = itemField(section, 'paragraphs')
               return h(
                 'div',
                 { key: i, className: 'pv-chapter' },
-                edit('pv-edit--title', section.getIn(['widgets', 'title'])),
-                edit('pv-edit--note', section.getIn(['widgets', 'quote'])),
+                edit('pv-edit--title', itemField(section, 'title')),
+                edit('pv-edit--note', itemField(section, 'quote')),
                 paraWidget ? h('div', { className: 'pv-copy' }, paraWidget) : null,
-                edit('pv-edit--media', section.getIn(['widgets', 'image'])),
-                edit('pv-edit--meta', section.getIn(['widgets', 'imageAlt'])),
+                edit('pv-edit--media', itemField(section, 'image')),
+                edit('pv-edit--meta', itemField(section, 'imageAlt')),
               )
             })
           : null,
-        gallery.size
+        gallery.length
           ? h(
               'div',
               { className: 'pv-gallery' },
@@ -368,7 +442,7 @@
                   return h(
                     'div',
                     { key: i, className: 'pv-gallery__item' },
-                    edit('pv-edit--bleed', item.getIn(['widgets', 'image'])),
+                    edit('pv-edit--bleed', itemField(item, 'image')),
                   )
                 }),
               ),
@@ -386,15 +460,37 @@
     )
   }
 
+  function safePreview(Component) {
+    return function Wrapped(props) {
+      try {
+        return Component(props)
+      } catch (err) {
+        return h(
+          'div',
+          { className: 'pv' },
+          h('p', { className: 'pv-hint' }, 'Preview hit a snag — use the form on the left to edit.'),
+          h(
+            'p',
+            { className: 'pv-empty' },
+            err && err.message ? err.message : 'Unknown preview error',
+          ),
+        )
+      }
+    }
+  }
+
   CMS.registerPreviewStyle('/admin/preview.css')
 
-  CMS.registerPreviewTemplate('hero', HeroPreview)
-  CMS.registerPreviewTemplate('about', AboutPreview)
-  CMS.registerPreviewTemplate('contact', ContactPreview)
-  CMS.registerPreviewTemplate('site', SitePreview)
-  CMS.registerPreviewTemplate('score', SectionHeadingPreview('Music section heading'))
-  CMS.registerPreviewTemplate('projects_section', SectionHeadingPreview('Projects section heading'))
-  CMS.registerPreviewTemplate('focuses', FocusesPreview)
-  CMS.registerPreviewTemplate('sketches', SketchesPreview)
-  CMS.registerPreviewTemplate('game_projects', ProjectPreview)
+  CMS.registerPreviewTemplate('hero', safePreview(HeroPreview))
+  CMS.registerPreviewTemplate('about', safePreview(AboutPreview))
+  CMS.registerPreviewTemplate('contact', safePreview(ContactPreview))
+  CMS.registerPreviewTemplate('site', safePreview(SitePreview))
+  CMS.registerPreviewTemplate('score', safePreview(SectionHeadingPreview('Music section heading')))
+  CMS.registerPreviewTemplate(
+    'projects_section',
+    safePreview(SectionHeadingPreview('Projects section heading')),
+  )
+  CMS.registerPreviewTemplate('focuses', safePreview(FocusesPreview))
+  CMS.registerPreviewTemplate('sketches', safePreview(SketchesPreview))
+  CMS.registerPreviewTemplate('game_projects', safePreview(ProjectPreview))
 })()
