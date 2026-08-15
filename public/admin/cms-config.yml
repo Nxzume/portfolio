@@ -9,6 +9,14 @@ backend:
   base_url: /
   auth_endpoint: api/auth
 
+# Edits become drafts instead of going straight to the live site.
+# Save = draft (can make many changes). Publish = live.
+# There is no separate Vercel preview URL — use the form's right-hand look-ahead,
+# then Publish when ready.
+publish_mode: editorial_workflow
+
+site_url: https://portfolio-five-steel-37.vercel.app
+
 # Uncomment for local editing with: npx decap-server
 # local_backend: true
 
