@@ -49,6 +49,7 @@ collections:
           - { label: Your name, name: name, widget: string, hint: "Shows in the nav, homepage, footer, and browser tab" }
           - { label: Short tagline under your name, name: tagline, widget: string }
           - { label: Email address, name: email, widget: string, hint: "Used by the Contact email button" }
+          - { label: Website address, name: url, widget: string, required: false, hint: "Only change this if the site moves to a new domain. Used for Google and for the preview card people see when they share a link." }
           - label: Links (shown on Contact)
             name: links
             widget: object

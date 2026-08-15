@@ -1,8 +1,13 @@
-import { useEffect, useId, useState } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { useId, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
 import { Footer } from '../components/Contact'
 import { Nav } from '../components/Nav'
+import { PageHead } from '../components/PageHead'
+import { ProjectCard } from '../components/ProjectCard'
 import { getProject, projects } from '../content'
+import { useDialog } from '../hooks/useDialog'
+import { projectMeta } from '../lib/meta'
+import { NotFound } from './NotFound'
 
 /** Editors often type "google.com" or an in-page "#anchor" instead of a full URL. */
 function isExternal(href: string) {
@@ -17,39 +22,29 @@ function normalizeHref(href: string) {
   return value
 }
 
+type Lightbox = { src: string; alt: string }
+
 export function ProjectPage() {
   const { slug } = useParams()
   const project = slug ? getProject(slug) : undefined
-  const [lightbox, setLightbox] = useState<string | null>(null)
+  const [lightbox, setLightbox] = useState<Lightbox | null>(null)
   const lightboxTitleId = useId()
-
-  useEffect(() => {
-    if (!lightbox) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setLightbox(null)
-    }
-    window.addEventListener('keydown', onKey)
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      window.removeEventListener('keydown', onKey)
-      document.body.style.overflow = prev
-    }
-  }, [lightbox])
+  const lightboxRef = useDialog<HTMLDivElement>(Boolean(lightbox), () => setLightbox(null))
 
   if (!project) {
-    return <Navigate to="/" replace />
+    return <NotFound />
   }
 
   const others = projects.filter((p) => p.id !== project.id)
 
   return (
     <div className="app">
+      <PageHead meta={projectMeta(project)} />
       <Nav variant="page" />
-      <main className="project-page">
+      <main id="main" className="project-page">
         <header className="project-page__hero">
           <div className="project-page__hero-media" aria-hidden>
-            {project.image ? <img src={project.image} alt="" /> : null}
+            {project.image ? <img src={project.image} alt="" decoding="async" /> : null}
             <div className="project-page__hero-veil" />
           </div>
           <div className="project-page__hero-content">
@@ -123,10 +118,20 @@ export function ProjectPage() {
                     <button
                       type="button"
                       className="project-page__zoom"
-                      onClick={() => setLightbox(section.image!)}
+                      onClick={() =>
+                        setLightbox({
+                          src: section.image!,
+                          alt: section.imageAlt || `${project.title} — ${section.title}`,
+                        })
+                      }
                       aria-label={`View larger: ${section.imageAlt || section.title}`}
                     >
-                      <img src={section.image} alt={section.imageAlt ?? ''} />
+                      <img
+                        src={section.image}
+                        alt={section.imageAlt ?? ''}
+                        loading="lazy"
+                        decoding="async"
+                      />
                     </button>
                     {section.imageAlt && <figcaption>{section.imageAlt}</figcaption>}
                   </figure>
@@ -143,10 +148,17 @@ export function ProjectPage() {
                       key={`${i}-${src}`}
                       type="button"
                       className="project-page__gallery-item"
-                      onClick={() => setLightbox(src)}
+                      onClick={() =>
+                        setLightbox({ src, alt: `${project.title} screenshot ${i + 1}` })
+                      }
                       aria-label={`View larger image from ${project.title}`}
                     >
-                      <img src={src} alt={`${project.title} screenshot`} />
+                      <img
+                        src={src}
+                        alt={`${project.title} screenshot ${i + 1}`}
+                        loading="lazy"
+                        decoding="async"
+                      />
                     </button>
                   ))}
                 </div>
@@ -158,14 +170,7 @@ export function ProjectPage() {
                 <h2>More projects</h2>
                 <div className="projects__grid">
                   {others.map((p) => (
-                    <Link key={p.slug} className="projects__card" to={`/projects/${p.slug}`}>
-                      {p.image ? <img src={p.image} alt="" /> : <div className="projects__card-noimg" />}
-                      <div className="projects__card-body">
-                        <h3>{p.title}</h3>
-                        <p className="projects__card-sub">{p.subtitle}</p>
-                        <span className="projects__card-cta">Read more →</span>
-                      </div>
-                    </Link>
+                    <ProjectCard key={p.slug} project={p} />
                   ))}
                 </div>
               </section>
@@ -177,6 +182,7 @@ export function ProjectPage() {
 
       {lightbox ? (
         <div
+          ref={lightboxRef}
           className="lightbox"
           role="dialog"
           aria-modal="true"
@@ -184,15 +190,20 @@ export function ProjectPage() {
           onClick={() => setLightbox(null)}
         >
           <p id={lightboxTitleId} className="visually-hidden">
-            Enlarged image
+            {lightbox.alt}
           </p>
-          <button type="button" className="lightbox__close" aria-label="Close">
+          <button
+            type="button"
+            className="lightbox__close"
+            aria-label="Close"
+            onClick={() => setLightbox(null)}
+          >
             Close
           </button>
           <img
             className="lightbox__img"
-            src={lightbox}
-            alt=""
+            src={lightbox.src}
+            alt={lightbox.alt}
             onClick={(e) => e.stopPropagation()}
           />
         </div>
