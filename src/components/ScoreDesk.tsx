@@ -43,12 +43,11 @@ export function ScoreDesk({ activeId, intensity, onPlay }: Props) {
                   </span>
                   <span className="score__meta">
                     <span className="score__title">{sketch.title}</span>
-                    <span className="score__mood">
-                      {sketch.mood}
-                      {sketch.audio ? ' · audio file' : ' · generative'}
-                    </span>
+                    <span className="score__mood">{sketch.mood}</span>
                   </span>
-                  <span className="score__bpm">{sketch.bpm} BPM</span>
+                  {sketch.audio?.trim() ? null : (
+                    <span className="score__bpm">{sketch.bpm ?? 100} BPM</span>
+                  )}
                 </button>
               </motion.li>
             )

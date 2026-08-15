@@ -132,7 +132,6 @@ collections:
               - { label: Short track name (no spaces), name: id, widget: string }
               - { label: Track title, name: title, widget: string }
               - { label: Mood line, name: mood, widget: string, hint: "Short flavor text under the title" }
-              - { label: Tempo (beats per minute), name: bpm, widget: number, value_type: int, default: 100 }
               - label: Music file
                 name: audio
                 widget: file
@@ -140,7 +139,14 @@ collections:
                 choose_url: false
                 media_folder: public/audio
                 public_folder: /audio
-                hint: "Upload an mp3/wav here, or leave empty for a simple placeholder sound."
+                hint: "Upload mp3/wav/ogg (best browser support). Leave empty to use a simple placeholder tone."
+              - label: Placeholder tempo (optional)
+                name: bpm
+                widget: number
+                value_type: int
+                required: false
+                default: 100
+                hint: "Only used when Music file is empty — sets the placeholder tone speed."
               - { label: Placeholder starting pitch (optional), name: baseFreq, widget: number, required: false, value_type: float, hint: "Only used when Music file is blank. Example: 110" }
               - label: Placeholder note steps (optional)
                 name: pattern

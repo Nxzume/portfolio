@@ -204,10 +204,12 @@
                 h('p', { className: 'pv-track__title' }, t.title || 'Track title'),
                 h('p', { className: 'pv-track__mood' }, t.mood || ''),
                 t.audio
-                  ? h('p', { className: 'pv-meta' }, 'File: ', t.audio)
+                  ? h('p', { className: 'pv-meta' }, 'Uploaded audio')
                   : h('p', { className: 'pv-meta' }, 'Placeholder tone'),
               ),
-              h('div', { className: 'pv-track__bpm' }, (t.bpm || '—') + ' BPM'),
+              t.audio
+                ? null
+                : h('div', { className: 'pv-track__bpm' }, (t.bpm || 100) + ' BPM'),
             ),
           )
         : h('p', { className: 'pv-empty' }, 'Add a track to preview it here.'),

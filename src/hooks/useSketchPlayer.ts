@@ -64,7 +64,7 @@ export function useSketchPlayer() {
     const pattern = sketch.pattern?.length ? sketch.pattern : [0, 4, 7]
     const baseFreq = sketch.baseFreq ?? 110
     let step = 0
-    const beatMs = (60_000 / Math.max(sketch.bpm, 1)) * 0.5
+    const beatMs = (60_000 / Math.max(sketch.bpm ?? 100, 1)) * 0.5
 
     const strike = () => {
       const now = ctx.currentTime
