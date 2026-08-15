@@ -19,22 +19,35 @@ export function WaveformCanvas({ intensity = 0.25, className }: Props) {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    let frame = 0
     let raf = 0
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
 
     const resize = () => {
-      const { width, height } = canvas.getBoundingClientRect()
-      canvas.width = Math.floor(width * dpr)
-      canvas.height = Math.floor(height * dpr)
+      const parent = canvas.parentElement
+      const bounds = parent?.getBoundingClientRect() ?? canvas.getBoundingClientRect()
+      const cssWidth = Math.max(1, Math.floor(bounds.width))
+      // Prefer explicit CSS height on the canvas; fall back to parent / min size.
+      const cssHeight = Math.max(
+        1,
+        Math.floor(canvas.clientHeight || bounds.height || 280),
+      )
+
+      // Lock layout size in CSS so bitmap width/height attrs cannot inflate the page.
+      canvas.style.width = `${cssWidth}px`
+      canvas.style.height = `${cssHeight}px`
+      canvas.width = Math.floor(cssWidth * dpr)
+      canvas.height = Math.floor(cssHeight * dpr)
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     }
 
     resize()
+    const ro = new ResizeObserver(() => resize())
+    if (canvas.parentElement) ro.observe(canvas.parentElement)
     window.addEventListener('resize', resize)
 
     const draw = (t: number) => {
-      const { width, height } = canvas.getBoundingClientRect()
+      const width = canvas.clientWidth
+      const height = canvas.clientHeight
       ctx.clearRect(0, 0, width, height)
 
       const amp = 18 + intensityRef.current * 42
@@ -55,7 +68,6 @@ export function WaveformCanvas({ intensity = 0.25, className }: Props) {
         }
         ctx.stroke()
       }
-      frame += 1
       raf = requestAnimationFrame(draw)
     }
 
@@ -63,7 +75,7 @@ export function WaveformCanvas({ intensity = 0.25, className }: Props) {
     return () => {
       cancelAnimationFrame(raf)
       window.removeEventListener('resize', resize)
-      void frame
+      ro.disconnect()
     }
   }, [])
 
