@@ -1,26 +1,6 @@
 {
-  "id": "arena",
-  "slug": "arena",
-  "order": 2,
-  "title": "The Arena",
-  "subtitle": "2D top-down RPG · in development",
-  "image": "/images/arena-gameplay.png",
-  "gallery": [
-    "/images/arena-gameplay.png",
-    "/images/arena-detail-1.png"
-  ],
   "summary": "A succession of floors with their own mechanics. The player controls two characters with different abilities and must combine their skills to solve puzzles and defeat enemies.",
-  "highlights": [
-    "Dual-character puzzle combat",
-    "Floor-based mechanical variety",
-    "First floor nearly complete in the original build"
-  ],
-  "links": [
-    {
-      "label": "GitHub",
-      "href": "https://github.com/keeganland/the-arena-agda"
-    }
-  ],
+  "slug": "arena",
   "intro": [
     "The Arena is a 2D top-down RPG still in development. The aim is a succession of floors, each with its own mechanics. The first floor is nearly done.",
     "The player controls two characters with different abilities and must combine both skill sets to solve puzzles and defeat enemies."
@@ -46,5 +26,26 @@
         "This write-up is carried forward from the original portfolio and will expand as the project continues."
       ]
     }
+  ],
+  "order": 2,
+  "gallery": [
+    "/images/arena-gameplay.png",
+    "/images/arena-detail-1.png",
+    "/images/hf_20260811_031129_e49a7056-7baa-43c7-8680-71758739818c.png"
+  ],
+  "subtitle": "2D top-down RPG · in development",
+  "title": "The Arena",
+  "links": [
+    {
+      "label": "GitHub",
+      "href": "https://github.com/keeganland/the-arena-agda"
+    }
+  ],
+  "id": "arena",
+  "image": "/images/arena-gameplay.png",
+  "highlights": [
+    "Dual-character puzzle combat",
+    "Floor-based mechanical variety",
+    "First floor nearly complete in the original build"
   ]
 }
