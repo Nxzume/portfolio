@@ -27,6 +27,10 @@ collections:
   - name: site_content
     label: Site pages
     description: Shared identity first — name, email, and links update the whole site
+    # Click text in the preview to jump to that field in the form.
+    editor:
+      preview: true
+      visualEditing: true
     files:
       - name: site
         label: Name and links (sitewide)
@@ -179,6 +183,9 @@ collections:
     extension: json
     format: json
     summary: "{{title}}"
+    editor:
+      preview: true
+      visualEditing: true
     fields:
       - { label: Project title, name: title, widget: string }
       - { label: Small label above the title, name: subtitle, widget: string, required: false, default: "", hint: "Example: 2D top-down RPG · in development" }
