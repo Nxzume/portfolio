@@ -159,15 +159,17 @@
       h(
         'div',
         { className: 'pv-link-stack' },
-        links.itch
-          ? h('div', { className: 'pv-link-row' }, h('span', { className: 'pv-link-label' }, 'itch.io'), h('p', null, links.itch))
+        links.github || links.githubLevel || links.githubArena
+          ? h(
+              'div',
+              { className: 'pv-link-row' },
+              h('span', { className: 'pv-link-label' }, 'GitHub'),
+              h('p', null, links.github || links.githubLevel || links.githubArena),
+            )
           : null,
-        links.githubArena
-          ? h('div', { className: 'pv-link-row' }, h('span', { className: 'pv-link-label' }, 'Arena'), h('p', null, links.githubArena))
-          : null,
-        links.githubLevel
-          ? h('div', { className: 'pv-link-row' }, h('span', { className: 'pv-link-label' }, 'Level'), h('p', null, links.githubLevel))
-          : null,
+        links.linkedin
+          ? h('div', { className: 'pv-link-row' }, h('span', { className: 'pv-link-label' }, 'LinkedIn'), h('p', null, links.linkedin))
+          : h('p', { className: 'pv-empty' }, 'LinkedIn URL not set yet'),
       ),
     )
   }

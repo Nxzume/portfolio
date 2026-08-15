@@ -13,13 +13,13 @@ function contactActions() {
     },
   ]
 
-  if (site.links.itch) {
-    actions.push({ label: 'itch.io', href: site.links.itch, style: 'ghost' })
+  const github =
+    site.links.github || site.links.githubLevel || site.links.githubArena || ''
+  if (github) {
+    actions.push({ label: 'GitHub', href: github, style: 'ghost' })
   }
-  if (site.links.githubLevel) {
-    actions.push({ label: 'GitHub', href: site.links.githubLevel, style: 'ghost' })
-  } else if (site.links.githubArena) {
-    actions.push({ label: 'GitHub', href: site.links.githubArena, style: 'ghost' })
+  if (site.links.linkedin) {
+    actions.push({ label: 'LinkedIn', href: site.links.linkedin, style: 'ghost' })
   }
   return actions
 }
