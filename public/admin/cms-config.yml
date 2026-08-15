@@ -74,11 +74,15 @@ collections:
             name: portrait
             widget: image
             choose_url: false
+            required: false
             hint: "Upload or pick from the media library"
-          - { label: About headline, name: lead, widget: string }
+          - { label: Photo description, name: portraitAlt, widget: string, required: false, hint: "Describes the photo for screen readers. Leave blank to use your name." }
+          - { label: About headline, name: lead, widget: string, required: false }
           - label: Bio paragraphs
             name: body
             widget: list
+            required: false
+            default: []
             field: { label: Paragraph, name: paragraph, widget: text }
           - { label: Small note under the bio (optional), name: note, widget: text, required: false }
 
@@ -86,39 +90,41 @@ collections:
         label: Contact
         file: content/contact.json
         fields:
-          - { label: Tiny label above the title, name: eyebrow, widget: string }
-          - { label: Contact title, name: title, widget: string }
-          - { label: Short description, name: lede, widget: text }
+          - { label: Tiny label above the title, name: eyebrow, widget: string, required: false }
+          - { label: Contact title, name: title, widget: string, required: false }
+          - { label: Short description, name: lede, widget: text, required: false }
           - { label: Email button text, name: emailButtonText, widget: string, required: false, hint: "Buttons for email / itch / GitHub come from Name and links" }
 
       - name: score
         label: Music section heading
         file: content/score.json
         fields:
-          - { label: Tiny label above the title, name: eyebrow, widget: string }
-          - { label: Section title, name: title, widget: string }
-          - { label: Short description, name: lede, widget: text }
+          - { label: Tiny label above the title, name: eyebrow, widget: string, required: false }
+          - { label: Section title, name: title, widget: string, required: false }
+          - { label: Short description, name: lede, widget: text, required: false }
 
       - name: projects_section
         label: Projects section heading
         file: content/projects-section.json
         fields:
-          - { label: Tiny label above the title, name: eyebrow, widget: string }
-          - { label: Section title, name: title, widget: string }
-          - { label: Short description, name: lede, widget: text }
+          - { label: Tiny label above the title, name: eyebrow, widget: string, required: false }
+          - { label: Section title, name: title, widget: string, required: false }
+          - { label: Short description, name: lede, widget: text, required: false }
 
       - name: focuses
         label: Compose / Levels / Azure tabs
         file: content/focuses.json
+        description: Keep at least one tab — the homepage hides this block if you delete them all
         fields:
           - label: Tabs
             name: tabs
             widget: list
+            summary: "{{label}}"
             fields:
-              - { label: Short tab name (no spaces), name: id, widget: string, hint: "Use compose, levels, or azure" }
               - { label: Tab button text, name: label, widget: string }
-              - { label: Headline when selected, name: headline, widget: string }
-              - { label: Paragraph when selected, name: body, widget: text }
+              - { label: Headline when selected, name: headline, widget: string, required: false }
+              - { label: Paragraph when selected, name: body, widget: text, required: false }
+              - { label: Internal name (no spaces), name: id, widget: string, required: false, hint: "Only used behind the scenes. Leave blank and one is made from the tab text." }
 
       - name: sketches
         label: Music tracks
@@ -129,9 +135,9 @@ collections:
             widget: list
             summary: "{{title}}"
             fields:
-              - { label: Short track name (no spaces), name: id, widget: string }
               - { label: Track title, name: title, widget: string }
               - { label: Short description, name: mood, widget: string, required: false, hint: "Optional line under the title (e.g. “Warm brass · slow pulse”)" }
+              - { label: Internal name (no spaces), name: id, widget: string, required: false, hint: "Only used behind the scenes. Leave blank and one is made from the title." }
               - label: Music file
                 name: audio
                 widget: file
@@ -166,29 +172,28 @@ collections:
     format: json
     summary: "{{title}}"
     fields:
-      - { label: Short project name (no spaces), name: id, widget: string, hint: "Example: arena" }
-      - { label: Page link name, name: slug, widget: string, hint: "Becomes /projects/your-name — lowercase, no spaces (example: arena). Required for the project page." }
-      - { label: Homepage order, name: order, widget: number, value_type: int, default: 10, hint: "Lower numbers show first" }
       - { label: Project title, name: title, widget: string }
-      - { label: One-line subtitle, name: subtitle, widget: string, required: false, default: "" }
+      - { label: Small label above the title, name: subtitle, widget: string, required: false, default: "", hint: "Example: 2D top-down RPG · in development" }
       - label: Cover photo
         name: image
         widget: image
         choose_url: false
         required: false
-        hint: "Upload or pick from the media library"
+        hint: "Upload or pick from the media library. Leave blank for a plain card."
+      - { label: Short card summary, name: summary, widget: text, required: false, default: "", hint: "Shown on the homepage project card" }
+      - { label: Page web address, name: slug, widget: string, hint: "The page becomes /projects/this — lowercase, no spaces (example: arena). Must be different from other projects." }
+      - { label: Homepage order, name: order, widget: number, value_type: int, default: 10, required: false, hint: "Lower numbers show first" }
       - label: Extra photos
         name: gallery
         widget: list
         required: false
         default: []
-        summary: "{{fields.image}}"
+        summary: "{{image}}"
         field:
           label: Photo
           name: image
           widget: image
           choose_url: false
-      - { label: Short card summary, name: summary, widget: text, required: false, default: "", hint: "Shown on the homepage project card" }
       - label: Bullet highlights
         name: highlights
         widget: list
@@ -200,9 +205,10 @@ collections:
         widget: list
         required: false
         default: []
+        summary: "{{label}}"
         fields:
           - { label: Button text, name: label, widget: string }
-          - { label: Web address, name: href, widget: string }
+          - { label: Web address, name: href, widget: string, hint: "Full link like https://example.com — or #contact to jump down this page" }
       - label: Opening paragraphs
         name: intro
         widget: list
@@ -216,7 +222,6 @@ collections:
         default: []
         summary: "{{title}}"
         fields:
-          - { label: Short chapter name (no spaces), name: id, widget: string, hint: "Example: level-design" }
           - { label: Chapter title, name: title, widget: string }
           - { label: Quote (optional), name: quote, widget: text, required: false }
           - label: Paragraphs

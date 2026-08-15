@@ -337,7 +337,11 @@
                       h('div', { className: 'pv-track__bar' }),
                       h('span', { className: 'pv-track__time' }, '—:—'),
                     )
-                  : null,
+                  : h(
+                      'p',
+                      { className: 'pv-empty' },
+                      'No music file yet — the site plays a short placeholder tone.',
+                    ),
               ),
               hasAudio
                 ? null
@@ -418,13 +422,26 @@
         ),
         sections.length
           ? sections.map(function (section, i) {
+              const paras = listWidgets(function (name) {
+                return safeGetIn(section, ['widgets', name])
+              }, 'paragraphs')
               const paraWidget = itemField(section, 'paragraphs')
               return h(
                 'div',
                 { key: i, className: 'pv-chapter' },
                 edit('pv-edit--title', itemField(section, 'title')),
                 edit('pv-edit--note', itemField(section, 'quote')),
-                paraWidget ? h('div', { className: 'pv-copy' }, paraWidget) : null,
+                paras.length
+                  ? h(
+                      'div',
+                      { className: 'pv-copy' },
+                      paras.map(function (p, j) {
+                        return h('div', { key: j, className: 'pv-edit' }, itemField(p, 'paragraph'))
+                      }),
+                    )
+                  : paraWidget
+                    ? h('div', { className: 'pv-copy' }, paraWidget)
+                    : null,
                 edit('pv-edit--media', itemField(section, 'image')),
                 edit('pv-edit--meta', itemField(section, 'imageAlt')),
               )
@@ -452,10 +469,8 @@
       h(
         'p',
         { className: 'pv-meta' },
-        'Page link name (slug): ',
+        'Web address: /projects/',
         edit('pv-edit--inline', widgetFor('slug')),
-        ' · short id: ',
-        edit('pv-edit--inline', widgetFor('id')),
       ),
     )
   }
