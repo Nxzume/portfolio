@@ -6,8 +6,10 @@ Live site: **https://portfolio-five-steel-37.vercel.app/**
 
 1. Open https://portfolio-five-steel-37.vercel.app/admin/  
 2. **Login with GitHub**  
-3. Open an entry below → change text/images → **Publish**  
+3. Open an entry below → change text/images → watch the **live preview** on the right → **Publish**  
 4. Wait for Vercel to rebuild, then refresh the public site  
+
+While editing, the right-hand pane updates as you type (site-styled preview). Use the preview toggle in the editor toolbar if the pane is hidden. 
 
 (First-time setup: `docs/ADMIN-SETUP.md`.)
 

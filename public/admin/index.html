@@ -30,6 +30,7 @@
     </script>
     <script src="https://unpkg.com/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
     <script src="https://unpkg.com/decap-cms@3.8.3/dist/decap-cms.js"></script>
+    <script src="/admin/preview.js"></script>
     <script>
       ;(async function boot() {
         if (window.__PORTFOLIO_CMS_BOOTED__) return
@@ -65,11 +66,26 @@
             config.local_backend = true
           }
 
+          // Keep the live preview pane on (right side while editing).
+          config.editor = Object.assign({ preview: true }, config.editor || {})
+
           const seen = new Set()
           config.collections = config.collections.filter(function (collection) {
             if (!collection || !collection.name || seen.has(collection.name)) return false
             seen.add(collection.name)
             return true
+          })
+
+          // Register previews after CMS is loaded (script already ran; call again safely).
+          if (window.__PORTFOLIO_PREVIEWS_REGISTERED__) {
+            window.__PORTFOLIO_PREVIEWS_REGISTERED__ = false
+          }
+          const previewScript = document.createElement('script')
+          previewScript.src = '/admin/preview.js?v=2'
+          await new Promise(function (resolve, reject) {
+            previewScript.onload = resolve
+            previewScript.onerror = reject
+            document.body.appendChild(previewScript)
           })
 
           status.remove()
