@@ -15,10 +15,10 @@ export function Projects() {
         {projects.map((p, i) => (
           <motion.div
             key={p.id}
-            initial={{ opacity: 0, y: 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, x: 18 }}
+            whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.35 }}
-            transition={{ delay: i * 0.08, duration: 0.45 }}
+            transition={{ delay: Math.min(i, 8) * 0.06, duration: 0.45 }}
           >
             <Link className="projects__card" to={`/projects/${p.slug}`}>
               {p.image ? <img src={p.image} alt="" /> : <div className="projects__card-noimg" />}
