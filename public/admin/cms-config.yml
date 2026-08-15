@@ -137,8 +137,8 @@ collections:
                 widget: file
                 required: false
                 choose_url: false
-                # Relative to content/ (where sketches.json lives), not the repo root.
-                media_folder: ../public/audio
+                # From repo-root global media (public/images): ../audio → public/audio
+                media_folder: ../audio
                 public_folder: /audio
                 hint: "Upload mp3/wav/ogg (best browser support). FLAC often fails in browsers. Leave empty for a placeholder tone."
               - label: Placeholder tempo (optional)
