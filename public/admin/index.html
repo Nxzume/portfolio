@@ -30,6 +30,7 @@
     </script>
     <script src="https://unpkg.com/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
     <script src="https://unpkg.com/decap-cms@3.8.3/dist/decap-cms.js"></script>
+    <script src="/admin/preview.js"></script>
     <script>
       ;(async function boot() {
         if (window.__PORTFOLIO_CMS_BOOTED__) return
@@ -64,6 +65,9 @@
           if (isLocal) {
             config.local_backend = true
           }
+
+          // Live preview pane on the right while editing.
+          config.editor = Object.assign({ preview: true }, config.editor || {})
 
           const seen = new Set()
           config.collections = config.collections.filter(function (collection) {
