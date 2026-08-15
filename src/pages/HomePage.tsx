@@ -21,7 +21,6 @@ export function HomePage() {
         <FocusSwitcher active={focus} onChange={setFocus} />
         <ScoreDesk
           activeId={player.activeId}
-          activeSketch={player.activeSketch}
           intensity={player.intensity}
           isPlaying={player.isPlaying}
           currentTime={player.currentTime}
@@ -31,11 +30,7 @@ export function HomePage() {
             const sketch = sketches.find((s) => s.id === id)
             if (sketch) void player.play(sketch)
           }}
-          onTogglePause={() => void player.togglePause()}
-          onStop={player.stop}
           onSeek={player.seek}
-          onPrev={player.playPrev}
-          onNext={player.playNext}
         />
         <Projects />
         <About />
