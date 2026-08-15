@@ -137,16 +137,16 @@ collections:
                 widget: file
                 required: false
                 choose_url: false
-                media_folder: public/audio
+                # Relative to content/ (where sketches.json lives), not the repo root.
+                media_folder: ../public/audio
                 public_folder: /audio
-                hint: "Upload mp3/wav/ogg (best browser support). Leave empty to use a simple placeholder tone."
+                hint: "Upload mp3/wav/ogg (best browser support). FLAC often fails in browsers. Leave empty for a placeholder tone."
               - label: Placeholder tempo (optional)
                 name: bpm
                 widget: number
                 value_type: int
                 required: false
-                default: 100
-                hint: "Only used when Music file is empty — sets the placeholder tone speed."
+                hint: "Only used when Music file is empty — sets the placeholder tone speed. Leave blank if unused."
               - { label: Placeholder starting pitch (optional), name: baseFreq, widget: number, required: false, value_type: float, hint: "Only used when Music file is blank. Example: 110" }
               - label: Placeholder note steps (optional)
                 name: pattern

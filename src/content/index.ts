@@ -35,9 +35,40 @@ export const about = aboutJson as AboutContent
 export const focuses = (Array.isArray(focusesJson)
   ? focusesJson
   : (focusesJson as { tabs: Focus[] }).tabs) as Focus[]
-export const sketches = (Array.isArray(sketchesJson)
+/** Decap number widgets often save cleared fields as "" — coerce before typing. */
+function normalizeSketch(raw: Record<string, unknown>): Sketch {
+  const num = (v: unknown): number | undefined => {
+    if (typeof v === 'number' && Number.isFinite(v)) return v
+    if (typeof v === 'string' && v.trim() !== '') {
+      const n = Number(v)
+      return Number.isFinite(n) ? n : undefined
+    }
+    return undefined
+  }
+  const str = (v: unknown): string | undefined =>
+    typeof v === 'string' && v.trim() !== '' ? v : undefined
+  const patternRaw = raw.pattern
+  const pattern = Array.isArray(patternRaw)
+    ? patternRaw.map((step) => num(step)).filter((n): n is number => n != null)
+    : undefined
+
+  return {
+    id: String(raw.id ?? ''),
+    title: String(raw.title ?? ''),
+    mood: str(raw.mood),
+    bpm: num(raw.bpm),
+    audio: str(raw.audio),
+    baseFreq: num(raw.baseFreq),
+    pattern: pattern?.length ? pattern : undefined,
+  }
+}
+
+const sketchesRaw = Array.isArray(sketchesJson)
   ? sketchesJson
-  : (sketchesJson as { tracks: Sketch[] }).tracks) as Sketch[]
+  : (sketchesJson as { tracks: unknown[] }).tracks
+export const sketches = (Array.isArray(sketchesRaw) ? sketchesRaw : []).map((t) =>
+  normalizeSketch((t && typeof t === 'object' ? t : {}) as Record<string, unknown>),
+)
 export const score = scoreJson as SectionCopy
 export const contact = contactJson as ContactContent
 export const hero = heroJson as HeroContent
