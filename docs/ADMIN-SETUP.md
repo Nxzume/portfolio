@@ -1,8 +1,10 @@
-# One-time admin setup (site owner)
+# One-time admin setup (site owner only)
+
+This file is for the **repo owner** in GitHub — it is **not** part of the public website.
 
 Live site: **https://portfolio-five-steel-37.vercel.app/**
 
-## Why you still see `Missing GITHUB_CLIENT_ID`
+## Why login still fails (`Missing GITHUB_CLIENT_ID`)
 
 Almost always one of these:
 
