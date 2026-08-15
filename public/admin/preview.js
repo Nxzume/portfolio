@@ -159,12 +159,20 @@
       h(
         'div',
         { className: 'pv-link-stack' },
-        links.github || links.githubLevel || links.githubArena
+        h(
+          'div',
+          { className: 'pv-link-row' },
+          h('span', { className: 'pv-link-label' }, 'Website'),
+          d.url
+            ? h('p', null, d.url)
+            : h('p', { className: 'pv-empty' }, 'Website address not set yet'),
+        ),
+        links.github
           ? h(
               'div',
               { className: 'pv-link-row' },
               h('span', { className: 'pv-link-label' }, 'GitHub'),
-              h('p', null, links.github || links.githubLevel || links.githubArena),
+              h('p', null, links.github),
             )
           : null,
         links.linkedin

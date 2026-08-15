@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Figtree:wght@400;500;600;700&display=swap');
+/* Fonts are linked from index.html so they do not sit behind a CSS @import chain. */
 
 :root {
   --ink: #0c1017;
@@ -146,4 +146,24 @@ p {
 .section__lede {
   color: var(--paper-dim);
   font-size: 1.05rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .btn:hover,
+  .projects__card:hover {
+    transform: none;
+  }
 }

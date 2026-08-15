@@ -1,0 +1,41 @@
+.about__grid {
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: 2rem;
+  align-items: center;
+}
+
+.about__portrait {
+  border-radius: 1.25rem;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.about__portrait img {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  filter: grayscale(0.15) contrast(1.05);
+}
+
+.about__copy h2 {
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  max-width: 16ch;
+}
+
+.about__copy p {
+  color: var(--paper-dim);
+}
+
+.about__note {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.95rem;
+}
+
+@media (max-width: 860px) {
+  .about__grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, m } from 'framer-motion'
 import { focuses, type FocusId } from '../content'
 
 type Props = {
@@ -28,7 +28,7 @@ export function FocusSwitcher({ active, onChange }: Props) {
         ))}
       </div>
       <AnimatePresence mode="wait">
-        <motion.div
+        <m.div
           key={current.id}
           className="focus__panel"
           role="tabpanel"
@@ -39,7 +39,7 @@ export function FocusSwitcher({ active, onChange }: Props) {
         >
           <h2>{current.headline}</h2>
           <p>{current.body}</p>
-        </motion.div>
+        </m.div>
       </AnimatePresence>
     </section>
   )

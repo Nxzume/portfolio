@@ -31,10 +31,17 @@ export function useSketchPlayer(sketches: Sketch[]) {
   const [duration, setDuration] = useState(0)
   const [mode, setMode] = useState<'file' | 'generative' | null>(null)
 
-  sketchesRef.current = sketches
-  activeIdRef.current = activeId
-  isPlayingRef.current = isPlaying
-  modeRef.current = mode
+  // Each setter keeps its ref in step, so callbacks can read current values
+  // without being recreated. Writing refs during render is not safe under
+  // concurrent rendering.
+  useEffect(() => {
+    sketchesRef.current = sketches
+  }, [sketches])
+
+  const setActive = (value: string | null) => {
+    activeIdRef.current = value
+    setActiveId(value)
+  }
 
   const setPlaying = (value: boolean) => {
     isPlayingRef.current = value
@@ -102,7 +109,7 @@ export function useSketchPlayer(sketches: Sketch[]) {
   const stop = () => {
     stopGenerative()
     stopAudioFile()
-    setActiveId(null)
+    setActive(null)
     setPlaying(false)
     setIntensity(0)
     setCurrentTime(0)
@@ -162,7 +169,6 @@ export function useSketchPlayer(sketches: Sketch[]) {
   }
 
   const playAudioFile = async (src: string) => {
-    await ensureCtx()
     const audio = new Audio(src)
     audioRef.current = audio
     audio.loop = false
@@ -188,7 +194,7 @@ export function useSketchPlayer(sketches: Sketch[]) {
     stopAudioFile()
     setCurrentTime(0)
     setDuration(0)
-    setActiveId(sketch.id)
+    setActive(sketch.id)
     setPlaying(false)
     setPlayMode(null)
 
@@ -226,7 +232,6 @@ export function useSketchPlayer(sketches: Sketch[]) {
     if (!sketch) return
 
     if (modeRef.current === 'file' && audioRef.current) {
-      await ensureCtx()
       await audioRef.current.play()
       setPlaying(true)
       setIntensity(0.55)

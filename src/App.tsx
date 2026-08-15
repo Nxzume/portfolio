@@ -1,25 +1,28 @@
-import { useEffect } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import { site } from './content'
+import { LazyMotion, MotionConfig, domAnimation } from 'framer-motion'
+import { Route, Routes } from 'react-router-dom'
 import { HomePage } from './pages/HomePage'
+import { NotFound } from './pages/NotFound'
 import { ProjectPage } from './pages/ProjectPage'
 import './App.css'
 
+/**
+ * The router lives in the entry points so the same tree can be prerendered
+ * (StaticRouter) and hydrated (BrowserRouter).
+ *
+ * `strict` on LazyMotion rejects the full `motion.*` components, which would
+ * pull the whole animation bundle back in.
+ */
 function App() {
-  useEffect(() => {
-    document.title = `${site.name} — Composer & Level Designer`
-    const meta = document.querySelector('meta[name="description"]')
-    if (meta) meta.setAttribute('content', `${site.name} — ${site.tagline}`)
-  }, [])
-
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/projects/:slug" element={<ProjectPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <LazyMotion features={domAnimation} strict>
+      <MotionConfig reducedMotion="user">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/projects/:slug" element={<ProjectPage />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </MotionConfig>
+    </LazyMotion>
   )
 }
 

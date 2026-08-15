@@ -4,10 +4,12 @@ import { Contact, Footer } from '../components/Contact'
 import { FocusSwitcher } from '../components/FocusSwitcher'
 import { Hero } from '../components/Hero'
 import { Nav } from '../components/Nav'
+import { PageHead } from '../components/PageHead'
 import { Projects } from '../components/Projects'
 import { ScoreDesk } from '../components/ScoreDesk'
 import { focuses, sketches, type FocusId } from '../content'
 import { useSketchPlayer } from '../hooks/useSketchPlayer'
+import { homeMeta } from '../lib/meta'
 
 export function HomePage() {
   const [focus, setFocus] = useState<FocusId>(focuses[0]?.id ?? 'compose')
@@ -15,8 +17,9 @@ export function HomePage() {
 
   return (
     <div className="app">
+      <PageHead meta={homeMeta()} />
       <Nav variant="home" />
-      <main>
+      <main id="main">
         <Hero intensity={player.intensity} />
         <FocusSwitcher active={focus} onChange={setFocus} />
         <ScoreDesk

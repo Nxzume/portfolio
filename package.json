@@ -5,8 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && npm run build:ssr && npm run prerender",
+    "build:ssr": "vite build --ssr src/entry-server.tsx --outDir dist-ssr",
+    "prerender": "node scripts/prerender.mjs",
     "lint": "oxlint",
+    "typecheck": "tsc -b --force",
+    "test": "vitest run",
     "preview": "vite preview",
     "cms": "npx --yes decap-server"
   },
@@ -17,12 +21,14 @@
     "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
-    "@types/node": "^24.13.3",
+    "@types/node": "^26.2.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",
+    "jsdom": "^29.1.1",
     "oxlint": "^1.75.0",
-    "typescript": "~6.0.2",
-    "vite": "^8.2.0"
+    "typescript": "^7.0.2",
+    "vite": "^8.2.0",
+    "vitest": "^4.1.10"
   }
 }

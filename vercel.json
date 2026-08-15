@@ -7,13 +7,43 @@
     { "source": "/admin/", "destination": "/admin/index.html" },
     {
       "source": "/((?!api/|admin/).*)",
-      "destination": "/index.html"
+      "destination": "/404.html"
     }
   ],
   "headers": [
     {
       "source": "/admin/cms-config.yml",
       "headers": [{ "key": "Content-Type", "value": "text/yaml; charset=utf-8" }]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+        }
+      ]
+    },
+    {
+      "source": "/images/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/audio/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
     }
   ]
 }

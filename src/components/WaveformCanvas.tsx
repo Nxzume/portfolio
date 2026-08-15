@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion'
 
 type Props = {
   intensity?: number
@@ -10,6 +11,7 @@ type Props = {
 export function WaveformCanvas({ intensity = 0.25, className, fill = false }: Props) {
   const ref = useRef<HTMLCanvasElement>(null)
   const intensityRef = useRef(intensity)
+  const reducedMotion = usePrefersReducedMotion()
 
   useEffect(() => {
     intensityRef.current = intensity
@@ -22,7 +24,35 @@ export function WaveformCanvas({ intensity = 0.25, className, fill = false }: Pr
     if (!ctx) return
 
     let raf = 0
+    let onScreen = true
+    let lastFrame = 0
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
+
+    const paint = (t: number) => {
+      const width = canvas.clientWidth
+      const height = canvas.clientHeight
+      ctx.clearRect(0, 0, width, height)
+
+      const amp = Math.min(height * 0.12, 16 + intensityRef.current * 36)
+      const bands = fill ? 5 : 3
+      for (let l = 0; l < bands; l++) {
+        ctx.beginPath()
+        const alpha = 0.32 - l * 0.045
+        ctx.strokeStyle =
+          l % 2 === 0 ? `rgba(212, 168, 75, ${alpha})` : `rgba(61, 155, 143, ${alpha * 0.95})`
+        ctx.lineWidth = l === 0 ? 2 : 1.2
+        const mid = height * (0.22 + (l / Math.max(bands - 1, 1)) * 0.56)
+        for (let x = 0; x <= width; x += 4) {
+          const n =
+            Math.sin(x * 0.012 + t * 0.0018 + l) * amp +
+            Math.sin(x * 0.035 - t * 0.0025 + l * 1.7) * (amp * 0.35)
+          const y = mid + n * (1 - l * 0.08)
+          if (x === 0) ctx.moveTo(x, y)
+          else ctx.lineTo(x, y)
+        }
+        ctx.stroke()
+      }
+    }
 
     const resize = () => {
       const parent = canvas.parentElement
@@ -49,47 +79,59 @@ export function WaveformCanvas({ intensity = 0.25, className, fill = false }: Pr
       canvas.width = Math.floor(cssWidth * dpr)
       canvas.height = Math.floor(cssHeight * dpr)
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      paint(lastFrame)
+    }
+
+    const tick = (t: number) => {
+      lastFrame = t
+      paint(t)
+      raf = requestAnimationFrame(tick)
+    }
+
+    const stop = () => {
+      if (!raf) return
+      cancelAnimationFrame(raf)
+      raf = 0
+    }
+
+    /** Animating off-screen or in a background tab is pure battery cost. */
+    const start = () => {
+      if (raf || reducedMotion || !onScreen || document.hidden) return
+      raf = requestAnimationFrame(tick)
     }
 
     resize()
-    const ro = new ResizeObserver(() => resize())
+
+    const ro = new ResizeObserver(resize)
     if (canvas.parentElement) ro.observe(canvas.parentElement)
     window.addEventListener('resize', resize)
 
-    const draw = (t: number) => {
-      const width = canvas.clientWidth
-      const height = canvas.clientHeight
-      ctx.clearRect(0, 0, width, height)
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        onScreen = entry.isIntersecting
+        if (onScreen) start()
+        else stop()
+      },
+      { threshold: 0 },
+    )
+    io.observe(canvas)
 
-      const amp = Math.min(height * 0.12, 16 + intensityRef.current * 36)
-      const bands = fill ? 5 : 3
-      for (let l = 0; l < bands; l++) {
-        ctx.beginPath()
-        const alpha = 0.32 - l * 0.045
-        ctx.strokeStyle =
-          l % 2 === 0 ? `rgba(212, 168, 75, ${alpha})` : `rgba(61, 155, 143, ${alpha * 0.95})`
-        ctx.lineWidth = l === 0 ? 2 : 1.2
-        const mid = height * (0.22 + (l / Math.max(bands - 1, 1)) * 0.56)
-        for (let x = 0; x <= width; x += 4) {
-          const n =
-            Math.sin(x * 0.012 + t * 0.0018 + l) * amp +
-            Math.sin(x * 0.035 - t * 0.0025 + l * 1.7) * (amp * 0.35)
-          const y = mid + n * (1 - l * 0.08)
-          if (x === 0) ctx.moveTo(x, y)
-          else ctx.lineTo(x, y)
-        }
-        ctx.stroke()
-      }
-      raf = requestAnimationFrame(draw)
+    const onVisibilityChange = () => {
+      if (document.hidden) stop()
+      else start()
     }
+    document.addEventListener('visibilitychange', onVisibilityChange)
 
-    raf = requestAnimationFrame(draw)
+    start()
+
     return () => {
-      cancelAnimationFrame(raf)
+      stop()
       window.removeEventListener('resize', resize)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
       ro.disconnect()
+      io.disconnect()
     }
-  }, [fill])
+  }, [fill, reducedMotion])
 
   return <canvas ref={ref} className={className} aria-hidden />
 }
