@@ -27,7 +27,8 @@ export type Project = {
 export type Sketch = {
   id: string
   title: string
-  mood: string
+  /** Optional line under the title. */
+  mood?: string
   /** Only used for generative placeholders when audio is empty. */
   bpm?: number
   /** Path under public/, e.g. "/audio/overture.mp3". Empty = generative placeholder. */

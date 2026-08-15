@@ -131,7 +131,7 @@ collections:
             fields:
               - { label: Short track name (no spaces), name: id, widget: string }
               - { label: Track title, name: title, widget: string }
-              - { label: Mood line, name: mood, widget: string, hint: "Short flavor text under the title" }
+              - { label: Short description, name: mood, widget: string, required: false, hint: "Optional line under the title (e.g. “Warm brass · slow pulse”)" }
               - label: Music file
                 name: audio
                 widget: file

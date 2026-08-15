@@ -202,8 +202,7 @@
                 'div',
                 null,
                 h('p', { className: 'pv-track__title' }, t.title || 'Track title'),
-                h('p', { className: 'pv-track__mood' }, t.mood || ''),
-                t.audio
+                t.mood ? h('p', { className: 'pv-track__mood' }, t.mood) : null,                t.audio
                   ? h('p', { className: 'pv-meta' }, 'Uploaded audio')
                   : h('p', { className: 'pv-meta' }, 'Placeholder tone'),
               ),
