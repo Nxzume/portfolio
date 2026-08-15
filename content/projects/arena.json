@@ -2,8 +2,12 @@
   "summary": "A succession of floors with their own mechanics. The player controls two characters with different abilities and must combine their skills to solve puzzles and defeat enemies.",
   "slug": "arena",
   "intro": [
-    "The Arena is a 2D top-down RPG still in development. The aim is a succession of floors, each with its own mechanics. The first floor is nearly done.",
-    "The player controls two characters with different abilities and must combine both skill sets to solve puzzles and defeat enemies."
+    {
+      "paragraph": "The Arena is a 2D top-down RPG still in development. The aim is a succession of floors, each with its own mechanics. The first floor is nearly done."
+    },
+    {
+      "paragraph": "The player controls two characters with different abilities and must combine both skill sets to solve puzzles and defeat enemies."
+    }
   ],
   "sections": [
     {
@@ -12,8 +16,12 @@
       "image": "/images/arena-gameplay.png",
       "imageAlt": "The Arena gameplay — dual characters in combat",
       "paragraphs": [
-        "Floors are designed as distinct mechanical chapters rather than copies of the same combat loop.",
-        "Spaces ask players to read the arena, switch characters, and sequence abilities — puzzles and fights share the same dual-character grammar."
+        {
+          "paragraph": "Floors are designed as distinct mechanical chapters rather than copies of the same combat loop."
+        },
+        {
+          "paragraph": "Spaces ask players to read the arena, switch characters, and sequence abilities — puzzles and fights share the same dual-character grammar."
+        }
       ]
     },
     {
@@ -22,15 +30,23 @@
       "image": "/images/arena-detail-1.png",
       "imageAlt": "The Arena scene detail",
       "paragraphs": [
-        "Two characters means two toolkits. Progress comes from combination, not from a single overpowered kit.",
-        "This write-up is carried forward from the original portfolio and will expand as the project continues."
+        {
+          "paragraph": "Two characters means two toolkits. Progress comes from combination, not from a single overpowered kit."
+        },
+        {
+          "paragraph": "This write-up is carried forward from the original portfolio and will expand as the project continues."
+        }
       ]
     }
   ],
   "order": 2,
   "gallery": [
-    "/images/arena-gameplay.png",
-    "/images/arena-detail-1.png"
+    {
+      "image": "/images/arena-gameplay.png"
+    },
+    {
+      "image": "/images/arena-detail-1.png"
+    }
   ],
   "subtitle": "2D top-down RPG · in development",
   "title": "The Arena",
@@ -43,8 +59,14 @@
   "id": "arena",
   "image": "/images/arena-gameplay.png",
   "highlights": [
-    "Dual-character puzzle combat",
-    "Floor-based mechanical variety",
-    "First floor nearly complete in the original build"
+    {
+      "item": "Dual-character puzzle combat"
+    },
+    {
+      "item": "Floor-based mechanical variety"
+    },
+    {
+      "item": "First floor nearly complete in the original build"
+    }
   ]
 }

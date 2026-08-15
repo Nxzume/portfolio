@@ -2,8 +2,12 @@
   "summary": "test",
   "slug": "test",
   "intro": [
-    "test 1",
-    "test 2"
+    {
+      "paragraph": "test 1"
+    },
+    {
+      "paragraph": "test 2"
+    }
   ],
   "sections": [
     {
@@ -15,7 +19,9 @@
   ],
   "order": 3,
   "gallery": [
-    "/images/hf_20260811_031129_e49a7056-7baa-43c7-8680-71758739818c.png"
+    {
+      "image": "/images/hf_20260811_031129_e49a7056-7baa-43c7-8680-71758739818c.png"
+    }
   ],
   "subtitle": "test",
   "title": "test",
@@ -32,7 +38,11 @@
   "id": "test",
   "image": "/images/hf_20260811_031129_e49a7056-7baa-43c7-8680-71758739818c.png",
   "highlights": [
-    "test",
-    "test 2"
+    {
+      "item": "test"
+    },
+    {
+      "item": "test 2"
+    }
   ]
 }

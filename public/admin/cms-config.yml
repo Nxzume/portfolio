@@ -80,10 +80,13 @@ collections:
           - { label: About headline, name: lead, widget: string, required: false }
           - label: Bio paragraphs
             name: body
+            label_singular: paragraph
             widget: list
             required: false
             default: []
-            field: { label: Paragraph, name: paragraph, widget: text }
+            summary: "{{fields.paragraph}}"
+            fields:
+              - { label: Paragraph, name: paragraph, widget: text }
           - { label: Small note under the bio (optional), name: note, widget: text, required: false }
 
       - name: contact
@@ -118,8 +121,9 @@ collections:
         fields:
           - label: Tabs
             name: tabs
+            label_singular: tab
             widget: list
-            summary: "{{label}}"
+            summary: "{{fields.label}}"
             fields:
               - { label: Tab button text, name: label, widget: string }
               - { label: Headline when selected, name: headline, widget: string, required: false }
@@ -132,8 +136,9 @@ collections:
         fields:
           - label: Tracks
             name: tracks
+            label_singular: track
             widget: list
-            summary: "{{title}}"
+            summary: "{{fields.title}}"
             fields:
               - { label: Track title, name: title, widget: string }
               - { label: Short description, name: mood, widget: string, required: false, hint: "Optional line under the title (e.g. “Warm brass · slow pulse”)" }
@@ -156,10 +161,13 @@ collections:
               - { label: Placeholder starting pitch (optional), name: baseFreq, widget: number, required: false, value_type: float, hint: "Only used when Music file is blank. Example: 110" }
               - label: Placeholder note steps (optional)
                 name: pattern
+                label_singular: step
                 widget: list
                 required: false
+                summary: "{{fields.step}}"
                 hint: "Only used when Music file is blank. Numbers like 0, 4, 7 make a simple melody."
-                field: { label: Note step, name: step, widget: number, value_type: int }
+                fields:
+                  - { label: Note step, name: step, widget: number, value_type: int }
 
   - name: game_projects
     label: Projects
@@ -185,51 +193,63 @@ collections:
       - { label: Homepage order, name: order, widget: number, value_type: int, default: 10, required: false, hint: "Lower numbers show first" }
       - label: Extra photos
         name: gallery
+        label_singular: photo
         widget: list
         required: false
         default: []
-        summary: "{{image}}"
-        field:
-          label: Photo
-          name: image
-          widget: image
-          choose_url: false
+        summary: "{{fields.image}}"
+        fields:
+          - label: Photo
+            name: image
+            widget: image
+            choose_url: false
       - label: Bullet highlights
         name: highlights
+        label_singular: highlight
         widget: list
         required: false
         default: []
-        field: { label: Bullet point, name: item, widget: string }
+        summary: "{{fields.item}}"
+        fields:
+          - { label: Bullet point, name: item, widget: string }
       - label: Buttons (Play, GitHub…)
         name: links
+        label_singular: button
         widget: list
         required: false
         default: []
-        summary: "{{label}}"
+        summary: "{{fields.label}}"
         fields:
           - { label: Button text, name: label, widget: string }
           - { label: Web address, name: href, widget: string, hint: "Full link like https://example.com — or #contact to jump down this page" }
       - label: Opening paragraphs
         name: intro
+        label_singular: paragraph
         widget: list
         required: false
         default: []
-        field: { label: Paragraph, name: paragraph, widget: text }
+        summary: "{{fields.paragraph}}"
+        fields:
+          - { label: Paragraph, name: paragraph, widget: text }
       - label: Page chapters
         name: sections
+        label_singular: chapter
         widget: list
         required: false
         default: []
-        summary: "{{title}}"
+        summary: "{{fields.title}}"
         fields:
           - { label: Chapter title, name: title, widget: string }
           - { label: Quote (optional), name: quote, widget: text, required: false }
           - label: Paragraphs
             name: paragraphs
+            label_singular: paragraph
             widget: list
             required: false
             default: []
-            field: { label: Paragraph, name: paragraph, widget: text }
+            summary: "{{fields.paragraph}}"
+            fields:
+              - { label: Paragraph, name: paragraph, widget: text }
           - label: Photo (optional)
             name: image
             widget: image
