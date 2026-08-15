@@ -219,9 +219,9 @@
     const cover = asset(getAsset, d.image)
     const highlights = asList(d.highlights).map(paragraphText).filter(Boolean)
     const intro = asList(d.intro).map(paragraphText).filter(Boolean)
-    const links = asList(d.links)
-    const sections = asList(d.sections)
-    const gallery = asList(d.gallery)
+    const links = asList(d.links).filter(Boolean)
+    const sections = asList(d.sections).filter((s) => s && typeof s === 'object')
+    const gallery = asList(d.gallery).filter((g) => g != null && g !== '')
 
     return h(
       'div',
@@ -248,7 +248,9 @@
           h(
             'div',
             { className: 'pv-cta-row', style: { marginTop: '0.85rem' } },
-            links.map((l, i) => h('span', { key: i, className: 'pv-btn pv-btn--ghost' }, l.label || 'Link')),
+            links.map((l, i) =>
+              h('span', { key: i, className: 'pv-btn pv-btn--ghost' }, (l && l.label) || 'Link'),
+            ),
           ),
         ),
       ),
@@ -265,14 +267,22 @@
             { className: 'pv-section' },
             h('p', { className: 'pv-eyebrow' }, 'Extra photos'),
             gallery.map((g, i) => {
-              const src = asset(getAsset, typeof g === 'string' ? g : g.image || g)
-              return src ? h('img', { key: i, src: src, alt: '', style: { marginBottom: '0.5rem', border: '1px solid var(--line)' } }) : null
+              const path = typeof g === 'string' ? g : g && g.image
+              const src = path ? asset(getAsset, path) : ''
+              return src
+                ? h('img', {
+                    key: i,
+                    src: src,
+                    alt: '',
+                    style: { marginBottom: '0.5rem', border: '1px solid var(--line)' },
+                  })
+                : null
             }),
           )
         : null,
       sections.map((s, i) => {
         const paras = asList(s.paragraphs).map(paragraphText).filter(Boolean)
-        const img = asset(getAsset, s.image)
+        const img = s.image ? asset(getAsset, s.image) : ''
         return h(
           'div',
           { key: i, className: 'pv-chapter' },
