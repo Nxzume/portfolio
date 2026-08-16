@@ -1,5 +1,5 @@
 # Edit your site at /admin/ (after GitHub login — see README).
-# Tip: use the form on the LEFT. The RIGHT side is a live look-ahead only.
+# Use the form to edit. Preview rendering is disabled for security.
 
 backend:
   name: github
@@ -11,8 +11,7 @@ backend:
 
 # Edits become drafts instead of going straight to the live site.
 # Save = draft (can make many changes). Publish = live.
-# There is no separate Vercel preview URL — use the form's right-hand look-ahead,
-# then Publish when ready.
+# There is no separate Vercel preview URL. Review the form, then Publish when ready.
 #
 # Media: upload photos/audio from the field on the entry you are editing (not the
 # Media tab). Those files ride along with the draft and only go live on Publish.
@@ -39,7 +38,7 @@ collections:
     label: Homepage & shared text
     description: "Pick a section below to edit. Upload photos or audio from the fields on that page — they stay in the draft until you Publish."
     editor:
-      preview: true
+      preview: false
       visualEditing: false
     files:
       - name: site
@@ -192,7 +191,7 @@ collections:
     format: json
     summary: "{{title}}"
     editor:
-      preview: true
+      preview: false
       visualEditing: false
     fields:
       - { label: Title, name: title, widget: string }

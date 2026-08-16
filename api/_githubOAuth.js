@@ -1,76 +1,24 @@
-/**
- * Shared GitHub OAuth helpers for Decap CMS.
- * Client ID is public; Client Secret must stay in env.
- */
-import { readFile } from 'node:fs/promises'
-import { readFileSync } from 'node:fs'
-import path from 'node:path'
-
-/** Only used when a request arrives without a Host header. */
-function configuredSiteUrl() {
-  for (const candidate of ['content/site.json', '../content/site.json']) {
-    try {
-      const raw = readFileSync(path.join(process.cwd(), candidate), 'utf8')
-      const url = String(JSON.parse(raw).url || '').trim().replace(/\/+$/, '')
-      if (url) return url
-    } catch {
-      /* try next */
-    }
-  }
-  return ''
-}
-
-const FALLBACK_ORIGIN = configuredSiteUrl()
-
-export function requestOrigin(req) {
-  const host = req.headers['x-forwarded-host'] || req.headers.host
-  if (!host) return FALLBACK_ORIGIN
-  const proto = req.headers['x-forwarded-proto'] || 'https'
-  return `${proto}://${host}`
-}
-
-export async function resolveClientId(req) {
-  const fromEnv = process.env.GITHUB_CLIENT_ID?.trim()
-  if (fromEnv) return { clientId: fromEnv, source: 'env' }
-
-  const fromDisk = await readClientIdFromDisk()
-  if (fromDisk) return { clientId: fromDisk, source: 'oauth-public.json' }
-
-  if (req) {
-    const fromFetch = await readClientIdFromPublicUrl(req)
-    if (fromFetch) return { clientId: fromFetch, source: 'oauth-public.json' }
-  }
-
-  return { clientId: '', source: 'none' }
-}
-
-async function readClientIdFromDisk() {
-  const candidates = [
-    path.join(process.cwd(), 'public/admin/oauth-public.json'),
-    path.join(process.cwd(), 'oauth-public.json'),
-  ]
-  for (const filePath of candidates) {
-    try {
-      const raw = await readFile(filePath, 'utf8')
-      const data = JSON.parse(raw)
-      const id = String(data.githubClientId || '').trim()
-      if (id) return id
-    } catch {
-      /* try next */
-    }
-  }
-  return ''
-}
-
-async function readClientIdFromPublicUrl(req) {
+/** Shared GitHub App configuration helpers for Decap CMS. */
+export function requestOrigin() {
   try {
-    const origin = requestOrigin(req)
-    if (!origin) return ''
-    const response = await fetch(`${origin}/admin/oauth-public.json`, { cache: 'no-store' })
-    if (!response.ok) return ''
-    const data = await response.json()
-    return String(data.githubClientId || '').trim()
+    const url = new URL(process.env.SITE_URL?.trim() || '')
+    const isOrigin =
+      url.protocol === 'https:' &&
+      !url.username &&
+      !url.password &&
+      url.pathname === '/' &&
+      !url.search &&
+      !url.hash
+    return isOrigin ? url.origin : ''
   } catch {
     return ''
+  }
+}
+
+export function resolveAppConfig() {
+  const clientId = process.env.GITHUB_APP_CLIENT_ID?.trim() || ''
+  return {
+    clientId,
+    clientIdSource: clientId ? 'env' : 'none',
   }
 }

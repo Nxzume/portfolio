@@ -3,6 +3,16 @@
   publish = "dist"
   functions = "netlify/functions"
 
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    Cache-Control = "no-store"
+    Content-Security-Policy = "default-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'self'; frame-src 'none'; object-src 'none'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.github.com; img-src 'self' data: blob: https://avatars.githubusercontent.com https://*.githubusercontent.com; media-src 'self' blob:; font-src 'self' data:; worker-src 'self' blob:"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Referrer-Policy = "no-referrer"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+
 # Same /api/* paths as Vercel, proxied to Netlify Functions.
 [[redirects]]
   from = "/api/auth"
@@ -12,6 +22,11 @@
 [[redirects]]
   from = "/api/callback"
   to = "/.netlify/functions/callback"
+  status = 200
+
+[[redirects]]
+  from = "/api/oauth-status"
+  to = "/.netlify/functions/oauth-status"
   status = 200
 
 [[redirects]]

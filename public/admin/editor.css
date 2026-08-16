@@ -6,6 +6,32 @@
  * so editors only add photos/audio via fields on a draft entry (those ride the
  * draft branch until Publish).
  */
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: #0c1017;
+  color: #e8e4dc;
+}
+
+.cms-boot,
+body > h1,
+body > p {
+  max-width: 36rem;
+  margin-inline: auto;
+  padding-inline: 2rem;
+  line-height: 1.5;
+}
+
+.cms-boot,
+body > h1 {
+  padding-top: 2rem;
+}
+
+.cms-boot code,
+body > p a {
+  color: #d4a84b;
+}
+
 header a[href$='/collections/media'],
 header a[href*='#/collections/media'],
 a[class*='AppHeaderNavLink'][href*='/media'],

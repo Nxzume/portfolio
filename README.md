@@ -22,6 +22,7 @@ Checks (the same ones CI runs on every pull request):
 npm run lint
 npm run typecheck
 npm test
+npm run test:security
 ```
 
 ## Edit content
@@ -47,16 +48,36 @@ Content lives in `content/`. Images in `public/images/`. Audio in `public/audio/
 
 Invite editors as GitHub collaborators with **write** access on this repo.
 
-## Online admin login (owner, one-time)
+## Online admin login (owner setup)
 
-1. Create a GitHub **OAuth App** with callback `https://YOUR-DOMAIN/api/callback`.
-2. Set `githubClientId` in `public/admin/oauth-public.json` (public) **or** `GITHUB_CLIENT_ID` in the host env.
-3. Set `GITHUB_CLIENT_SECRET` in the host env only.
-4. Redeploy after changing env vars.
+The admin uses a GitHub App user token restricted to this repository. Classic
+OAuth credentials are ignored because `public_repo` and `repo` scopes grant
+access to repositories beyond this portfolio.
 
-The login asks GitHub for the `public_repo` scope, which is enough while this repo is public. If it ever becomes private, set `GITHUB_OAUTH_SCOPE=repo` in the host env — note that `repo` grants access to every private repository the editor can see.
+1. Choose the deployed HTTPS origin, for example `https://portfolio-five-steel-37.vercel.app`. Use that same origin for the GitHub App, host environment, and callback.
+2. Under the `Nxzume` account, create a GitHub App with:
+	- Homepage URL: the deployed origin.
+	- Callback URL: `DEPLOYED_ORIGIN/api/callback`.
+	- Expiring user authorization tokens enabled.
+	- Webhooks disabled.
+	- Repository permissions: **Contents — Read and write**, **Pull requests — Read and write**, and **Commit statuses — Read-only**.
+	- No account or organization permissions.
+	- Installation limited to the app owner's account.
+3. Install the app and select only `Nxzume/portfolio`.
+4. Set `SITE_URL=DEPLOYED_ORIGIN`, `GITHUB_APP_CLIENT_ID`, and `GITHUB_APP_CLIENT_SECRET` in the host environment. `SITE_URL` must be a bare HTTPS origin and is never inferred from request headers. Keep the client secret in the host environment only.
+5. Redeploy and confirm `/api/oauth-status` reports `authType: github-app`, `hasSiteUrl: true`, and `configurationReady: true`.
 
-Check the wiring at `/api/oauth-status` (no secrets in the response).
+The login uses PKCE and binds the GitHub token exchange to immutable repository
+ID `1334579175`. Before returning an issued `ghu_` token to Decap, the callback
+enumerates the token's GitHub App installations and repositories. Login succeeds
+only when the complete accessible set is one selected installation owned by
+`Nxzume`, with exactly the documented app permissions, and one repository:
+`Nxzume/portfolio`. The repository identity is compiled into the authentication
+handler and cannot be overridden by deployment configuration. Expiring tokens
+require an editor to sign in again after expiration.
+
+Decap preview rendering remains disabled because Decap CMS 3.8.3 is affected by
+CVE-2025-57520. Editing and publishing continue through the form.
 
 ## How pages are built
 
