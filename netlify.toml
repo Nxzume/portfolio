@@ -7,7 +7,7 @@
   for = "/admin/*"
   [headers.values]
     Cache-Control = "no-store"
-    Content-Security-Policy = "default-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'self'; frame-src 'none'; object-src 'none'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.github.com; img-src 'self' data: blob: https://avatars.githubusercontent.com https://*.githubusercontent.com; media-src 'self' blob:; font-src 'self' data:; worker-src 'self' blob:"
+    Content-Security-Policy = "default-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'self'; frame-src 'none'; object-src 'none'; script-src 'self' https://unpkg.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.github.com; img-src 'self' data: blob: https://avatars.githubusercontent.com https://*.githubusercontent.com; media-src 'self' blob:; font-src 'self' data:; worker-src 'self' blob:"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
     Referrer-Policy = "no-referrer"
     X-Content-Type-Options = "nosniff"

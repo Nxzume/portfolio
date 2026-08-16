@@ -42,9 +42,12 @@ function checkAdminPolicy() {
 
   const adminHeaders = vercel.headers.find((route) => route.source === '/admin/(.*)')?.headers || []
   const vercelCsp = adminHeaders.find((header) => header.key === 'Content-Security-Policy')?.value
-  assert.match(vercelCsp || '', /script-src 'self' https:\/\/unpkg\.com/)
+  assert.match(vercelCsp || '', /script-src 'self' https:\/\/unpkg\.com 'unsafe-eval'/)
   assert.match(vercelCsp || '', /frame-src 'none'/)
-  assert.match(netlify, /Content-Security-Policy = ".*script-src 'self' https:\/\/unpkg\.com/)
+  assert.match(
+    netlify,
+    /Content-Security-Policy = ".*script-src 'self' https:\/\/unpkg\.com 'unsafe-eval'/,
+  )
   assert.match(netlify, /from = "\/api\/oauth-status"/)
   assert.equal(existsSync('netlify/functions/oauth-status.js'), true)
 }
