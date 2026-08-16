@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
+import { runInNewContext } from 'node:vm'
 import { completeAuth, hasOnlyTargetRepository, startAuth } from '../api/_oauthCore.js'
 import { oauthStatus } from '../api/oauth-status.js'
 
@@ -53,6 +54,58 @@ function authRequest(startResponse, authorizeUrl) {
     headers: { cookie: startResponse.headers['Set-Cookie'].split(';')[0] },
     url: `/api/callback?code=test-code&state=${authorizeUrl.searchParams.get('state')}`,
   }
+}
+
+function checkCallbackHandshake() {
+  const source = readFileSync('public/admin/oauth-callback.js', 'utf8')
+  const sent = []
+  const listeners = {}
+  let resultRemoved = false
+  const resultNode = {
+    textContent: JSON.stringify({
+      origin: SITE_ORIGIN,
+      message: 'authorization:github:success:{"token":"test","provider":"github"}',
+    }),
+    remove() {
+      resultRemoved = true
+    },
+  }
+
+  const window = {
+    opener: {
+      postMessage(message, targetOrigin) {
+        sent.push({ message, targetOrigin })
+      },
+    },
+    addEventListener(type, listener) {
+      listeners[type] = listener
+    },
+  }
+
+  runInNewContext(
+    source,
+    {
+      document: {
+        getElementById(id) {
+          return id === 'oauth-result' ? resultNode : null
+        },
+      },
+      JSON,
+      window,
+    },
+    { filename: 'public/admin/oauth-callback.js' },
+  )
+
+  assert.equal(resultRemoved, true)
+  assert.deepEqual(sent, [{ message: 'authorizing:github', targetOrigin: SITE_ORIGIN }])
+
+  listeners.message({ origin: 'https://attacker.example' })
+  assert.equal(sent.length, 1, 'foreign origins must not receive the GitHub token')
+
+  listeners.message({ origin: SITE_ORIGIN })
+  assert.equal(sent.length, 2)
+  assert.equal(sent[1].targetOrigin, SITE_ORIGIN)
+  assert.match(sent[1].message, /^authorization:github:success:/)
 }
 
 async function checkRepositoryScopedAuth() {
@@ -258,5 +311,6 @@ async function checkRepositoryScopedAuth() {
 }
 
 checkAdminPolicy()
+checkCallbackHandshake()
 await checkRepositoryScopedAuth()
 console.log('Security checks passed')
