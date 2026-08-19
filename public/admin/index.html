@@ -6,158 +6,20 @@
     <title>Edit this site</title>
     <base href="/admin/" />
     <link rel="stylesheet" href="/admin/editor.css" />
-    <style>
-      body {
-        margin: 0;
-        font-family: system-ui, sans-serif;
-        background: #0c1017;
-        color: #e8e4dc;
-      }
-      .cms-boot {
-        padding: 2rem;
-        max-width: 36rem;
-        line-height: 1.5;
-      }
-      .cms-boot code {
-        color: #d4a84b;
-      }
-    </style>
   </head>
   <body>
     <div class="cms-boot" id="cms-status">Loading editor…</div>
-    <script>
-      // Prevent Decap auto-load of config.yml (avoids duplicate collections with CMS.init).
-      window.CMS_MANUAL_INIT = true
-    </script>
-    <script src="https://unpkg.com/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
-    <script src="https://unpkg.com/decap-cms@3.8.3/dist/decap-cms.js"></script>
-    <script src="/admin/preview.js"></script>
-    <script>
-      ;(async function boot() {
-        if (window.__PORTFOLIO_CMS_BOOTED__) return
-        window.__PORTFOLIO_CMS_BOOTED__ = true
-
-        const status = document.getElementById('cms-status')
-        const origin = window.location.origin
-        const host = window.location.hostname
-        const isLocal = host === 'localhost' || host === '127.0.0.1'
-
-        try {
-          // Intentionally NOT named config.yml — avoids Decap auto-load + our init both registering collections.
-          const res = await fetch('/admin/cms-config.yml', { cache: 'no-store' })
-          if (!res.ok) throw new Error('Could not load /admin/cms-config.yml (' + res.status + ')')
-          const text = await res.text()
-          if (text.trim().startsWith('<!')) {
-            throw new Error('Got HTML instead of YAML for cms-config.yml.')
-          }
-
-          const config = window.jsyaml.load(text)
-          if (!config || !config.backend || !Array.isArray(config.collections)) {
-            throw new Error('Config YAML is missing backend/collections.')
-          }
-
-          // Host-agnostic: always use the site you opened /admin on.
-          config.backend = config.backend || {}
-          config.backend.name = config.backend.name || 'github'
-          config.backend.base_url = origin
-          config.backend.auth_endpoint = 'api/auth'
-
-          // Local editing: talk to `npm run cms` (decap-server on :8081). No OAuth.
-          if (isLocal) {
-            config.local_backend = true
-            config.backend = {
-              name: 'proxy',
-              proxy_url: 'http://' + (host === '127.0.0.1' ? '127.0.0.1' : 'localhost') + ':8081/api/v1',
-              branch: (config.backend && config.backend.branch) || 'master',
-            }
-          }
-
-          // Preview on the right is view-only. Edit with the form on the left.
-          // (Decap “visualEditing” click-to-edit is unreliable for this setup.)
-          // On narrow screens, hide the preview pane entirely so the form fits.
-          const isNarrow = window.matchMedia('(max-width: 900px)').matches
-          config.editor = Object.assign({ preview: !isNarrow, visualEditing: false }, config.editor || {})
-          config.editor.preview = !isNarrow
-          config.editor.visualEditing = false
-          ;(config.collections || []).forEach(function (collection) {
-            if (!collection || typeof collection !== 'object') return
-            collection.editor = Object.assign(
-              { preview: !isNarrow, visualEditing: false },
-              collection.editor || {},
-            )
-            collection.editor.preview = !isNarrow
-            collection.editor.visualEditing = false
-          })
-
-          // One global upload limit for every image/file field (edit upload-limit.json).
-          try {
-            const limitRes = await fetch('/admin/upload-limit.json', { cache: 'no-store' })
-            if (limitRes.ok) {
-              const limitData = await limitRes.json()
-              const maxBytes = Number(limitData.maxFileSizeBytes)
-              if (maxBytes > 0) {
-                applyUploadLimit(config, maxBytes)
-              }
-            }
-          } catch (_) {
-            /* keep Decap defaults if limit file is missing */
-          }
-
-          const seen = new Set()
-          config.collections = config.collections.filter(function (collection) {
-            if (!collection || !collection.name || seen.has(collection.name)) return false
-            seen.add(collection.name)
-            return true
-          })
-
-          status.remove()
-          window.CMS.init({ config: config })
-          // Media Library uploads/deletes always commit to master — hide the tab
-          // so photos/audio are only added via fields on a draft entry.
-          hideMediaNav()
-          new MutationObserver(hideMediaNav).observe(document.body, {
-            childList: true,
-            subtree: true,
-          })
-        } catch (err) {
-          const localHint = isLocal
-            ? '<p>For local editing run <code>npm run cms</code> in another terminal, then refresh.</p>'
-            : '<p>If this keeps happening, ask the site owner to finish GitHub login setup.</p>'
-          status.innerHTML =
-            '<h1>Editor failed to load</h1><p>' +
-            (err && err.message ? err.message : String(err)) +
-            '</p>' +
-            localHint
-        }
-      })()
-
-      function hideMediaNav() {
-        document.querySelectorAll('a').forEach(function (a) {
-          var text = (a.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase()
-          if (text !== 'media') return
-          var hide = a.closest('li') || a
-          hide.style.display = 'none'
-        })
-      }
-
-      function applyUploadLimit(node, maxBytes) {
-        if (!node || typeof node !== 'object') return
-        if (Array.isArray(node)) {
-          node.forEach(function (item) {
-            applyUploadLimit(item, maxBytes)
-          })
-          return
-        }
-        if (node.widget === 'image' || node.widget === 'file') {
-          node.media_library = node.media_library || {}
-          node.media_library.config = Object.assign({}, node.media_library.config, {
-            max_file_size: maxBytes,
-          })
-        }
-        Object.keys(node).forEach(function (key) {
-          applyUploadLimit(node[key], maxBytes)
-        })
-      }
-    </script>
+    <script src="/admin/manual-init.js"></script>
+    <script
+      src="https://unpkg.com/js-yaml@4.3.1/dist/js-yaml.min.js"
+      integrity="sha384-S9ICdlb+JXmKnf3zbM1G+PBNWbhB7ARTUpJyvroFrHHHR8JsKt4oO+kPyfzbT+TM"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://unpkg.com/decap-cms@3.8.3/dist/decap-cms.js"
+      integrity="sha384-zQmFlOQ/XomwFYm/TxeQ5kACvVVgZ/QRhxcvWOYmR2S1ruSgHYPc/XJYllIrLyIB"
+      crossorigin="anonymous"
+    ></script>
+    <script src="/admin/boot.js"></script>
   </body>
 </html>

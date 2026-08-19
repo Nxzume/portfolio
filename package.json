@@ -11,6 +11,7 @@
     "lint": "oxlint",
     "typecheck": "tsc -b --force",
     "test": "vitest run",
+    "test:security": "node scripts/security-check.mjs",
     "preview": "vite preview",
     "cms": "npx --yes decap-server"
   },
