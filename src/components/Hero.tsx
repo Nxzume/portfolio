@@ -1,5 +1,5 @@
 import { m } from 'framer-motion'
-import { hero, site } from '../content'
+import { usePortfolioContent } from '../content'
 import { WaveformCanvas } from './WaveformCanvas'
 
 type Props = {
@@ -7,6 +7,7 @@ type Props = {
 }
 
 export function Hero({ intensity }: Props) {
+  const { hero, site } = usePortfolioContent()
   return (
     <section className="hero" id="top">
       <div className="hero__media" aria-hidden>

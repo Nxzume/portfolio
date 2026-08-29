@@ -1,7 +1,7 @@
 import { AnimatePresence, m } from 'framer-motion'
 import { useEffect, useId, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { site } from '../content'
+import { usePortfolioContent } from '../content'
 import { useDialog } from '../hooks/useDialog'
 
 type Props = {
@@ -33,6 +33,7 @@ function useIsMobile() {
 }
 
 export function Nav({ variant = 'home' }: Props) {
+  const { site } = usePortfolioContent()
   const [scrolled, setScrolled] = useState(false)
   const [away, setAway] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)

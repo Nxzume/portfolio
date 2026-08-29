@@ -4,18 +4,19 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "prepare:cms-sdk": "node scripts/prepare-cms-sdk.mjs",
+    "predev": "npm run prepare:cms-sdk",
+    "prebuild": "npm run prepare:cms-sdk",
     "dev": "vite",
-    "build": "tsc -b && vite build && npm run build:ssr && npm run prerender",
-    "build:ssr": "vite build --ssr src/entry-server.tsx --outDir dist-ssr",
-    "prerender": "node scripts/prerender.mjs",
+    "build": "tsc -b && vite build",
     "lint": "oxlint",
     "typecheck": "tsc -b --force",
     "test": "vitest run",
-    "test:security": "node scripts/security-check.mjs",
-    "preview": "vite preview",
-    "cms": "npx --yes decap-server"
+    "preview": "vite preview"
   },
   "dependencies": {
+    "@cms/sdk": "file:.vendor/cms-sdk",
+    "dompurify": "^3.4.14",
     "framer-motion": "^13.1.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

@@ -1,56 +1,79 @@
 import { describe, expect, it } from 'vitest'
-import { projects, site } from '../content'
-import { absoluteUrl, homeMeta, metaForPath, notFoundMeta, renderMetaHtml } from './meta'
+import type { HeroContent, Project, SiteContent } from '../content/types'
+import { absoluteUrl, homeMeta, metaTagSpecs, notFoundMeta, projectMeta } from './meta'
+
+const site: SiteContent = {
+  name: 'Alexandre Example',
+  tagline: 'Composer and level designer based in Vancouver.',
+  email: 'hello@example.com',
+  url: 'https://portfolio.example.com',
+  links: { github: 'https://github.com/example', linkedin: '' },
+}
+
+const hero: HeroContent = {
+  headline: 'Music and worlds that pull you in',
+  image: '/images/portrait.png',
+  primaryCta: { label: 'See projects', href: '#projects' },
+  secondaryCta: { label: 'About', href: '#about' },
+}
+
+const project: Project = {
+  id: 'arena',
+  slug: 'arena',
+  title: 'Arena',
+  subtitle: 'Competitive map',
+  summary: 'A fast-paced arena for team fights.',
+  image: '/images/arena-gameplay.png',
+  intro: ['Built for clarity under pressure.'],
+  highlights: ['Readable sightlines'],
+  links: [{ label: 'Play', href: 'https://example.com' }],
+  sections: [],
+  gallery: [],
+}
 
 describe('absoluteUrl', () => {
   it('joins the configured site url with a path', () => {
-    expect(absoluteUrl('/projects/arena')).toBe(`${site.url}/projects/arena`)
+    expect(absoluteUrl(site, '/projects/arena')).toBe(`${site.url}/projects/arena`)
   })
 })
 
-describe('metaForPath', () => {
-  it('returns the home metadata for the root', () => {
-    expect(metaForPath('/')).toEqual(homeMeta())
+describe('homeMeta', () => {
+  it('uses the site name and hero image', () => {
+    const meta = homeMeta(site, hero)
+    expect(meta.title).toContain(site.name)
+    expect(meta.path).toBe('/')
+    expect(meta.image).toBe(hero.image)
   })
+})
 
-  it('matches a project page by slug, with or without a trailing slash', () => {
-    const project = projects[0]
-    expect(metaForPath(`/projects/${project.slug}`).title).toContain(project.title)
-    expect(metaForPath(`/projects/${project.slug}/`).title).toContain(project.title)
+describe('projectMeta', () => {
+  it('includes the project title and canonical path', () => {
+    const meta = projectMeta(site, hero, project)
+    expect(meta.title).toContain(project.title)
+    expect(meta.path).toBe(`/projects/${project.slug}`)
   })
+})
 
-  it('falls back to the not-found metadata for unknown paths', () => {
-    expect(metaForPath('/projects/does-not-exist')).toEqual(notFoundMeta())
-    expect(metaForPath('/nope')).toEqual(notFoundMeta())
-  })
-
+describe('notFoundMeta', () => {
   it('marks the not-found page as noindex', () => {
-    expect(notFoundMeta().noindex).toBe(true)
+    expect(notFoundMeta(site).noindex).toBe(true)
   })
 })
 
-describe('renderMetaHtml', () => {
-  it('emits a title plus canonical and Open Graph tags', () => {
-    const html = renderMetaHtml(homeMeta())
-    expect(html).toContain('<title>')
-    expect(html).toContain('rel="canonical"')
-    expect(html).toContain('property="og:title"')
-    expect(html).toContain('name="twitter:card"')
-  })
-
-  it('escapes quotes and angle brackets so content cannot break out of an attribute', () => {
-    const html = renderMetaHtml({
-      title: 'A "quoted" <tag>',
-      description: 'Ampersand & "quotes"',
-      path: '/',
-    })
-    expect(html).toContain('&quot;quoted&quot;')
-    expect(html).not.toMatch(/content="[^"]*"[a-z]/)
-    expect(html).toContain('Ampersand &amp;')
+describe('metaTagSpecs', () => {
+  it('emits canonical and Open Graph tags', () => {
+    const specs = metaTagSpecs(site, homeMeta(site, hero))
+    expect(specs.some((s) => s.selector.includes('canonical'))).toBe(true)
+    expect(specs.some((s) => s.attrs.property === 'og:title')).toBe(true)
+    expect(specs.some((s) => s.attrs.name === 'twitter:card')).toBe(true)
   })
 
   it('only advertises a robots tag when the page should be hidden', () => {
-    expect(renderMetaHtml(homeMeta())).not.toContain('name="robots"')
-    expect(renderMetaHtml(notFoundMeta())).toContain('content="noindex"')
+    expect(metaTagSpecs(site, homeMeta(site, hero)).some((s) => s.attrs.name === 'robots')).toBe(
+      false,
+    )
+    expect(metaTagSpecs(site, notFoundMeta(site)).some((s) => s.attrs.content === 'noindex')).toBe(
+      true,
+    )
   })
 })

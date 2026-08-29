@@ -4,7 +4,7 @@ import { Footer } from '../components/Contact'
 import { Nav } from '../components/Nav'
 import { PageHead } from '../components/PageHead'
 import { ProjectCard } from '../components/ProjectCard'
-import { getProject, projects } from '../content'
+import { usePortfolioContent } from '../content'
 import { useDialog } from '../hooks/useDialog'
 import { projectMeta } from '../lib/meta'
 import { NotFound } from './NotFound'
@@ -25,6 +25,7 @@ function normalizeHref(href: string) {
 type Lightbox = { src: string; alt: string }
 
 export function ProjectPage() {
+  const { getProject, hero, projects, site } = usePortfolioContent()
   const { slug } = useParams()
   const project = slug ? getProject(slug) : undefined
   const [lightbox, setLightbox] = useState<Lightbox | null>(null)
@@ -39,7 +40,7 @@ export function ProjectPage() {
 
   return (
     <div className="app">
-      <PageHead meta={projectMeta(project)} />
+      <PageHead meta={projectMeta(site, hero, project)} />
       <Nav variant="page" />
       <main id="main" className="project-page">
         <header className="project-page__hero">

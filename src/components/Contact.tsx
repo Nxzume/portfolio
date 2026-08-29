@@ -1,10 +1,12 @@
-import { contact, site } from '../content'
+import { usePortfolioContent } from '../content'
 
 function firstName(fullName: string) {
   return fullName.trim().split(/\s+/)[0] || fullName
 }
 
-function contactActions() {
+export function Contact() {
+  const { contact, site } = usePortfolioContent()
+
   const actions: { label: string; href: string; style: 'primary' | 'ghost' }[] = [
     {
       label: contact.emailButtonText || `Email ${firstName(site.name)}`,
@@ -19,11 +21,6 @@ function contactActions() {
   if (site.links.linkedin) {
     actions.push({ label: 'LinkedIn', href: site.links.linkedin, style: 'ghost' })
   }
-  return actions
-}
-
-export function Contact() {
-  const actions = contactActions()
 
   return (
     <section className="section contact" id="contact">
@@ -50,9 +47,10 @@ export function Contact() {
 }
 
 export function Footer() {
+  const { site } = usePortfolioContent()
+
   return (
     <footer className="footer">
-      {/* Baked at build time, refreshed on hydration — they differ over New Year. */}
       <p suppressHydrationWarning>
         © {new Date().getFullYear()} {site.name}
       </p>

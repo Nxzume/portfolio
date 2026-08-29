@@ -1,7 +1,8 @@
 import { m } from 'framer-motion'
-import { about, site } from '../content'
+import { usePortfolioContent } from '../content'
 
 export function About() {
+  const { about, site } = usePortfolioContent()
   return (
     <section className="section about" id="about">
       <div className="about__grid">

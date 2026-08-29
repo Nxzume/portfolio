@@ -3,13 +3,15 @@ import { Footer } from '../components/Contact'
 import { Nav } from '../components/Nav'
 import { PageHead } from '../components/PageHead'
 import { ProjectCard } from '../components/ProjectCard'
-import { projects } from '../content'
+import { usePortfolioContent } from '../content'
 import { notFoundMeta } from '../lib/meta'
 
 export function NotFound() {
+  const { projects, site } = usePortfolioContent()
+
   return (
     <div className="app">
-      <PageHead meta={notFoundMeta()} />
+      <PageHead meta={notFoundMeta(site)} />
       <Nav variant="page" />
       <main id="main" className="notfound">
         <p className="eyebrow">404</p>

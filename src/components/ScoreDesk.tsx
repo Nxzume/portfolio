@@ -1,6 +1,6 @@
 import { m } from 'framer-motion'
 import type { CSSProperties, MouseEvent } from 'react'
-import { score, sketches } from '../content'
+import { usePortfolioContent } from '../content'
 import { formatClock } from '../hooks/useSketchPlayer'
 import { WaveformCanvas } from './WaveformCanvas'
 
@@ -42,6 +42,7 @@ export function ScoreDesk({
   onPlayTrack,
   onSeek,
 }: Props) {
+  const { score, sketches } = usePortfolioContent()
   const progress = canSeek && duration > 0 ? Math.min(1, currentTime / duration) : 0
 
   return (

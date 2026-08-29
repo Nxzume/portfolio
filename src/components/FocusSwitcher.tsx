@@ -1,5 +1,5 @@
 import { AnimatePresence, m } from 'framer-motion'
-import { focuses, type FocusId } from '../content'
+import { usePortfolioContent, type FocusId } from '../content'
 
 type Props = {
   active: FocusId
@@ -7,6 +7,7 @@ type Props = {
 }
 
 export function FocusSwitcher({ active, onChange }: Props) {
+  const { focuses } = usePortfolioContent()
   const current = focuses.find((f) => f.id === active) ?? focuses[0]
 
   if (!current) return null
