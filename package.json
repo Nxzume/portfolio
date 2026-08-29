@@ -5,15 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && npm run build:ssr && npm run prerender",
+    "build": "node scripts/fetch-cms-content.mjs && tsc -b && vite build && npm run build:ssr && npm run prerender",
     "build:ssr": "vite build --ssr src/entry-server.tsx --outDir dist-ssr",
     "prerender": "node scripts/prerender.mjs",
     "lint": "oxlint",
     "typecheck": "tsc -b --force",
     "test": "vitest run",
-    "test:security": "node scripts/security-check.mjs",
-    "preview": "vite preview",
-    "cms": "npx --yes decap-server"
+    "preview": "vite preview"
   },
   "dependencies": {
     "framer-motion": "^13.1.0",
