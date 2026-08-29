@@ -12,7 +12,8 @@
     "lint": "oxlint",
     "typecheck": "tsc -b --force",
     "test": "vitest run",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "seed:cms": "node scripts/seed-cms.mjs"
   },
   "dependencies": {
     "@cms/sdk": "file:.vendor/cms-sdk",
