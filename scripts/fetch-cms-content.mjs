@@ -1,23 +1,22 @@
 /**
- * Runs before `vite build`. Fetches this site's published content from its
- * client-site-cms instance and writes it into content/*.json — the exact
- * same files the app already statically imports (src/content/index.ts is
- * unchanged). This replaces the old flow where Decap CMS committed these
- * files to GitHub directly.
+ * Runs before `vite build`. Fetches this site's published content from
+ * Directus and writes it into content/*.json — the exact same files
+ * src/content/index.ts already statically imports, so no component needs
+ * to change.
  *
  * Required env (set as Coolify build-time vars on the -web app):
- *   CMS_API_URL     e.g. https://pilot-admin.vancouverly.ca
- *   CMS_PUBLIC_KEY  same value as PUBLIC_API_KEY on that CMS instance
+ *   DIRECTUS_URL   e.g. https://portfolio-cms.vancouverly.ca
  *
- * Content only updates here — i.e. on the next build. After an editor hits
- * Publish in the CMS admin, redeploy this app (or wire a Coolify webhook) to
- * pick it up.
+ * portfolio_globals and projects both have public read access, so no API
+ * key is needed for this fetch.
+ *
+ * Content only updates on the next build — after publishing in Directus,
+ * redeploy this app (or wire a Coolify webhook) to pick it up.
  */
 import { mkdir, writeFile, rm } from 'node:fs/promises'
 import path from 'node:path'
 
-const CMS_API_URL = (process.env.CMS_API_URL || '').replace(/\/+$/, '')
-const CMS_PUBLIC_KEY = process.env.CMS_PUBLIC_KEY || ''
+const DIRECTUS_URL = (process.env.DIRECTUS_URL || '').replace(/\/+$/, '')
 const CONTENT_DIR = path.resolve('content')
 
 const GLOBAL_FILES = {
@@ -28,15 +27,13 @@ const GLOBAL_FILES = {
   focuses: 'focuses.json',
   sketches: 'sketches.json',
   score: 'score.json',
-  projectsSection: 'projects-section.json',
+  projects_section: 'projects-section.json',
 }
 
 async function fetchJson(pathname) {
-  const res = await fetch(`${CMS_API_URL}${pathname}`, {
-    headers: { 'X-Api-Key': CMS_PUBLIC_KEY },
-  })
+  const res = await fetch(`${DIRECTUS_URL}${pathname}`, { headers: { Accept: 'application/json' } })
   if (!res.ok) {
-    throw new Error(`CMS request failed: ${pathname} -> ${res.status} ${res.statusText}`)
+    throw new Error(`Directus request failed: ${pathname} -> ${res.status} ${res.statusText}`)
   }
   return res.json()
 }
@@ -46,24 +43,22 @@ async function writeJsonFile(file, data) {
 }
 
 async function main() {
-  if (!CMS_API_URL || !CMS_PUBLIC_KEY) {
-    console.log(
-      'CMS_API_URL / CMS_PUBLIC_KEY not set — skipping CMS fetch, using content/*.json already on disk.'
-    )
+  if (!DIRECTUS_URL) {
+    console.log('DIRECTUS_URL not set — skipping CMS fetch, using content/*.json already on disk.')
     return
   }
 
-  console.log(`Fetching content from ${CMS_API_URL} ...`)
+  console.log(`Fetching content from ${DIRECTUS_URL} ...`)
 
-  const globalsRes = await fetchJson('/api/public/globals')
+  const globalsRes = await fetchJson('/items/portfolio_globals')
   const globals = globalsRes.data || {}
 
   for (const [key, file] of Object.entries(GLOBAL_FILES)) {
     await writeJsonFile(file, globals[key] ?? {})
   }
 
-  const projectsRes = await fetchJson('/api/public/collections/projects')
-  const items = projectsRes.items || []
+  const projectsRes = await fetchJson('/items/projects?sort=sort&limit=-1')
+  const items = projectsRes.data || []
 
   const projectsDir = path.join(CONTENT_DIR, 'projects')
   await rm(projectsDir, { recursive: true, force: true })
@@ -71,12 +66,8 @@ async function main() {
 
   for (const item of items) {
     const slug = item.slug
-    const payload = item.data?.payload ?? {}
-    await writeFile(
-      path.join(projectsDir, `${slug}.json`),
-      `${JSON.stringify(payload, null, 2)}\n`,
-      'utf8'
-    )
+    const payload = item.payload ?? {}
+    await writeFile(path.join(projectsDir, `${slug}.json`), `${JSON.stringify(payload, null, 2)}\n`, 'utf8')
   }
 
   console.log(`Wrote ${Object.keys(GLOBAL_FILES).length} global file(s) and ${items.length} project(s).`)
