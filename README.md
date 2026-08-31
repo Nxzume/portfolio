@@ -54,16 +54,21 @@ the file to `public/`, then reference its path from the Directus admin).
 
 ## Directus schema
 
-Two collections, set up via the scripts in `cms/`:
+Structured collections with normal form fields (not raw JSON):
 
-- `portfolio_globals` (singleton) — one JSON field per content file (site,
-  hero, about, contact, focuses, sketches, score, projects_section). Kept
-  as opaque JSON since `src/content/normalize.ts` already validates each
-  section's shape on the site side.
-- `projects` — one row per project (`slug` + a `payload` JSON field
-  matching `content/projects/*.json`).
+| Collection | What you edit |
+|------------|----------------|
+| `site_settings` | Name, tagline, email, site URL, GitHub, LinkedIn |
+| `hero` | Headline, image path, CTA buttons |
+| `about` | Portrait, lead, body paragraphs (list), note |
+| `contact` | Section copy + email button label |
+| `score_section` | Music section header |
+| `projects_section` | Projects section header |
+| `focus_tabs` | Compose / Levels / Azure tabs |
+| `sketch_tracks` | Audio tracks on the score desk |
+| `projects` | Each project — title, summary, gallery, sections, etc. |
 
-### Setting up a fresh Directus instance
+Bootstrap or upgrade the CMS:
 
 ```powershell
 $env:DIRECTUS_URL = "https://alexandreguichet-cms.vancouverly.ca"
@@ -71,10 +76,8 @@ $env:DIRECTUS_TOKEN = "your_admin_token"
 npm run cms:migrate
 ```
 
-Or use the Coolify migrate app — see [`docs/setup-guide.md`](docs/setup-guide.md).
-
-Legacy one-off scripts (`apply-schema.mjs`, `seed-content.mjs`, `grant-public-read.mjs`)
-still work but `cms:migrate` is idempotent and preferred.
+Migrate is idempotent — safe to re-run. It converts legacy JSON-blob fields into
+structured forms automatically.
 
 ## How pages are built
 

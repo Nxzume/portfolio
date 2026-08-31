@@ -33,7 +33,7 @@ Four Coolify resources in one project:
 
 - **Site** — static React app with prerendered HTML, nginx. Content is pulled
   from Directus **during the Docker build**, then baked into static files.
-- **Directus** — headless CMS. Edit copy and project JSON here.
+- **Directus** — headless CMS. Edit copy in normal form fields (not raw JSON).
 - **Migrate app** — runs `cms/migrate.mjs` on your server when deployed.
   Creates schema, seeds initial content, fixes permissions. Not a public site.
 
@@ -129,7 +129,7 @@ npm run cms:migrate
 Open in a private/incognito window:
 
 ```
-https://alexandreguichet-cms.vancouverly.ca/items/portfolio_globals
+https://alexandreguichet-cms.vancouverly.ca/items/site_settings
 ```
 
 You should see JSON. If 403, re-run migrate.
@@ -392,5 +392,5 @@ $env:DIRECTUS_TOKEN = "your_token"
 npm run cms:migrate
 
 # Test public API (should return JSON)
-curl https://alexandreguichet-cms.vancouverly.ca/items/portfolio_globals
+curl https://alexandreguichet-cms.vancouverly.ca/items/site_settings
 ```

@@ -82,7 +82,7 @@ export async function verifyToken() {
   console.log(`Directus URL: ${DIRECTUS_URL}`)
 
   try {
-    await publicGet('/items/portfolio_globals')
+    await publicGet('/items/site_settings')
     console.log('Directus reachable (public API)')
   } catch (err) {
     if (err.isNetworkError) {
