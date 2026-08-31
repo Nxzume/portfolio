@@ -7,7 +7,7 @@ migrations, and editing content day-to-day.
 
 | Resource | URL |
 |----------|-----|
-| Site | `https://portfolio.vancouverly.ca` |
+| Site | `https://alexandreguichet.vancouverly.ca` |
 | CMS | `https://portfolio-cms.vancouverly.ca` |
 
 Adjust to your actual domain. The `*.vancouverly.ca` wildcard tunnel route
@@ -64,7 +64,7 @@ Left sidebar → **Environment Variables** → **+ Add** for each:
 | Key | Value |
 |-----|-------|
 | `ADMIN_EMAIL` | your email |
-| `CORS_ORIGIN` | `https://portfolio.vancouverly.ca` |
+| `CORS_ORIGIN` | `https://alexandreguichet.vancouverly.ca` |
 
 Your admin password is auto-generated — find it as **`SERVICE_PASSWORD_ADMIN`**
 on the same page. Copy and save it.
@@ -150,10 +150,10 @@ You should see JSON. If 403, re-run migrate.
 4. **Domains:**
 
    ```
-   https://portfolio.vancouverly.ca
+   https://alexandreguichet.vancouverly.ca
    ```
 
-   If Coolify requires a port: `https://portfolio.vancouverly.ca:80`
+   If Coolify requires a port: `https://alexandreguichet.vancouverly.ca:80`
 
 5. **Environment Variables** → **+ Add**:
 
@@ -174,7 +174,7 @@ Wrote 8 global file(s) and 2 project(s).
 If you see `DIRECTUS_URL not set — skipping CMS fetch`, the build-time env var
 is missing — add it and redeploy.
 
-Site is live at `https://portfolio.vancouverly.ca`.
+Site is live at `https://alexandreguichet.vancouverly.ca`.
 
 ---
 

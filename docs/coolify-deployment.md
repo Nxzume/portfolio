@@ -5,10 +5,10 @@
 Quick checklist:
 
 1. **Directus** — one-click service, domain `https://portfolio-cms.vancouverly.ca:8055`,
-   `PUBLIC_URL=https://portfolio-cms.vancouverly.ca`, `CORS_ORIGIN=https://portfolio.vancouverly.ca`
+   `PUBLIC_URL=https://portfolio-cms.vancouverly.ca`, `CORS_ORIGIN=https://alexandreguichet.vancouverly.ca`
 2. **Migrate app** — same repo, branch `master`, Base Directory `/`, Dockerfile `/cms/Dockerfile`,
    env `DIRECTUS_URL` + `DIRECTUS_TOKEN`, no public domain
-3. **Site app** — Dockerfile build pack, port 80, build-time `DIRECTUS_URL=https://portfolio-cms.vancouverly.ca`
+3. **Site app** — Dockerfile build pack, port 80, domain `https://alexandreguichet.vancouverly.ca`, build-time `DIRECTUS_URL=https://portfolio-cms.vancouverly.ca`
 
 After editing content in Directus, **redeploy the site app** (content is fetched at build time).
 
