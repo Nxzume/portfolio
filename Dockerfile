@@ -1,5 +1,5 @@
 # Build-time env (set in Coolify, marked "Available at Buildtime"):
-#   DIRECTUS_URL   e.g. https://cms.alexandreguichet.vancouverly.ca
+#   DIRECTUS_URL   e.g. https://alexandreguichet-cms.vancouverly.ca
 
 FROM node:20-alpine AS build
 WORKDIR /app

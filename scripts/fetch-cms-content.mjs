@@ -5,7 +5,7 @@
  * to change.
  *
  * Required env (set as Coolify build-time vars on the -web app):
- *   DIRECTUS_URL   e.g. https://cms.alexandreguichet.vancouverly.ca
+ *   DIRECTUS_URL   e.g. https://alexandreguichet-cms.vancouverly.ca
  *
  * portfolio_globals and projects both have public read access, so no API
  * key is needed for this fetch.
