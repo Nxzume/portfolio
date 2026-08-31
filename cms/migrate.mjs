@@ -6,7 +6,7 @@
  * - Grants public read where missing
  *
  * Usage:
- *   DIRECTUS_URL=https://portfolio-cms.vancouverly.ca DIRECTUS_TOKEN=... node cms/migrate.mjs
+ *   DIRECTUS_URL=https://cms.alexandreguichet.vancouverly.ca DIRECTUS_TOKEN=... node cms/migrate.mjs
  */
 import { readFile, readdir } from 'node:fs/promises'
 import path from 'node:path'

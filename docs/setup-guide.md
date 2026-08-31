@@ -8,7 +8,7 @@ migrations, and editing content day-to-day.
 | Resource | URL |
 |----------|-----|
 | Site | `https://alexandreguichet.vancouverly.ca` |
-| CMS | `https://portfolio-cms.vancouverly.ca` |
+| CMS | `https://cms.alexandreguichet.vancouverly.ca` |
 
 Adjust to your actual domain. The `*.vancouverly.ca` wildcard tunnel route
 covers subdomains without extra DNS work.
@@ -75,11 +75,11 @@ on the same page. Copy and save it.
 2. **Domains** field:
 
    ```
-   https://portfolio-cms.vancouverly.ca:8055
+   https://cms.alexandreguichet.vancouverly.ca:8055
    ```
 
    The `:8055` is required — it tells Coolify which container port to proxy to.
-   Visitors still use `https://portfolio-cms.vancouverly.ca` (no port in the browser).
+   Visitors still use `https://cms.alexandreguichet.vancouverly.ca` (no port in the browser).
 
 3. **Save**
 
@@ -89,14 +89,14 @@ on the same page. Copy and save it.
 
 | Key | Value |
 |-----|-------|
-| `PUBLIC_URL` | `https://portfolio-cms.vancouverly.ca` |
+| `PUBLIC_URL` | `https://cms.alexandreguichet.vancouverly.ca` |
 
 No `:8055` here.
 
 ### Deploy and log in
 
 1. Top right → **Deploy**
-2. Open `https://portfolio-cms.vancouverly.ca`
+2. Open `https://cms.alexandreguichet.vancouverly.ca`
 3. Log in with `ADMIN_EMAIL` + `SERVICE_PASSWORD_ADMIN`
 
 ---
@@ -116,7 +116,7 @@ Set up Part 4 below first, then **Deploy** the migrate app. Check **Logs**
 git clone https://github.com/Nxzume/portfolio.git
 cd portfolio
 
-$env:DIRECTUS_URL = "https://portfolio-cms.vancouverly.ca"
+$env:DIRECTUS_URL = "https://cms.alexandreguichet.vancouverly.ca"
 $env:DIRECTUS_TOKEN = "your_admin_token"
 npm run cms:migrate
 ```
@@ -129,7 +129,7 @@ npm run cms:migrate
 Open in a private/incognito window:
 
 ```
-https://portfolio-cms.vancouverly.ca/items/portfolio_globals
+https://cms.alexandreguichet.vancouverly.ca/items/portfolio_globals
 ```
 
 You should see JSON. If 403, re-run migrate.
@@ -159,7 +159,7 @@ You should see JSON. If 403, re-run migrate.
 
    | Key | Value | Build-time? |
    |-----|-------|-------------|
-   | `DIRECTUS_URL` | `https://portfolio-cms.vancouverly.ca` | **Yes** — check "Available at Buildtime" |
+   | `DIRECTUS_URL` | `https://cms.alexandreguichet.vancouverly.ca` | **Yes** — check "Available at Buildtime" |
 
 6. **Deploy**
 
@@ -202,7 +202,7 @@ Runs CMS schema updates on **your server** — avoids Cloudflare blocking GitHub
 
 | Key | Value | Build-time? |
 |-----|-------|-------------|
-| `DIRECTUS_URL` | `https://portfolio-cms.vancouverly.ca` | No (runtime only) |
+| `DIRECTUS_URL` | `https://cms.alexandreguichet.vancouverly.ca` | No (runtime only) |
 | `DIRECTUS_TOKEN` | admin static token | No |
 
 ### Deploy and read logs
@@ -275,7 +275,7 @@ rebuild the site — only the site app does.
 
 ## Editing content in Directus
 
-Log in at `https://portfolio-cms.vancouverly.ca`.
+Log in at `https://cms.alexandreguichet.vancouverly.ca`.
 
 ### portfolio_globals (singleton)
 
@@ -339,7 +339,7 @@ Build with live CMS content:
 
 ```powershell
 # PowerShell
-$env:DIRECTUS_URL = "https://portfolio-cms.vancouverly.ca"
+$env:DIRECTUS_URL = "https://cms.alexandreguichet.vancouverly.ca"
 npm run build
 ```
 
@@ -348,7 +348,7 @@ Without `DIRECTUS_URL`, build uses whatever is already in `content/`.
 Run migrate against your CMS:
 
 ```powershell
-$env:DIRECTUS_URL = "https://portfolio-cms.vancouverly.ca"
+$env:DIRECTUS_URL = "https://cms.alexandreguichet.vancouverly.ca"
 $env:DIRECTUS_TOKEN = "your_token"
 npm run cms:migrate
 ```
@@ -366,7 +366,7 @@ npm run cms:migrate
 | Migrate logs empty | Open **Logs** sidebar after app shows **Running**, not deployment log |
 | Migrate 403 on token | Regenerate admin token, update `DIRECTUS_TOKEN` on **migrate app** |
 | GitHub webhook does nothing | Check `COOLIFY_MIGRATE_WEBHOOK` is a **repository** secret |
-| Directus domain won't save | Include port: `https://portfolio-cms.vancouverly.ca:8055` |
+| Directus domain won't save | Include port: `https://cms.alexandreguichet.vancouverly.ca:8055` |
 | Migrate can't find content | Migrate app Base Directory must be `/` (repo root), not `/cms` |
 
 ---
@@ -387,10 +387,10 @@ npm run cms:migrate
 
 ```powershell
 # Migrate from laptop (PowerShell)
-$env:DIRECTUS_URL = "https://portfolio-cms.vancouverly.ca"
+$env:DIRECTUS_URL = "https://cms.alexandreguichet.vancouverly.ca"
 $env:DIRECTUS_TOKEN = "your_token"
 npm run cms:migrate
 
 # Test public API (should return JSON)
-curl https://portfolio-cms.vancouverly.ca/items/portfolio_globals
+curl https://cms.alexandreguichet.vancouverly.ca/items/portfolio_globals
 ```

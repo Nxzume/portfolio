@@ -89,7 +89,7 @@ export async function verifyToken() {
       throw new Error(
         `Cannot reach Directus at ${DIRECTUS_URL}.\n` +
           `Network error: ${err.message}\n\n` +
-          'Check DIRECTUS_URL is exactly https://portfolio-cms.vancouverly.ca (no :8055, no quotes).',
+          'Check DIRECTUS_URL is exactly https://cms.alexandreguichet.vancouverly.ca (no :8055, no quotes).',
       )
     }
     if (err.status === 403) {

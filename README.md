@@ -41,7 +41,7 @@ paint, good SEO).
 Required env for the build (Coolify build-time var):
 
 ```env
-DIRECTUS_URL=https://portfolio-cms.vancouverly.ca
+DIRECTUS_URL=https://cms.alexandreguichet.vancouverly.ca
 ```
 
 If unset, the fetch step is skipped and the build uses whatever is already
@@ -66,7 +66,7 @@ Two collections, set up via the scripts in `cms/`:
 ### Setting up a fresh Directus instance
 
 ```powershell
-$env:DIRECTUS_URL = "https://portfolio-cms.vancouverly.ca"
+$env:DIRECTUS_URL = "https://cms.alexandreguichet.vancouverly.ca"
 $env:DIRECTUS_TOKEN = "your_admin_token"
 npm run cms:migrate
 ```
