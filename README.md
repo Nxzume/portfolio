@@ -53,7 +53,8 @@ the file to `public/`, then reference its path from the Directus admin).
 
 ## Directus schema
 
-Two collections, set up via the scripts in `cms/`:
+Two collections, managed by the single idempotent `cms/migrate.mjs` script
+(safe to re-run anytime, including on every deploy):
 
 - `portfolio_globals` (singleton) — one JSON field per content file (site,
   hero, about, contact, focuses, sketches, score, projects_section). Kept
@@ -65,15 +66,16 @@ Two collections, set up via the scripts in `cms/`:
 ### Setting up a fresh Directus instance
 
 ```bash
-cd cms
-DIRECTUS_URL=https://portfolio-cms.vancouverly.ca DIRECTUS_TOKEN=<admin token> node apply-schema.mjs
-DIRECTUS_URL=https://portfolio-cms.vancouverly.ca DIRECTUS_TOKEN=<admin token> node seed-content.mjs
-DIRECTUS_URL=https://portfolio-cms.vancouverly.ca DIRECTUS_TOKEN=<admin token> node grant-public-read.mjs
+DIRECTUS_URL=https://portfolio-cms.vancouverly.ca DIRECTUS_TOKEN=<admin token> npm run cms:migrate
 ```
 
-`seed-content.mjs` migrates whatever's currently in `content/` into Directus
-— run it once against a fresh instance, then edit from the Directus admin
-going forward, not by committing to this repo.
+Creates the schema if missing, migrates whatever's currently in `content/`
+into Directus if the `projects` collection is empty, and grants public read.
+Run it once against a fresh instance — after that, edit from the Directus
+admin, not by committing to this repo. See
+[`docs/coolify-deployment.md`](docs/coolify-deployment.md) for the
+"migrate app" pattern that runs this automatically from your own server on
+every push to `cms/`.
 
 ## How pages are built
 

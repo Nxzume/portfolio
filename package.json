@@ -11,7 +11,8 @@
     "lint": "oxlint",
     "typecheck": "tsc -b --force",
     "test": "vitest run",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cms:migrate": "node cms/migrate.mjs"
   },
   "dependencies": {
     "framer-motion": "^13.1.0",
