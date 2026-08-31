@@ -30,12 +30,13 @@ committed here. `npm run build` runs `scripts/fetch-cms-content.mjs` first,
 which pulls the current published content and writes it into those files.
 
 **To edit content:** log into the Directus admin for this site (see
-`docs/coolify-deployment.md` for the URL/setup), edit `portfolio_globals`
-or `projects`, save. Then trigger a rebuild of this app in Coolify — the
-next build pulls the new content. Content is fetched at **build time**, not
-at page load, so publishing a change doesn't show up until the next build —
-that trade-off buys prerendered static HTML for every page (real `<title>`,
-description, and Open Graph tags per project, fast first paint, good SEO).
+[`docs/setup-guide.md`](docs/setup-guide.md) for full Coolify setup), edit
+`portfolio_globals` or `projects`, save. Then trigger a rebuild of this app
+in Coolify — the next build pulls the new content. Content is fetched at
+**build time**, not at page load, so publishing a change doesn't show up until
+the next build — that trade-off buys prerendered static HTML for every page
+(real `<title>`, description, and Open Graph tags per project, fast first
+paint, good SEO).
 
 Required env for the build (Coolify build-time var):
 
@@ -64,16 +65,16 @@ Two collections, set up via the scripts in `cms/`:
 
 ### Setting up a fresh Directus instance
 
-```bash
-cd cms
-DIRECTUS_URL=https://portfolio-cms.vancouverly.ca DIRECTUS_TOKEN=<admin token> node apply-schema.mjs
-DIRECTUS_URL=https://portfolio-cms.vancouverly.ca DIRECTUS_TOKEN=<admin token> node seed-content.mjs
-DIRECTUS_URL=https://portfolio-cms.vancouverly.ca DIRECTUS_TOKEN=<admin token> node grant-public-read.mjs
+```powershell
+$env:DIRECTUS_URL = "https://portfolio-cms.vancouverly.ca"
+$env:DIRECTUS_TOKEN = "your_admin_token"
+npm run cms:migrate
 ```
 
-`seed-content.mjs` migrates whatever's currently in `content/` into Directus
-— run it once against a fresh instance, then edit from the Directus admin
-going forward, not by committing to this repo.
+Or use the Coolify migrate app — see [`docs/setup-guide.md`](docs/setup-guide.md).
+
+Legacy one-off scripts (`apply-schema.mjs`, `seed-content.mjs`, `grant-public-read.mjs`)
+still work but `cms:migrate` is idempotent and preferred.
 
 ## How pages are built
 
