@@ -44,7 +44,11 @@ export async function itemsAccessible(name) {
     await api(`/items/${name}`, 'GET')
     return true
   } catch (err) {
-    if (err.status === 404) return false
+    // Directus returns 403 (not 404) for a nonexistent collection on the
+    // /items endpoint — deliberately ambiguous ("doesn't exist or no
+    // permission") to avoid leaking which collections exist. Treat both as
+    // "not accessible" rather than re-throwing.
+    if (err.status === 404 || err.status === 403) return false
     throw err
   }
 }
@@ -82,14 +86,20 @@ export async function verifyToken() {
   console.log(`Directus URL: ${DIRECTUS_URL}`)
 
   try {
-    await publicGet('/items/site_settings')
+    // /server/info is public and exists on every Directus install regardless
+    // of migration state — unlike /items/<collection>, which 403s on a
+    // never-migrated instance (site_settings doesn't exist yet) and would be
+    // misdiagnosed as Cloudflare/WAF blocking rather than "this collection
+    // doesn't exist yet". Confirmed by testing against a genuinely fresh
+    // instance: the old check failed every first-time bootstrap.
+    await publicGet('/server/info')
     console.log('Directus reachable (public API)')
   } catch (err) {
     if (err.isNetworkError) {
       throw new Error(
         `Cannot reach Directus at ${DIRECTUS_URL}.\n` +
           `Network error: ${err.message}\n\n` +
-          'Check DIRECTUS_URL is exactly https://alexandreguichet-cms.vancouverly.ca (no :8055, no quotes).',
+          'Check DIRECTUS_URL is exactly right (no trailing port unless needed, no quotes).',
       )
     }
     if (err.status === 403) {
@@ -159,8 +169,11 @@ export async function removeField(collection, field) {
     await api(`/fields/${collection}/${field}`, 'DELETE')
     console.log(`Removed field: ${collection}.${field}`)
   } catch (err) {
-    if (err.status === 404) {
-      console.log(`Field already removed: ${collection}.${field}`)
+    // Same 403-vs-404 ambiguity as itemsAccessible — a field on a
+    // nonexistent collection (e.g. cleaning up legacy portfolio_globals
+    // fields on an instance that never had that collection) can 403.
+    if (err.status === 404 || err.status === 403) {
+      console.log(`Field already removed (or collection doesn't exist): ${collection}.${field}`)
       return
     }
     throw err
