@@ -229,6 +229,13 @@ Coolify → migrate app → **Deploy**. Safe to run repeatedly — migrate is id
 
 ## Part 5 — Auto-run migrate on push (optional)
 
+**Note:** GitHub blocked this repo's setup from pushing `.github/workflows/*`
+files directly (a token scope restriction) — the workflow file below needs
+to be added once via GitHub's web UI (**Add file → Create new file**,
+path `.github/workflows/coolify-migrate-deploy.yml`) before this section
+applies. Until then, re-run migrate manually (**Deploy** on the migrate
+app) after `cms/` changes.
+
 GitHub does **not** call Directus directly. It only pings Coolify to redeploy the migrate app.
 
 ### Step 1 — Copy webhook from Coolify
@@ -248,6 +255,39 @@ GitHub does **not** call Directus directly. It only pings Coolify to redeploy th
    | `COOLIFY_MIGRATE_WEBHOOK` | paste webhook URL from Coolify |
 
 You do **not** need `DIRECTUS_URL` or `DIRECTUS_TOKEN` in GitHub — those live on the migrate app in Coolify.
+
+### Step 3 — Add the workflow file
+
+`.github/workflows/coolify-migrate-deploy.yml`:
+
+```yaml
+name: Trigger Coolify CMS migrate
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - 'cms/**'
+      - '.github/workflows/coolify-migrate-deploy.yml'
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Coolify migrate deploy
+        env:
+          COOLIFY_MIGRATE_WEBHOOK: ${{ secrets.COOLIFY_MIGRATE_WEBHOOK }}
+        run: |
+          if [ -z "$COOLIFY_MIGRATE_WEBHOOK" ]; then
+            echo "COOLIFY_MIGRATE_WEBHOOK secret not set — skip (run migrate manually in Coolify)"
+            exit 0
+          fi
+          curl -fsSL -X GET "$COOLIFY_MIGRATE_WEBHOOK"
+          echo "Coolify migrate deploy triggered"
+```
+
+Note this repo's default branch is `master`, not `main` — the trigger above matches that.
 
 ### What triggers it
 
@@ -362,11 +402,16 @@ npm run cms:migrate
 
 | Path | Purpose |
 |------|---------|
-| `cms/migrate.mjs` | Idempotent CMS migration (schema, seed, permissions) |
+| `cms/migrate.mjs` | Idempotent CMS migration (schema, seed/migrate content, permissions) |
+| `cms/lib/schema.mjs` | Structured Directus collection/field definitions |
+| `cms/lib/content-map.mjs` | Bidirectional mapping between Directus fields and `content/*.json` |
+| `cms/lib/directus.mjs` | Shared Directus API helper (error diagnostics, permission grants) |
 | `cms/Dockerfile` | Migrate app container |
-| `Dockerfile` | Site app (Vite build → nginx) |
-| `scripts/fetch-cms-content.mjs` | Pulls content from Directus at build time |
-| `.github/workflows/coolify-migrate-deploy.yml` | Triggers Coolify migrate via webhook |
+| `Dockerfile` | Site app (client build → SSR build → prerender → nginx) |
+| `scripts/fetch-cms-content.mjs` | Pulls content from Directus at build time, writes `content/*.json` |
+| `scripts/prerender.mjs` | Renders every page to static HTML at build time |
+| `src/entry-server.tsx` | SSR entry point used by the prerender step |
+| `.github/workflows/coolify-migrate-deploy.yml` | Triggers Coolify migrate via webhook — needs manual one-time add, see Part 5 |
 
 ---
 

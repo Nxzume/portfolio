@@ -1,5 +1,13 @@
 # Agent handoff — structured Directus CMS for `Nxzume/portfolio`
 
+> **Done.** This was completed and merged to `master` — Directus now uses
+> structured form fields (`site_settings`, `hero`, `about`, `projects`,
+> etc. — see `cms/lib/schema.mjs`) instead of JSON blobs. Kept here as a
+> historical record of the original spec, not a pending task list. The
+> `docs/structured-cms-bundle/` folder this doc references has been
+> removed — its contents are the real `cms/`, `scripts/`, and
+> `src/content/content-map.test.mjs` files now, already in place.
+
 Give this document to an agent with **write access** to `https://github.com/Nxzume/portfolio`.
 
 **Do not** put these files in `vancouverly-site`. Everything below belongs in the **portfolio** repo only.
