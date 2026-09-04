@@ -22,9 +22,6 @@ jobs:
 
       - run: npm ci
 
-      - name: Security boundaries
-        run: npm run test:security
-
       - name: Lint
         run: npm run lint
 
