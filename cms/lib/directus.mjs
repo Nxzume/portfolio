@@ -224,17 +224,42 @@ async function getRelation(collection, field) {
   return existing.data?.[0] ?? null
 }
 
+async function deleteRelation(collection, field) {
+  try {
+    await api(`/relations/${encodeURIComponent(collection)}/${encodeURIComponent(field)}`, 'DELETE')
+    console.log(`Removed relation: ${collection}.${field}`)
+  } catch (err) {
+    if (err.status === 404) return
+    // Some Directus versions only support delete by id
+    const existing = await getRelation(collection, field)
+    if (existing?.id != null) {
+      await api(`/relations/${existing.id}`, 'DELETE')
+      console.log(`Removed relation id=${existing.id}: ${collection}.${field}`)
+      return
+    }
+    throw err
+  }
+}
+
 /**
  * Ensure a M2O relation from collection.field → directus_files.
  * Without this relation, Directus hides Upload / Import URL and only shows
  * "Choose File from Library" (createAllowed stays false).
+ *
+ * Also repairs wrong targets (we've seen fields linked to directus_users).
  */
 export async function ensureFileRelation(collection, field) {
   const existing = await getRelation(collection, field)
-  if (existing) {
-    const related = existing.related_collection || 'directus_files'
-    console.log(`Relation exists: ${collection}.${field} → ${related}`)
+  if (existing?.related_collection === 'directus_files') {
+    console.log(`Relation exists: ${collection}.${field} → directus_files`)
     return existing
+  }
+
+  if (existing && existing.related_collection && existing.related_collection !== 'directus_files') {
+    console.log(
+      `Wrong relation ${collection}.${field} → ${existing.related_collection}; recreating → directus_files`,
+    )
+    await deleteRelation(collection, field)
   }
 
   try {
@@ -247,35 +272,104 @@ export async function ensureFileRelation(collection, field) {
         sort_field: null,
         one_deselect_action: 'nullify',
       },
-      // Keep this minimal — extra FK keys on relation schema caused 400s that
-      // older migrate code incorrectly treated as "already exists".
       schema: { on_delete: 'SET NULL' },
     })
   } catch (err) {
     if (isDuplicateError(err)) {
-      // Directus may report "already has an associated relationship" even when
-      // GET /relations?filter=… returns nothing (common for file fields).
       const again = await getRelation(collection, field)
-      if (again) {
-        console.log(`Relation exists: ${collection}.${field} → ${again.related_collection || 'directus_files'}`)
+      if (again?.related_collection === 'directus_files') {
+        console.log(`Relation exists: ${collection}.${field} → directus_files`)
         return again
       }
-      console.log(`Relation already associated in Directus: ${collection}.${field} → directus_files`)
-      return { collection, field, related_collection: 'directus_files' }
+      if (again && again.related_collection !== 'directus_files') {
+        await deleteRelation(collection, field)
+        await api('/relations', 'POST', {
+          collection,
+          field,
+          related_collection: 'directus_files',
+          meta: {
+            one_field: null,
+            sort_field: null,
+            one_deselect_action: 'nullify',
+          },
+          schema: { on_delete: 'SET NULL' },
+        })
+      } else if (!again) {
+        // Directus says associated but GET is empty — trust Directus only if
+        // we can't inspect; still try one more GET after a no-op.
+        console.log(`Relation already associated in Directus: ${collection}.${field}`)
+        return { collection, field, related_collection: 'directus_files' }
+      }
+    } else {
+      throw new Error(
+        `Failed creating relation ${collection}.${field} → directus_files: ${err.message}`,
+      )
     }
-    throw new Error(
-      `Failed creating relation ${collection}.${field} → directus_files: ${err.message}`,
-    )
   }
 
   const verified = await getRelation(collection, field)
-  if (!verified) {
-    // POST succeeded but lookup still empty — treat as OK for file fields.
+  if (verified?.related_collection === 'directus_files') {
     console.log(`Created relation: ${collection}.${field} → directus_files`)
-    return { collection, field, related_collection: 'directus_files' }
+    return verified
   }
-  console.log(`Created relation: ${collection}.${field} → ${verified.related_collection || 'directus_files'}`)
-  return verified
+  if (verified && verified.related_collection !== 'directus_files') {
+    throw new Error(
+      `Relation ${collection}.${field} still points at ${verified.related_collection}, expected directus_files`,
+    )
+  }
+  console.log(`Created relation: ${collection}.${field} → directus_files`)
+  return { collection, field, related_collection: 'directus_files' }
+}
+
+/**
+ * projects.gallery was partially migrated (meta left behind, DB column gone),
+ * which makes GET /items/projects 500. Drop the broken field so we can recreate
+ * it as a proper Files (M2M) alias.
+ */
+export async function repairBrokenProjectsGalleryField() {
+  const field = await getField('projects', 'gallery')
+  if (!field) {
+    console.log('projects.gallery absent — will create Files field later')
+    return
+  }
+
+  // Alias Files fields are fine once junction exists; anything else (json /
+  // orphaned column meta) breaks item reads.
+  if (field.type === 'alias' && (field.meta?.special || []).includes?.('files')) {
+    // Probe whether items can be read; if gallery meta is corrupt, drop it.
+    try {
+      await api('/items/projects?limit=1&fields=id', 'GET')
+      console.log('projects.gallery Files alias present')
+      return
+    } catch (err) {
+      console.warn(`projects.gallery alias looks broken (${err.message}); recreating`)
+    }
+  } else {
+    console.log(`Removing broken projects.gallery (type=${field.type})…`)
+  }
+
+  await removeField('projects', 'gallery')
+}
+
+/** Same for projects.sections JSON leftovers before O2M is ready. */
+export async function repairBrokenProjectsSectionsField() {
+  const field = await getField('projects', 'sections')
+  if (!field) return
+  if (field.type === 'alias' && (field.meta?.special || []).includes?.('o2m')) {
+    console.log('projects.sections O2M alias present')
+    return
+  }
+  // Keep JSON until migrateProjectSectionsToO2M copies values — but if the
+  // column is already gone, drop meta so item reads work.
+  try {
+    await api('/items/projects?limit=1&fields=id,sections', 'GET')
+  } catch (err) {
+    const msg = String(err.message || '')
+    if (msg.includes('sections') && msg.includes('does not exist')) {
+      console.log('Removing broken projects.sections field meta…')
+      await removeField('projects', 'sections')
+    }
+  }
 }
 
 /**
@@ -659,21 +753,25 @@ export async function grantPublicRead(collection) {
 /** Fail migrate loudly if Upload would still be hidden in the Data Studio. */
 export async function assertFileRelations(fields) {
   const missing = []
+  const wrong = []
   for (const { collection, field } of fields) {
-    const rel = await getRelation(collection, field)
-    if (rel) continue
-
-    // Last resort: ask Directus to create; "already associated" counts as present.
     try {
-      await ensureFileRelation(collection, field)
-    } catch {
-      missing.push(`${collection}.${field}`)
+      const rel = await ensureFileRelation(collection, field)
+      if (rel?.related_collection && rel.related_collection !== 'directus_files') {
+        wrong.push(`${collection}.${field}→${rel.related_collection}`)
+      }
+    } catch (err) {
+      missing.push(`${collection}.${field} (${err.message})`)
     }
   }
-  if (missing.length) {
+  if (missing.length || wrong.length) {
     throw new Error(
-      `File relations missing (Upload will stay hidden): ${missing.join(', ')}. ` +
-        'Fix DIRECTUS_TOKEN permissions or re-run after schema errors are resolved.',
+      [
+        missing.length ? `File relations missing: ${missing.join(', ')}` : null,
+        wrong.length ? `File relations wrong target: ${wrong.join(', ')}` : null,
+      ]
+        .filter(Boolean)
+        .join(' | '),
     )
   }
   console.log(`Verified ${fields.length} file relation(s) → directus_files`)
