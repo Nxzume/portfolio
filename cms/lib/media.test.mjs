@@ -44,12 +44,16 @@ describe('media helpers', () => {
       slug: 'demo',
       title: 'Demo',
       image: id,
-      gallery: [{ image: id }, { image: { id, filename_download: 'g.png' } }],
-      sections: [{ id: 's', title: 'S', image: id, paragraphs: [] }],
+      gallery: [
+        { directus_files_id: id },
+        { directus_files_id: { id, filename_download: 'g.png' } },
+      ],
+      sections: [{ section_id: 's', title: 'S', image: id, paragraphs: [] }],
     })
     expect(project.image).toBe(id)
     expect(project.gallery[0].image).toBe(id)
     expect(project.gallery[1].image).toBe(id)
+    expect(project.sections[0].id).toBe('s')
     expect(project.sections[0].image).toBe(id)
   })
 

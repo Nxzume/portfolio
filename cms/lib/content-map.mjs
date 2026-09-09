@@ -179,19 +179,37 @@ export function projectToDirectus(project, sort) {
     subtitle: project.subtitle ?? '',
     summary: project.summary ?? '',
     image: project.image ?? '',
-    gallery: project.gallery ?? [],
     highlights: project.highlights ?? [],
     links: project.links ?? [],
     intro: project.intro ?? [],
-    sections: (project.sections ?? []).map((section) => ({
-      id: section.id ?? '',
-      title: section.title ?? '',
-      image: section.image ?? '',
-      image_alt: section.imageAlt ?? '',
-      quote: section.quote ?? '',
-      paragraphs: section.paragraphs ?? [],
-    })),
   }
+}
+
+/** Normalize gallery from JSON list or Files M2M junction rows. */
+export function galleryFromDirectus(gallery) {
+  return (gallery ?? []).map((item) => {
+    if (typeof item === 'string') return { image: mediaValue(item) }
+    // Files M2M junction: { directus_files_id: uuid | { id } }
+    if (item?.directus_files_id != null) {
+      return { image: mediaValue(item.directus_files_id) }
+    }
+    return { image: mediaValue(item?.image) }
+  }).filter((g) => g.image)
+}
+
+/** Normalize sections from JSON list or project_sections O2M rows. */
+export function sectionsFromDirectus(sections) {
+  return (sections ?? []).map((section) => {
+    const image = mediaValue(section.image)
+    return {
+      id: section.section_id ?? section.id ?? '',
+      title: section.title ?? '',
+      ...(image ? { image } : {}),
+      ...(section.image_alt ? { imageAlt: section.image_alt } : {}),
+      ...(section.quote ? { quote: section.quote } : {}),
+      paragraphs: section.paragraphs ?? [],
+    }
+  })
 }
 
 export function projectFromDirectus(row) {
@@ -204,24 +222,11 @@ export function projectFromDirectus(row) {
     subtitle: row.subtitle ?? '',
     summary: row.summary ?? '',
     image: mediaValue(row.image),
-    gallery: (row.gallery ?? []).map((item) => {
-      if (typeof item === 'string') return { image: mediaValue(item) }
-      return { image: mediaValue(item?.image) }
-    }),
+    gallery: galleryFromDirectus(row.gallery),
     highlights: row.highlights ?? [],
     links: row.links ?? [],
     intro: row.intro ?? [],
-    sections: (row.sections ?? []).map((section) => {
-      const image = mediaValue(section.image)
-      return {
-        id: section.id ?? '',
-        title: section.title ?? '',
-        ...(image ? { image } : {}),
-        ...(section.image_alt ? { imageAlt: section.image_alt } : {}),
-        ...(section.quote ? { quote: section.quote } : {}),
-        paragraphs: section.paragraphs ?? [],
-      }
-    }),
+    sections: sectionsFromDirectus(row.sections),
   }
 }
 

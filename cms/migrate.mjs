@@ -3,10 +3,14 @@
  */
 import {
   api,
+  assertFileRelations,
   ensureCollection,
   ensureField,
   ensureFileField,
   ensureFileRelation,
+  ensureProjectGalleryFilesField,
+  ensureProjectSectionsCollection,
+  getField,
   grantPublicRead,
   removeField,
   repairFileField,
@@ -14,7 +18,7 @@ import {
   verifyToken,
 } from './lib/directus.mjs'
 import { COLLECTIONS, FILE_RELATION_FIELDS, PUBLIC_COLLECTIONS } from './lib/schema.mjs'
-import { isMediaPath, isUuid, rewriteMediaFieldsToFileIds } from './lib/media.mjs'
+import { isMediaPath, isUuid, rewriteMediaFieldsToFileIds, ensurePathUploaded } from './lib/media.mjs'
 import {
   aboutToDirectus,
   contactToDirectus,
@@ -49,14 +53,13 @@ async function ensureSchema() {
         await ensureFileField(def.collection, fieldDefItem)
       } else {
         await ensureField(def.collection, fieldDefItem)
-        // Refresh list field meta so nested image pickers become file-image
         if (fieldDefItem.type === 'json' && fieldDefItem.meta?.interface === 'list') {
           try {
             await api(`/fields/${def.collection}/${fieldDefItem.field}`, 'PATCH', {
               meta: fieldDefItem.meta,
             })
           } catch {
-            // non-fatal — field may already match
+            // non-fatal
           }
         }
       }
@@ -101,9 +104,7 @@ async function migrateStringFileFields() {
 
     for (const [id, mediaPath] of pathById) {
       try {
-        const fileId = await rewriteMediaFieldsToFileIds({ [field]: mediaPath }, uploadCache).then(
-          (o) => o[field],
-        )
+        const fileId = await ensurePathUploaded(mediaPath, uploadCache)
         if (isSingleton) {
           await api(`/items/${collection}`, 'PATCH', { [field]: fileId })
         } else {
@@ -117,66 +118,17 @@ async function migrateStringFileFields() {
   }
 }
 
-/** Rewrite path strings inside JSON galleries / sections / audio leftovers to file UUIDs. */
-async function migrateEmbeddedMediaPaths() {
-  console.log('Converting embedded media paths (gallery, sections, …) to file UUIDs…')
-
-  // Projects: image (if still path somehow), gallery, sections
-  const projects = (await api('/items/projects?limit=-1', 'GET')).data ?? []
-  for (const row of projects) {
-    const rewritten = await rewriteMediaFieldsToFileIds(
-      {
-        image: row.image,
-        gallery: row.gallery,
-        sections: row.sections,
-      },
-      uploadCache,
-    )
-    const patch = {}
-    if (rewritten.image !== row.image && (isUuid(rewritten.image) || rewritten.image === '' || rewritten.image == null)) {
-      patch.image = rewritten.image || null
-    }
-    if (JSON.stringify(rewritten.gallery) !== JSON.stringify(row.gallery)) patch.gallery = rewritten.gallery
-    if (JSON.stringify(rewritten.sections) !== JSON.stringify(row.sections)) patch.sections = rewritten.sections
-    if (Object.keys(patch).length) {
-      await api(`/items/projects/${row.id}`, 'PATCH', patch)
-      console.log(`  Updated project ${row.slug || row.id} media refs`)
-    }
+async function repairAllFileFields() {
+  console.log('Repairing Directus file field configuration…')
+  for (const { collection, field } of FILE_RELATION_FIELDS) {
+    const def = fieldDef(collection, field)
+    if (!def) continue
+    await repairFileField(collection, def)
   }
-
-  // Hero / about singletons (in case string→uuid conversion already done but values still paths)
-  for (const { collection, fields } of [
-    { collection: 'hero', fields: ['image'] },
-    { collection: 'about', fields: ['portrait'] },
-  ]) {
-    try {
-      const row = (await api(`/items/${collection}`, 'GET')).data
-      if (!row) continue
-      const slice = Object.fromEntries(fields.map((f) => [f, row[f]]))
-      const rewritten = await rewriteMediaFieldsToFileIds(slice, uploadCache)
-      const patch = {}
-      for (const f of fields) {
-        if (typeof row[f] === 'string' && isMediaPath(row[f]) && rewritten[f] !== row[f]) {
-          patch[f] = rewritten[f]
-        }
-      }
-      if (Object.keys(patch).length) {
-        await api(`/items/${collection}`, 'PATCH', patch)
-        console.log(`  Updated ${collection} media refs`)
-      }
-    } catch (err) {
-      console.warn(`  Warning updating ${collection}: ${err.message}`)
-    }
-  }
-
-  const tracks = (await api('/items/sketch_tracks?limit=-1', 'GET')).data ?? []
-  for (const row of tracks) {
-    if (typeof row.audio === 'string' && isMediaPath(row.audio)) {
-      const rewritten = await rewriteMediaFieldsToFileIds({ audio: row.audio }, uploadCache)
-      await api(`/items/sketch_tracks/${row.id}`, 'PATCH', { audio: rewritten.audio })
-      console.log(`  Updated sketch_tracks ${row.track_id || row.id} audio`)
-    }
-  }
+  // Section images also need a working file relation
+  await ensureFileRelation('project_sections', 'image').catch(() => {
+    // collection may not exist yet — created later
+  })
 }
 
 async function singletonHasData(collection) {
@@ -196,8 +148,12 @@ async function singletonHasData(collection) {
 }
 
 async function collectionCount(collection) {
-  const res = await api(`/items/${collection}?aggregate[count]=id`, 'GET')
-  return Number(res.data?.[0]?.count?.id ?? 0)
+  try {
+    const res = await api(`/items/${collection}?aggregate[count]=id`, 'GET')
+    return Number(res.data?.[0]?.count?.id ?? 0)
+  } catch {
+    return 0
+  }
 }
 
 async function migrateFromLegacyGlobals() {
@@ -312,14 +268,311 @@ async function seedFromContentFiles() {
   if (hasProjects === 0) {
     for (const [i, project] of content.projects.entries()) {
       const row = await rewriteMediaFieldsToFileIds(projectToDirectus(project, i + 1), uploadCache)
-      await api('/items/projects', 'POST', row)
+      const created = await api('/items/projects', 'POST', row)
+      const projectId = created.data?.id
+      if (projectId) {
+        await seedProjectRelations(projectId, project)
+      }
     }
   }
 
   console.log('File seed complete')
 }
 
-/** Replace stale preview/hosting URLs (e.g. old Vercel) with the live site URL. */
+async function seedProjectRelations(projectId, project) {
+  for (const [i, item] of (project.gallery ?? []).entries()) {
+    const path = typeof item === 'string' ? item : item?.image
+    if (!path || !isMediaPath(path)) continue
+    try {
+      const fileId = await ensurePathUploaded(path, uploadCache)
+      await api('/items/projects_gallery', 'POST', {
+        projects_id: projectId,
+        directus_files_id: fileId,
+        sort: i + 1,
+      })
+    } catch (err) {
+      console.warn(`  Warning seeding gallery for project ${projectId}: ${err.message}`)
+    }
+  }
+
+  for (const [i, section] of (project.sections ?? []).entries()) {
+    try {
+      let imageId = null
+      if (section.image && isMediaPath(section.image)) {
+        imageId = await ensurePathUploaded(section.image, uploadCache)
+      } else if (section.image && isUuid(section.image)) {
+        imageId = section.image
+      }
+      await api('/items/project_sections', 'POST', {
+        project: projectId,
+        sort: i + 1,
+        section_id: section.id ?? '',
+        title: section.title ?? '',
+        image: imageId,
+        image_alt: section.imageAlt ?? '',
+        quote: section.quote ?? '',
+        paragraphs: section.paragraphs ?? [],
+      })
+    } catch (err) {
+      console.warn(`  Warning seeding section for project ${projectId}: ${err.message}`)
+    }
+  }
+}
+
+/** Convert projects.gallery JSON list → Files M2M junction rows. */
+async function migrateProjectGalleryToFiles() {
+  console.log('Migrating projects.gallery → Files (M2M)…')
+  const field = await getField('projects', 'gallery')
+  const projects = (await api('/items/projects?limit=-1', 'GET')).data ?? []
+
+  // Capture JSON values before converting the field
+  const pending = []
+  if (field?.type === 'json') {
+    for (const row of projects) {
+      const gallery = Array.isArray(row.gallery) ? row.gallery : []
+      pending.push({ projectId: row.id, slug: row.slug, gallery })
+    }
+  }
+
+  await ensureProjectGalleryFilesField()
+
+  if (!pending.length) {
+    // Field already Files — maybe seed empty galleries from content
+    await reseedGalleriesFromContent(projects)
+    return
+  }
+
+  for (const { projectId, slug, gallery } of pending) {
+    let sort = 1
+    for (const item of gallery) {
+      const pathOrId = typeof item === 'string' ? item : item?.image
+      if (!pathOrId) continue
+      try {
+        const fileId = isUuid(pathOrId)
+          ? pathOrId
+          : await ensurePathUploaded(pathOrId, uploadCache)
+        await api('/items/projects_gallery', 'POST', {
+          projects_id: projectId,
+          directus_files_id: fileId,
+          sort: sort++,
+        })
+      } catch (err) {
+        console.warn(`  Warning gallery ${slug}: ${err.message}`)
+      }
+    }
+    console.log(`  Migrated gallery for ${slug || projectId} (${gallery.length} item(s))`)
+  }
+}
+
+async function reseedGalleriesFromContent(projects) {
+  const content = await loadContentFiles()
+  for (const row of projects) {
+    const existing = await api(
+      `/items/projects_gallery?filter[projects_id][_eq]=${row.id}&limit=1`,
+      'GET',
+    )
+    if (existing.data?.length) continue
+    const source = content.projects.find((p) => p.slug === row.slug)
+    if (!source?.gallery?.length) continue
+    await seedProjectRelations(row.id, { gallery: source.gallery, sections: [] })
+    console.log(`  Reseeded gallery for ${row.slug}`)
+  }
+}
+
+/** Convert projects.sections JSON → project_sections O2M rows. */
+async function migrateProjectSectionsToO2M() {
+  console.log('Migrating projects.sections → project_sections (O2M)…')
+  const status = await ensureProjectSectionsCollection()
+  const field = await getField('projects', 'sections')
+  const projects = (await api('/items/projects?limit=-1', 'GET')).data ?? []
+
+  const pending = []
+  if (field?.type === 'json' || status.needsJsonMigration) {
+    for (const row of projects) {
+      const sections = Array.isArray(row.sections) ? row.sections : []
+      pending.push({ projectId: row.id, slug: row.slug, sections })
+    }
+  }
+
+  // If still JSON, drop it then create O2M alias
+  if (field?.type === 'json') {
+    await removeField('projects', 'sections')
+    await ensureProjectSectionsCollection()
+  }
+
+  if (!pending.length) {
+    await reseedSectionsFromContent(projects)
+    return
+  }
+
+  for (const { projectId, slug, sections } of pending) {
+    // Skip if O2M rows already exist
+    const existing = await api(
+      `/items/project_sections?filter[project][_eq]=${projectId}&limit=1`,
+      'GET',
+    )
+    if (existing.data?.length) continue
+
+    for (const [i, section] of sections.entries()) {
+      try {
+        let imageId = null
+        const raw = section.image
+        if (raw && isUuid(raw)) imageId = raw
+        else if (raw && (isMediaPath(raw) || String(raw).startsWith('/'))) {
+          imageId = await ensurePathUploaded(raw, uploadCache)
+        }
+        await api('/items/project_sections', 'POST', {
+          project: projectId,
+          sort: i + 1,
+          section_id: section.id ?? section.section_id ?? '',
+          title: section.title ?? '',
+          image: imageId,
+          image_alt: section.image_alt ?? section.imageAlt ?? '',
+          quote: section.quote ?? '',
+          paragraphs: section.paragraphs ?? [],
+        })
+      } catch (err) {
+        console.warn(`  Warning section ${slug}/${section.id}: ${err.message}`)
+      }
+    }
+    console.log(`  Migrated sections for ${slug || projectId} (${sections.length} item(s))`)
+  }
+}
+
+async function reseedSectionsFromContent(projects) {
+  const content = await loadContentFiles()
+  for (const row of projects) {
+    const existing = await api(
+      `/items/project_sections?filter[project][_eq]=${row.id}&limit=1`,
+      'GET',
+    )
+    if (existing.data?.length) continue
+    const source = content.projects.find((p) => p.slug === row.slug)
+    if (!source?.sections?.length) continue
+    await seedProjectRelations(row.id, { gallery: [], sections: source.sections })
+    console.log(`  Reseeded sections for ${row.slug}`)
+  }
+}
+
+async function migrateEmbeddedMediaPaths() {
+  console.log('Converting remaining path strings on top-level media fields…')
+
+  for (const { collection, fields } of [
+    { collection: 'hero', fields: ['image'] },
+    { collection: 'about', fields: ['portrait'] },
+  ]) {
+    try {
+      const row = (await api(`/items/${collection}`, 'GET')).data
+      if (!row) continue
+      const slice = Object.fromEntries(fields.map((f) => [f, row[f]]))
+      const rewritten = await rewriteMediaFieldsToFileIds(slice, uploadCache)
+      const patch = {}
+      for (const f of fields) {
+        if (typeof row[f] === 'string' && isMediaPath(row[f]) && rewritten[f] !== row[f]) {
+          patch[f] = rewritten[f]
+        }
+      }
+      if (Object.keys(patch).length) {
+        await api(`/items/${collection}`, 'PATCH', patch)
+        console.log(`  Updated ${collection} media refs`)
+      }
+    } catch (err) {
+      console.warn(`  Warning updating ${collection}: ${err.message}`)
+    }
+  }
+
+  const tracks = (await api('/items/sketch_tracks?limit=-1', 'GET')).data ?? []
+  for (const row of tracks) {
+    if (typeof row.audio === 'string' && isMediaPath(row.audio)) {
+      const rewritten = await rewriteMediaFieldsToFileIds({ audio: row.audio }, uploadCache)
+      await api(`/items/sketch_tracks/${row.id}`, 'PATCH', { audio: rewritten.audio })
+      console.log(`  Updated sketch_tracks ${row.track_id || row.id} audio`)
+    }
+  }
+
+  const projects = (await api('/items/projects?limit=-1', 'GET')).data ?? []
+  for (const row of projects) {
+    if (typeof row.image === 'string' && isMediaPath(row.image)) {
+      try {
+        const fileId = await ensurePathUploaded(row.image, uploadCache)
+        await api(`/items/projects/${row.id}`, 'PATCH', { image: fileId })
+        console.log(`  Updated project ${row.slug} cover image`)
+      } catch (err) {
+        console.warn(`  Warning project ${row.slug} image: ${err.message}`)
+      }
+    }
+  }
+}
+
+function isEmptyFileValue(value) {
+  if (value == null || value === '') return true
+  if (typeof value === 'string' && isMediaPath(value)) return true
+  return false
+}
+
+async function reseedEmptyMediaFromContent() {
+  console.log('Reseeding empty media fields from content/*.json …')
+  const content = await loadContentFiles()
+
+  try {
+    const hero = (await api('/items/hero', 'GET')).data
+    if (hero && isEmptyFileValue(hero.image) && content.hero?.image) {
+      const patch = await rewriteMediaFieldsToFileIds({ image: content.hero.image }, uploadCache)
+      await api('/items/hero', 'PATCH', { image: patch.image })
+      console.log(`  hero.image ← ${patch.image}`)
+    }
+  } catch (err) {
+    console.warn(`  Warning reseeding hero: ${err.message}`)
+  }
+
+  try {
+    const about = (await api('/items/about', 'GET')).data
+    if (about && isEmptyFileValue(about.portrait) && content.about?.portrait) {
+      const patch = await rewriteMediaFieldsToFileIds({ portrait: content.about.portrait }, uploadCache)
+      await api('/items/about', 'PATCH', { portrait: patch.portrait })
+      console.log(`  about.portrait ← ${patch.portrait}`)
+    }
+  } catch (err) {
+    console.warn(`  Warning reseeding about: ${err.message}`)
+  }
+
+  try {
+    const tracks = (await api('/items/sketch_tracks?limit=-1', 'GET')).data ?? []
+    for (const row of tracks) {
+      const source = content.sketches.tracks.find((t) => t.id === row.track_id)
+      if (!source?.audio || !isEmptyFileValue(row.audio)) continue
+      try {
+        const patch = await rewriteMediaFieldsToFileIds({ audio: source.audio }, uploadCache)
+        await api(`/items/sketch_tracks/${row.id}`, 'PATCH', { audio: patch.audio })
+        console.log(`  sketch_tracks.${row.track_id}.audio ← ${patch.audio}`)
+      } catch (err) {
+        console.warn(`  Warning reseeding sketch ${row.track_id}: ${err.message}`)
+      }
+    }
+  } catch (err) {
+    console.warn(`  Warning listing sketch_tracks: ${err.message}`)
+  }
+
+  try {
+    const projects = (await api('/items/projects?limit=-1', 'GET')).data ?? []
+    for (const row of projects) {
+      const source = content.projects.find((p) => p.slug === row.slug)
+      if (!source) continue
+      if (isEmptyFileValue(row.image) && source.image) {
+        try {
+          const fileId = await ensurePathUploaded(source.image, uploadCache)
+          await api(`/items/projects/${row.id}`, 'PATCH', { image: fileId })
+          console.log(`  projects.${row.slug}.image ← ${fileId}`)
+        } catch (err) {
+          console.warn(`  Warning reseeding project image ${row.slug}: ${err.message}`)
+        }
+      }
+    }
+  } catch (err) {
+    console.warn(`  Warning listing projects: ${err.message}`)
+  }
+}
+
 async function normalizeSiteUrl() {
   const expected = (process.env.SITE_URL || 'https://alexandreguichet.vancouverly.ca').replace(/\/+$/, '')
   let row
@@ -331,7 +584,6 @@ async function normalizeSiteUrl() {
   if (!row) return
 
   const current = String(row.url || '').trim().replace(/\/+$/, '')
-  // Only auto-fix known stale hosts; leave intentional custom domains alone.
   const shouldFix =
     !current || /vercel\.app/i.test(current) || /portfolio-five-steel/i.test(current)
 
@@ -346,120 +598,6 @@ async function normalizeSiteUrl() {
   console.log(`Updated site_settings.url: ${current || '(empty)'} → ${expected}`)
 }
 
-/** Make sure every file field has uuid + special:file + FK relation (fixes half-broken pickers). */
-async function repairAllFileFields() {
-  console.log('Repairing Directus file field configuration…')
-  for (const { collection, field } of FILE_RELATION_FIELDS) {
-    const def = fieldDef(collection, field)
-    if (!def) continue
-    await repairFileField(collection, def)
-  }
-}
-
-function isEmptyFileValue(value) {
-  if (value == null || value === '') return true
-  if (typeof value === 'string' && isMediaPath(value)) return true
-  return false
-}
-
-/**
- * When file fields are empty (or still path strings), upload from content/*.json
- * / the live site and attach the Directus file ids.
- */
-async function reseedEmptyMediaFromContent() {
-  console.log('Reseeding empty media fields from content/*.json …')
-  const content = await loadContentFiles()
-
-  // Hero
-  try {
-    const hero = (await api('/items/hero', 'GET')).data
-    if (hero && isEmptyFileValue(hero.image) && content.hero?.image) {
-      const patch = await rewriteMediaFieldsToFileIds({ image: content.hero.image }, uploadCache)
-      await api('/items/hero', 'PATCH', { image: patch.image })
-      console.log(`  hero.image ← ${patch.image}`)
-    }
-  } catch (err) {
-    console.warn(`  Warning reseeding hero: ${err.message}`)
-  }
-
-  // About
-  try {
-    const about = (await api('/items/about', 'GET')).data
-    if (about && isEmptyFileValue(about.portrait) && content.about?.portrait) {
-      const patch = await rewriteMediaFieldsToFileIds({ portrait: content.about.portrait }, uploadCache)
-      await api('/items/about', 'PATCH', { portrait: patch.portrait })
-      console.log(`  about.portrait ← ${patch.portrait}`)
-    }
-  } catch (err) {
-    console.warn(`  Warning reseeding about: ${err.message}`)
-  }
-
-  // Sketch tracks by track_id
-  try {
-    const tracks = (await api('/items/sketch_tracks?limit=-1', 'GET')).data ?? []
-    for (const row of tracks) {
-      const source = content.sketches.tracks.find((t) => t.id === row.track_id)
-      if (!source?.audio) continue
-      if (!isEmptyFileValue(row.audio)) continue
-      try {
-        const patch = await rewriteMediaFieldsToFileIds({ audio: source.audio }, uploadCache)
-        await api(`/items/sketch_tracks/${row.id}`, 'PATCH', { audio: patch.audio })
-        console.log(`  sketch_tracks.${row.track_id}.audio ← ${patch.audio}`)
-      } catch (err) {
-        console.warn(`  Warning reseeding sketch ${row.track_id}: ${err.message}`)
-      }
-    }
-  } catch (err) {
-    console.warn(`  Warning listing sketch_tracks: ${err.message}`)
-  }
-
-  // Projects by slug
-  try {
-    const projects = (await api('/items/projects?limit=-1', 'GET')).data ?? []
-    for (const row of projects) {
-      const source = content.projects.find((p) => p.slug === row.slug)
-      if (!source) continue
-      const needsImage = isEmptyFileValue(row.image) && source.image
-      const galleryEmpty =
-        !Array.isArray(row.gallery) ||
-        row.gallery.length === 0 ||
-        row.gallery.every((g) => isEmptyFileValue(g?.image ?? g))
-      const sectionsNeed =
-        Array.isArray(source.sections) &&
-        source.sections.some((s) => s.image) &&
-        (!Array.isArray(row.sections) ||
-          row.sections.every((s) => isEmptyFileValue(s?.image)))
-
-      if (!needsImage && !galleryEmpty && !sectionsNeed) continue
-
-      try {
-        const patch = await rewriteMediaFieldsToFileIds(
-          {
-            ...(needsImage ? { image: source.image } : {}),
-            ...(galleryEmpty ? { gallery: source.gallery } : {}),
-            ...(sectionsNeed
-              ? {
-                  sections: (row.sections ?? source.sections).map((section, i) => {
-                    const src = source.sections?.[i] || source.sections?.find((s) => s.id === section.id)
-                    if (!isEmptyFileValue(section?.image)) return section
-                    return { ...section, image: src?.image || section?.image || '' }
-                  }),
-                }
-              : {}),
-          },
-          uploadCache,
-        )
-        await api(`/items/projects/${row.id}`, 'PATCH', patch)
-        console.log(`  projects.${row.slug} media reseeded`)
-      } catch (err) {
-        console.warn(`  Warning reseeding project ${row.slug}: ${err.message}`)
-      }
-    }
-  } catch (err) {
-    console.warn(`  Warning listing projects: ${err.message}`)
-  }
-}
-
 async function cleanupLegacySchema() {
   const legacyFields = ['site', 'hero', 'about', 'contact', 'focuses', 'sketches', 'score', 'projects_section']
   for (const field of legacyFields) {
@@ -471,7 +609,6 @@ async function ensurePermissions() {
   for (const collection of PUBLIC_COLLECTIONS) {
     await grantPublicRead(collection)
   }
-  // Public asset URLs (/assets/:id) need read on directus_files
   await grantPublicRead('directus_files')
 }
 
@@ -479,12 +616,33 @@ console.log('CMS migrate starting…')
 await ensureSchema()
 await migrateStringFileFields()
 await repairAllFileFields()
+await assertFileRelations(FILE_RELATION_FIELDS)
 await migrateFromLegacyGlobals()
 await migrateLegacyProjects()
 await seedFromContentFiles()
 await migrateEmbeddedMediaPaths()
+await migrateProjectGalleryToFiles()
+await migrateProjectSectionsToO2M()
+await repairFileField('project_sections', {
+  field: 'image',
+  type: 'uuid',
+  meta: {
+    interface: 'file-image',
+    special: ['file'],
+    width: 'half',
+    options: { folder: null, enableCreate: true, enableSelect: true },
+  },
+  schema: { is_nullable: true },
+}).catch((err) => console.warn(`project_sections.image repair: ${err.message}`))
+await assertFileRelations([
+  ...FILE_RELATION_FIELDS,
+  { collection: 'project_sections', field: 'image' },
+])
 await reseedEmptyMediaFromContent()
 await normalizeSiteUrl()
 await cleanupLegacySchema()
 await ensurePermissions()
 console.log('CMS migrate done.')
+console.log(
+  'Next: hard-refresh Directus admin — file fields should show Upload + Library. Then redeploy the site app.',
+)

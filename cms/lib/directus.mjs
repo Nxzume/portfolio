@@ -1,3 +1,6 @@
+/**
+ * Directus API helpers shared by cms/migrate.mjs.
+ */
 const DIRECTUS_URL = (process.env.DIRECTUS_URL || 'http://localhost:8055').trim().replace(/\/+$/, '')
 const TOKEN = process.env.DIRECTUS_TOKEN?.trim()
 
@@ -153,10 +156,11 @@ export async function ensureField(collection, fieldDef) {
     console.log(`Created field: ${collection}.${fieldDef.field}`)
   } catch (err) {
     const msg = JSON.stringify(err.body ?? err.message)
-    if (msg.includes('already exists') || msg.includes('duplicate') || err.status === 400) {
+    if (msg.includes('already exists') || msg.includes('duplicate')) {
       console.log(`Field exists: ${collection}.${fieldDef.field}`)
       return
     }
+    // Do not treat every 400 as success — that hid real schema errors.
     if (err.status === 403) {
       throw new Error(`Cannot create field "${fieldDef.field}" — token needs Administrator access.`)
     }
@@ -190,16 +194,33 @@ export async function removeField(collection, field) {
   }
 }
 
-/** Ensure a M2O relation from collection.field → directus_files. */
+function isDuplicateError(err) {
+  const msg = JSON.stringify(err.body ?? err.message).toLowerCase()
+  return msg.includes('already exists') || msg.includes('duplicate') || msg.includes('unique')
+}
+
+async function getRelation(collection, field) {
+  const q = new URLSearchParams({
+    'filter[collection][_eq]': collection,
+    'filter[field][_eq]': field,
+    limit: '1',
+  })
+  const existing = await api(`/relations?${q}`, 'GET')
+  return existing.data?.[0] ?? null
+}
+
+/**
+ * Ensure a M2O relation from collection.field → directus_files.
+ * Without this relation, Directus hides Upload / Import URL and only shows
+ * "Choose File from Library" (createAllowed stays false).
+ */
 export async function ensureFileRelation(collection, field) {
-  const existing = await api(
-    `/relations?filter[collection][_eq]=${collection}&filter[field][_eq]=${field}`,
-    'GET',
-  )
-  if (existing.data?.length) {
+  const existing = await getRelation(collection, field)
+  if (existing?.related_collection === 'directus_files') {
     console.log(`Relation exists: ${collection}.${field} → directus_files`)
-    return
+    return existing
   }
+
   try {
     await api('/relations', 'POST', {
       collection,
@@ -210,26 +231,32 @@ export async function ensureFileRelation(collection, field) {
         sort_field: null,
         one_deselect_action: 'nullify',
       },
-      schema: {
-        on_delete: 'SET NULL',
-        foreign_key_table: 'directus_files',
-        foreign_key_column: 'id',
-      },
+      // Keep this minimal — extra FK keys on relation schema caused 400s that
+      // older migrate code incorrectly treated as "already exists".
+      schema: { on_delete: 'SET NULL' },
     })
-    console.log(`Created relation: ${collection}.${field} → directus_files`)
   } catch (err) {
-    const msg = JSON.stringify(err.body ?? err.message)
-    if (msg.includes('already exists') || msg.includes('duplicate') || err.status === 400) {
-      console.log(`Relation already present: ${collection}.${field}`)
-      return
+    if (!isDuplicateError(err)) {
+      throw new Error(
+        `Failed creating relation ${collection}.${field} → directus_files: ${err.message}`,
+      )
     }
-    throw err
   }
+
+  const verified = await getRelation(collection, field)
+  if (verified?.related_collection !== 'directus_files') {
+    throw new Error(
+      `Relation still missing after create: ${collection}.${field} → directus_files. ` +
+        'File pickers will not show Upload until this exists.',
+    )
+  }
+  console.log(`Created relation: ${collection}.${field} → directus_files`)
+  return verified
 }
 
 /**
  * Force file-field meta/schema/relation into the shape Directus expects for a
- * working upload + library picker (uuid + special:file + FK to directus_files).
+ * working upload + library picker (uuid + special:file + relation).
  */
 export async function repairFileField(collection, fieldDef) {
   const existing = await getField(collection, fieldDef.field)
@@ -245,11 +272,7 @@ export async function repairFileField(collection, fieldDef) {
     await api(`/fields/${collection}/${fieldDef.field}`, 'PATCH', {
       meta: fieldDef.meta,
       schema: {
-        ...(existing.schema || {}),
-        ...(fieldDef.schema || {}),
         is_nullable: true,
-        foreign_key_table: 'directus_files',
-        foreign_key_column: 'id',
       },
     })
     console.log(`Repaired file field: ${collection}.${fieldDef.field}`)
@@ -268,7 +291,10 @@ export async function repairFileField(collection, fieldDef) {
 export async function ensureFileField(collection, fieldDef) {
   const existing = await getField(collection, fieldDef.field)
   if (!existing) {
-    await api(`/fields/${collection}`, 'POST', fieldDef)
+    await api(`/fields/${collection}`, 'POST', {
+      ...fieldDef,
+      schema: { is_nullable: true, ...(fieldDef.schema || {}) },
+    })
     console.log(`Created file field: ${collection}.${fieldDef.field}`)
     await ensureFileRelation(collection, fieldDef.field)
     return { needsPathMigration: false }
@@ -283,20 +309,13 @@ export async function ensureFileField(collection, fieldDef) {
       : String(special || '').includes('file')
     const interfaceOk =
       existing.meta?.interface === 'file' || existing.meta?.interface === 'file-image'
-    const fkOk = existing.schema?.foreign_key_table === 'directus_files'
-    if (!specialOk || !interfaceOk || !fkOk || existing.meta?.interface === 'input') {
+    if (!specialOk || !interfaceOk || existing.meta?.interface === 'input') {
       try {
         await api(`/fields/${collection}/${fieldDef.field}`, 'PATCH', {
           meta: fieldDef.meta,
-          schema: {
-            ...(existing.schema || {}),
-            ...(fieldDef.schema || {}),
-            is_nullable: true,
-            foreign_key_table: 'directus_files',
-            foreign_key_column: 'id',
-          },
+          schema: { is_nullable: true },
         })
-        console.log(`Updated file field meta/schema: ${collection}.${fieldDef.field}`)
+        console.log(`Updated file field meta: ${collection}.${fieldDef.field}`)
       } catch (err) {
         console.log(`Could not patch field meta ${collection}.${fieldDef.field}: ${err.message}`)
       }
@@ -311,6 +330,281 @@ export async function ensureFileField(collection, fieldDef) {
 
   console.log(`Unexpected type for ${collection}.${fieldDef.field}: ${existing.type}`)
   return { needsPathMigration: false }
+}
+
+/**
+ * Ensure projects.gallery is a real Files (M2M) field — JSON list + file-image
+ * cannot upload (Directus treats file interfaces as relational).
+ */
+export async function ensureProjectGalleryFilesField() {
+  const collection = 'projects'
+  const field = 'gallery'
+  const junction = 'projects_gallery'
+  const existing = await getField(collection, field)
+
+  if (existing?.type === 'json') {
+    console.log('projects.gallery is JSON — converting to Files (M2M)…')
+    // Caller should have migrated values first; drop JSON field then recreate.
+    await removeField(collection, field)
+  } else if (existing && existing.type === 'alias') {
+    console.log('projects.gallery Files field exists')
+    return { junction }
+  }
+
+  if (!(await collectionExists(junction))) {
+    await api('/collections', 'POST', {
+      collection: junction,
+      meta: { hidden: true, icon: 'import_export' },
+      schema: {},
+      fields: [
+        {
+          field: 'id',
+          type: 'integer',
+          meta: { hidden: true, interface: 'input' },
+          schema: { is_primary_key: true, has_auto_increment: true },
+        },
+      ],
+    })
+    console.log(`Created junction collection: ${junction}`)
+  }
+
+  // Junction columns
+  await ensureField(junction, {
+    field: 'projects_id',
+    type: 'integer',
+    meta: { hidden: true, interface: 'select-dropdown-m2o' },
+    schema: { is_nullable: true },
+  })
+  await ensureField(junction, {
+    field: 'directus_files_id',
+    type: 'uuid',
+    meta: { hidden: true, interface: 'select-dropdown-m2o', special: ['file'] },
+    schema: { is_nullable: true },
+  })
+  await ensureField(junction, {
+    field: 'sort',
+    type: 'integer',
+    meta: { hidden: true, interface: 'input' },
+    schema: { is_nullable: true },
+  })
+
+  // Alias field on projects
+  const galleryField = await getField(collection, field)
+  if (!galleryField) {
+    await api(`/fields/${collection}`, 'POST', {
+      field,
+      type: 'alias',
+      meta: {
+        interface: 'files',
+        special: ['files'],
+        options: { folder: null, enableCreate: true, enableSelect: true },
+        note: 'Project gallery — upload or pick from File Library',
+      },
+    })
+    console.log('Created projects.gallery Files field')
+  }
+
+  // Relations: projects ↔ junction ↔ files
+  async function ensureRel(payload, label) {
+    const found = await getRelation(payload.collection, payload.field)
+    if (found) {
+      console.log(`Relation exists: ${label}`)
+      return
+    }
+    try {
+      await api('/relations', 'POST', payload)
+      console.log(`Created relation: ${label}`)
+    } catch (err) {
+      if (!isDuplicateError(err)) throw err
+    }
+  }
+
+  await ensureRel(
+    {
+      collection: junction,
+      field: 'projects_id',
+      related_collection: 'projects',
+      meta: {
+        one_field: field,
+        sort_field: 'sort',
+        one_deselect_action: 'nullify',
+        junction_field: 'directus_files_id',
+      },
+      schema: { on_delete: 'SET NULL' },
+    },
+    `${junction}.projects_id → projects`,
+  )
+
+  await ensureRel(
+    {
+      collection: junction,
+      field: 'directus_files_id',
+      related_collection: 'directus_files',
+      meta: {
+        one_field: null,
+        sort_field: null,
+        one_deselect_action: 'nullify',
+        junction_field: 'projects_id',
+      },
+      schema: { on_delete: 'SET NULL' },
+    },
+    `${junction}.directus_files_id → directus_files`,
+  )
+
+  await ensureRel(
+    {
+      collection: 'projects',
+      field,
+      related_collection: junction,
+      meta: {
+        one_field: 'projects_id',
+        sort_field: 'sort',
+        one_deselect_action: 'nullify',
+        junction_field: 'directus_files_id',
+      },
+      schema: null,
+    },
+    `projects.${field} → ${junction}`,
+  )
+
+  return { junction }
+}
+
+/** O2M project_sections with a real file-image field (JSON list cannot host file uploads). */
+export async function ensureProjectSectionsCollection() {
+  const collection = 'project_sections'
+
+  await ensureCollection({
+    collection,
+    meta: {
+      icon: 'segment',
+      sort_field: 'sort',
+      note: 'Detail sections for each project',
+      display_template: '{{title}}',
+    },
+    schema: {},
+    fields: [
+      {
+        field: 'id',
+        type: 'integer',
+        meta: { hidden: true, interface: 'input' },
+        schema: { is_primary_key: true, has_auto_increment: true },
+      },
+    ],
+  })
+
+  await ensureField(collection, {
+    field: 'project',
+    type: 'integer',
+    meta: {
+      interface: 'select-dropdown-m2o',
+      special: ['m2o'],
+      required: true,
+      options: { template: '{{title}}' },
+    },
+    schema: { is_nullable: false },
+  })
+  await ensureField(collection, {
+    field: 'sort',
+    type: 'integer',
+    meta: { interface: 'input', hidden: true },
+  })
+  await ensureField(collection, stringLike('section_id', 'Section ID used in anchors'))
+  await ensureField(collection, stringLike('title', 'Section title'))
+  await ensureFileField(collection, {
+    field: 'image',
+    type: 'uuid',
+    meta: {
+      interface: 'file-image',
+      special: ['file'],
+      width: 'half',
+      note: 'Section image',
+      options: { folder: null, enableCreate: true, enableSelect: true },
+    },
+    schema: { is_nullable: true },
+  })
+  await ensureField(collection, stringLike('image_alt', 'Image alt text'))
+  await ensureField(collection, {
+    field: 'quote',
+    type: 'text',
+    meta: { interface: 'input-multiline', width: 'full', note: 'Optional quote' },
+  })
+  await ensureField(collection, {
+    field: 'paragraphs',
+    type: 'json',
+    meta: {
+      interface: 'list',
+      width: 'full',
+      options: {
+        template: '{{paragraph}}',
+        fields: [
+          {
+            field: 'paragraph',
+            name: 'Paragraph',
+            type: 'text',
+            meta: { interface: 'input-multiline', width: 'full' },
+          },
+        ],
+      },
+    },
+  })
+
+  // Relation project_sections.project → projects
+  const rel = await getRelation(collection, 'project')
+  if (!rel) {
+    try {
+      await api('/relations', 'POST', {
+        collection,
+        field: 'project',
+        related_collection: 'projects',
+        meta: {
+          one_field: 'sections',
+          sort_field: 'sort',
+          one_deselect_action: 'nullify',
+        },
+        schema: { on_delete: 'CASCADE' },
+      })
+      console.log('Created relation: project_sections.project → projects')
+    } catch (err) {
+      if (!isDuplicateError(err)) throw err
+    }
+  }
+
+  // Alias O2M on projects
+  const sectionsField = await getField('projects', 'sections')
+  if (sectionsField?.type === 'json') {
+    console.log('projects.sections is JSON — will migrate then replace with O2M alias')
+    return { needsJsonMigration: true }
+  }
+  if (!sectionsField) {
+    await api('/fields/projects', 'POST', {
+      field: 'sections',
+      type: 'alias',
+      meta: {
+        interface: 'list-o2m',
+        special: ['o2m'],
+        options: {
+          template: '{{title}}',
+          enableCreate: true,
+          enableSelect: true,
+        },
+        note: 'Project detail sections',
+      },
+    })
+    console.log('Created projects.sections O2M alias')
+  }
+
+  // Ensure one-side relation meta points at sections
+  await ensureFileRelation(collection, 'image')
+  return { needsJsonMigration: false }
+}
+
+function stringLike(field, note) {
+  return {
+    field,
+    type: 'string',
+    meta: { interface: 'input', width: 'full', ...(note ? { note } : {}) },
+  }
 }
 
 export async function grantPublicRead(collection) {
@@ -336,4 +630,20 @@ export async function grantPublicRead(collection) {
     validation: {},
   })
   console.log(`Granted public read: ${collection}`)
+}
+
+/** Fail migrate loudly if Upload would still be hidden in the Data Studio. */
+export async function assertFileRelations(fields) {
+  const missing = []
+  for (const { collection, field } of fields) {
+    const rel = await getRelation(collection, field)
+    if (rel?.related_collection !== 'directus_files') missing.push(`${collection}.${field}`)
+  }
+  if (missing.length) {
+    throw new Error(
+      `File relations missing (Upload will stay hidden): ${missing.join(', ')}. ` +
+        'Fix DIRECTUS_TOKEN permissions or re-run after schema errors are resolved.',
+    )
+  }
+  console.log(`Verified ${fields.length} file relation(s) → directus_files`)
 }

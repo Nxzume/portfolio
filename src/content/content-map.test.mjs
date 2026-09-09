@@ -32,9 +32,23 @@ describe('content-map roundtrips', () => {
 
   it('project', () => {
     const directus = projectToDirectus(arenaJson, 2)
-    const back = projectFromDirectus(directus)
+    const back = projectFromDirectus({
+      ...directus,
+      gallery: (arenaJson.gallery ?? []).map((g) => ({
+        directus_files_id: typeof g === 'string' ? g : g.image,
+      })),
+      sections: (arenaJson.sections ?? []).map((section) => ({
+        section_id: section.id,
+        title: section.title,
+        image: section.image,
+        image_alt: section.imageAlt,
+        quote: section.quote,
+        paragraphs: section.paragraphs,
+      })),
+    })
     expect(back.slug).toBe(arenaJson.slug)
     expect(back.title).toBe(arenaJson.title)
     expect(back.sections).toHaveLength(arenaJson.sections.length)
+    expect(back.gallery.length).toBeGreaterThan(0)
   })
 })

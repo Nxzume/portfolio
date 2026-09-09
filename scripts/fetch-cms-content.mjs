@@ -1,7 +1,8 @@
 /**
  * Runs before `vite build`. Fetches structured Directus content and writes
  * content/*.json for the static site build. Media file fields are downloaded
- * into public/media/ and rewritten as local paths.
+ * into public/media/ and rewritten as local paths (so nginx serves them, while
+ * Directus remains the source of truth).
  */
 import { mkdir, writeFile, rm } from 'node:fs/promises'
 import path from 'node:path'
@@ -42,6 +43,21 @@ async function materialize(data, opts) {
   return rewriteMediaFieldsToPublicPaths(data, opts)
 }
 
+const PROJECT_FIELDS = [
+  '*',
+  'image.id',
+  'image.filename_download',
+  'image.type',
+  'gallery.directus_files_id.id',
+  'gallery.directus_files_id.filename_download',
+  'gallery.directus_files_id.type',
+  'gallery.sort',
+  'sections.*',
+  'sections.image.id',
+  'sections.image.filename_download',
+  'sections.image.type',
+].join(',')
+
 async function main() {
   if (!DIRECTUS_URL) {
     console.log('DIRECTUS_URL not set — skipping CMS fetch, using content/*.json already on disk.')
@@ -81,7 +97,7 @@ async function main() {
   await writeJsonFile('sketches.json', sketches)
 
   const projectsRes = await fetchJson(
-    '/items/projects?sort=sort&limit=-1&fields=*,image.id,image.filename_download,image.type',
+    `/items/projects?sort=sort&limit=-1&fields=${encodeURIComponent(PROJECT_FIELDS)}`,
   )
   const items = projectsRes.data ?? []
 
