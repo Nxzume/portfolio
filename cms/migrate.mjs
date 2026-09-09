@@ -9,6 +9,7 @@ import {
   ensureFileRelation,
   grantPublicRead,
   removeField,
+  repairFileField,
   requireConfig,
   verifyToken,
 } from './lib/directus.mjs'
@@ -345,6 +346,120 @@ async function normalizeSiteUrl() {
   console.log(`Updated site_settings.url: ${current || '(empty)'} → ${expected}`)
 }
 
+/** Make sure every file field has uuid + special:file + FK relation (fixes half-broken pickers). */
+async function repairAllFileFields() {
+  console.log('Repairing Directus file field configuration…')
+  for (const { collection, field } of FILE_RELATION_FIELDS) {
+    const def = fieldDef(collection, field)
+    if (!def) continue
+    await repairFileField(collection, def)
+  }
+}
+
+function isEmptyFileValue(value) {
+  if (value == null || value === '') return true
+  if (typeof value === 'string' && isMediaPath(value)) return true
+  return false
+}
+
+/**
+ * When file fields are empty (or still path strings), upload from content/*.json
+ * / the live site and attach the Directus file ids.
+ */
+async function reseedEmptyMediaFromContent() {
+  console.log('Reseeding empty media fields from content/*.json …')
+  const content = await loadContentFiles()
+
+  // Hero
+  try {
+    const hero = (await api('/items/hero', 'GET')).data
+    if (hero && isEmptyFileValue(hero.image) && content.hero?.image) {
+      const patch = await rewriteMediaFieldsToFileIds({ image: content.hero.image }, uploadCache)
+      await api('/items/hero', 'PATCH', { image: patch.image })
+      console.log(`  hero.image ← ${patch.image}`)
+    }
+  } catch (err) {
+    console.warn(`  Warning reseeding hero: ${err.message}`)
+  }
+
+  // About
+  try {
+    const about = (await api('/items/about', 'GET')).data
+    if (about && isEmptyFileValue(about.portrait) && content.about?.portrait) {
+      const patch = await rewriteMediaFieldsToFileIds({ portrait: content.about.portrait }, uploadCache)
+      await api('/items/about', 'PATCH', { portrait: patch.portrait })
+      console.log(`  about.portrait ← ${patch.portrait}`)
+    }
+  } catch (err) {
+    console.warn(`  Warning reseeding about: ${err.message}`)
+  }
+
+  // Sketch tracks by track_id
+  try {
+    const tracks = (await api('/items/sketch_tracks?limit=-1', 'GET')).data ?? []
+    for (const row of tracks) {
+      const source = content.sketches.tracks.find((t) => t.id === row.track_id)
+      if (!source?.audio) continue
+      if (!isEmptyFileValue(row.audio)) continue
+      try {
+        const patch = await rewriteMediaFieldsToFileIds({ audio: source.audio }, uploadCache)
+        await api(`/items/sketch_tracks/${row.id}`, 'PATCH', { audio: patch.audio })
+        console.log(`  sketch_tracks.${row.track_id}.audio ← ${patch.audio}`)
+      } catch (err) {
+        console.warn(`  Warning reseeding sketch ${row.track_id}: ${err.message}`)
+      }
+    }
+  } catch (err) {
+    console.warn(`  Warning listing sketch_tracks: ${err.message}`)
+  }
+
+  // Projects by slug
+  try {
+    const projects = (await api('/items/projects?limit=-1', 'GET')).data ?? []
+    for (const row of projects) {
+      const source = content.projects.find((p) => p.slug === row.slug)
+      if (!source) continue
+      const needsImage = isEmptyFileValue(row.image) && source.image
+      const galleryEmpty =
+        !Array.isArray(row.gallery) ||
+        row.gallery.length === 0 ||
+        row.gallery.every((g) => isEmptyFileValue(g?.image ?? g))
+      const sectionsNeed =
+        Array.isArray(source.sections) &&
+        source.sections.some((s) => s.image) &&
+        (!Array.isArray(row.sections) ||
+          row.sections.every((s) => isEmptyFileValue(s?.image)))
+
+      if (!needsImage && !galleryEmpty && !sectionsNeed) continue
+
+      try {
+        const patch = await rewriteMediaFieldsToFileIds(
+          {
+            ...(needsImage ? { image: source.image } : {}),
+            ...(galleryEmpty ? { gallery: source.gallery } : {}),
+            ...(sectionsNeed
+              ? {
+                  sections: (row.sections ?? source.sections).map((section, i) => {
+                    const src = source.sections?.[i] || source.sections?.find((s) => s.id === section.id)
+                    if (!isEmptyFileValue(section?.image)) return section
+                    return { ...section, image: src?.image || section?.image || '' }
+                  }),
+                }
+              : {}),
+          },
+          uploadCache,
+        )
+        await api(`/items/projects/${row.id}`, 'PATCH', patch)
+        console.log(`  projects.${row.slug} media reseeded`)
+      } catch (err) {
+        console.warn(`  Warning reseeding project ${row.slug}: ${err.message}`)
+      }
+    }
+  } catch (err) {
+    console.warn(`  Warning listing projects: ${err.message}`)
+  }
+}
+
 async function cleanupLegacySchema() {
   const legacyFields = ['site', 'hero', 'about', 'contact', 'focuses', 'sketches', 'score', 'projects_section']
   for (const field of legacyFields) {
@@ -363,10 +478,12 @@ async function ensurePermissions() {
 console.log('CMS migrate starting…')
 await ensureSchema()
 await migrateStringFileFields()
+await repairAllFileFields()
 await migrateFromLegacyGlobals()
 await migrateLegacyProjects()
 await seedFromContentFiles()
 await migrateEmbeddedMediaPaths()
+await reseedEmptyMediaFromContent()
 await normalizeSiteUrl()
 await cleanupLegacySchema()
 await ensurePermissions()

@@ -200,18 +200,65 @@ export async function ensureFileRelation(collection, field) {
     console.log(`Relation exists: ${collection}.${field} → directus_files`)
     return
   }
-  await api('/relations', 'POST', {
-    collection,
-    field,
-    related_collection: 'directus_files',
-    meta: {
-      one_field: null,
-      sort_field: null,
-      one_deselect_action: 'nullify',
-    },
-    schema: { on_delete: 'SET NULL' },
-  })
-  console.log(`Created relation: ${collection}.${field} → directus_files`)
+  try {
+    await api('/relations', 'POST', {
+      collection,
+      field,
+      related_collection: 'directus_files',
+      meta: {
+        one_field: null,
+        sort_field: null,
+        one_deselect_action: 'nullify',
+      },
+      schema: {
+        on_delete: 'SET NULL',
+        foreign_key_table: 'directus_files',
+        foreign_key_column: 'id',
+      },
+    })
+    console.log(`Created relation: ${collection}.${field} → directus_files`)
+  } catch (err) {
+    const msg = JSON.stringify(err.body ?? err.message)
+    if (msg.includes('already exists') || msg.includes('duplicate') || err.status === 400) {
+      console.log(`Relation already present: ${collection}.${field}`)
+      return
+    }
+    throw err
+  }
+}
+
+/**
+ * Force file-field meta/schema/relation into the shape Directus expects for a
+ * working upload + library picker (uuid + special:file + FK to directus_files).
+ */
+export async function repairFileField(collection, fieldDef) {
+  const existing = await getField(collection, fieldDef.field)
+  if (!existing) {
+    return ensureFileField(collection, fieldDef)
+  }
+
+  if (existing.type !== 'uuid') {
+    return ensureFileField(collection, fieldDef)
+  }
+
+  try {
+    await api(`/fields/${collection}/${fieldDef.field}`, 'PATCH', {
+      meta: fieldDef.meta,
+      schema: {
+        ...(existing.schema || {}),
+        ...(fieldDef.schema || {}),
+        is_nullable: true,
+        foreign_key_table: 'directus_files',
+        foreign_key_column: 'id',
+      },
+    })
+    console.log(`Repaired file field: ${collection}.${fieldDef.field}`)
+  } catch (err) {
+    console.warn(`Could not repair ${collection}.${fieldDef.field}: ${err.message}`)
+  }
+
+  await ensureFileRelation(collection, fieldDef.field)
+  return { needsPathMigration: false }
 }
 
 /**
@@ -230,13 +277,26 @@ export async function ensureFileField(collection, fieldDef) {
   if (existing.type === 'uuid') {
     console.log(`File field exists: ${collection}.${fieldDef.field}`)
     await ensureFileRelation(collection, fieldDef.field)
-    // Refresh interface/special if still a plain input
-    if (existing.meta?.interface === 'input' || !existing.meta?.special?.includes?.('file')) {
+    const special = existing.meta?.special
+    const specialOk = Array.isArray(special)
+      ? special.includes('file')
+      : String(special || '').includes('file')
+    const interfaceOk =
+      existing.meta?.interface === 'file' || existing.meta?.interface === 'file-image'
+    const fkOk = existing.schema?.foreign_key_table === 'directus_files'
+    if (!specialOk || !interfaceOk || !fkOk || existing.meta?.interface === 'input') {
       try {
         await api(`/fields/${collection}/${fieldDef.field}`, 'PATCH', {
           meta: fieldDef.meta,
+          schema: {
+            ...(existing.schema || {}),
+            ...(fieldDef.schema || {}),
+            is_nullable: true,
+            foreign_key_table: 'directus_files',
+            foreign_key_column: 'id',
+          },
         })
-        console.log(`Updated file field meta: ${collection}.${fieldDef.field}`)
+        console.log(`Updated file field meta/schema: ${collection}.${fieldDef.field}`)
       } catch (err) {
         console.log(`Could not patch field meta ${collection}.${fieldDef.field}: ${err.message}`)
       }

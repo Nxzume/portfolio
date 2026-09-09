@@ -25,8 +25,16 @@ export const imageFileField = (field, note = 'Upload an image in Directus') => (
     special: ['file'],
     width: 'half',
     ...(note ? { note } : {}),
+    options: {
+      // Keep folder unrestricted so the picker shows Upload + Library
+      folder: null,
+    },
   },
-  schema: {},
+  schema: {
+    is_nullable: true,
+    foreign_key_table: 'directus_files',
+    foreign_key_column: 'id',
+  },
 })
 
 /** Top-level file (audio, etc.) stored in Directus Files. */
@@ -38,8 +46,15 @@ export const fileField = (field, note = 'Upload a file in Directus') => ({
     special: ['file'],
     width: 'full',
     ...(note ? { note } : {}),
+    options: {
+      folder: null,
+    },
   },
-  schema: {},
+  schema: {
+    is_nullable: true,
+    foreign_key_table: 'directus_files',
+    foreign_key_column: 'id',
+  },
 })
 
 /**
