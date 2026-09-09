@@ -13,6 +13,8 @@ import {
   getField,
   grantPublicRead,
   removeField,
+  repairBrokenProjectsGalleryField,
+  repairBrokenProjectsSectionsField,
   repairFileField,
   requireConfig,
   verifyToken,
@@ -615,6 +617,11 @@ async function ensurePermissions() {
 console.log('CMS migrate starting…')
 await ensureSchema()
 await migrateStringFileFields()
+// Drop broken gallery/sections meta before any GET /items/projects (500 otherwise)
+await repairBrokenProjectsGalleryField()
+await repairBrokenProjectsSectionsField()
+await ensureProjectGalleryFilesField()
+await ensureProjectSectionsCollection()
 await repairAllFileFields()
 await assertFileRelations(FILE_RELATION_FIELDS)
 await migrateFromLegacyGlobals()
