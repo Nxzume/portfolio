@@ -318,6 +318,33 @@ async function seedFromContentFiles() {
   console.log('File seed complete')
 }
 
+/** Replace stale preview/hosting URLs (e.g. old Vercel) with the live site URL. */
+async function normalizeSiteUrl() {
+  const expected = (process.env.SITE_URL || 'https://alexandreguichet.vancouverly.ca').replace(/\/+$/, '')
+  let row
+  try {
+    row = (await api('/items/site_settings', 'GET')).data
+  } catch {
+    return
+  }
+  if (!row) return
+
+  const current = String(row.url || '').trim().replace(/\/+$/, '')
+  // Only auto-fix known stale hosts; leave intentional custom domains alone.
+  const shouldFix =
+    !current || /vercel\.app/i.test(current) || /portfolio-five-steel/i.test(current)
+
+  if (!shouldFix) {
+    if (current !== expected) {
+      console.log(`site_settings.url is ${current} (leaving as-is; expected default ${expected})`)
+    }
+    return
+  }
+
+  await api('/items/site_settings', 'PATCH', { url: expected })
+  console.log(`Updated site_settings.url: ${current || '(empty)'} → ${expected}`)
+}
+
 async function cleanupLegacySchema() {
   const legacyFields = ['site', 'hero', 'about', 'contact', 'focuses', 'sketches', 'score', 'projects_section']
   for (const field of legacyFields) {
@@ -340,6 +367,7 @@ await migrateFromLegacyGlobals()
 await migrateLegacyProjects()
 await seedFromContentFiles()
 await migrateEmbeddedMediaPaths()
+await normalizeSiteUrl()
 await cleanupLegacySchema()
 await ensurePermissions()
 console.log('CMS migrate done.')
