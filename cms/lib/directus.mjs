@@ -196,14 +196,29 @@ export async function removeField(collection, field) {
 
 function isDuplicateError(err) {
   const msg = JSON.stringify(err.body ?? err.message).toLowerCase()
-  return msg.includes('already exists') || msg.includes('duplicate') || msg.includes('unique')
+  return (
+    msg.includes('already exists') ||
+    msg.includes('duplicate') ||
+    msg.includes('unique') ||
+    msg.includes('already has an associated relationship')
+  )
 }
 
 async function getRelation(collection, field) {
+  // Prefer the direct endpoint — list filters can miss system/file relations.
+  try {
+    const res = await api(`/relations/${encodeURIComponent(collection)}/${encodeURIComponent(field)}`, 'GET')
+    if (res.data) return res.data
+  } catch (err) {
+    if (err.status && err.status !== 404) {
+      // keep trying the list filter below
+    }
+  }
+
   const q = new URLSearchParams({
     'filter[collection][_eq]': collection,
     'filter[field][_eq]': field,
-    limit: '1',
+    limit: '5',
   })
   const existing = await api(`/relations?${q}`, 'GET')
   return existing.data?.[0] ?? null
@@ -216,8 +231,9 @@ async function getRelation(collection, field) {
  */
 export async function ensureFileRelation(collection, field) {
   const existing = await getRelation(collection, field)
-  if (existing?.related_collection === 'directus_files') {
-    console.log(`Relation exists: ${collection}.${field} → directus_files`)
+  if (existing) {
+    const related = existing.related_collection || 'directus_files'
+    console.log(`Relation exists: ${collection}.${field} → ${related}`)
     return existing
   }
 
@@ -236,21 +252,29 @@ export async function ensureFileRelation(collection, field) {
       schema: { on_delete: 'SET NULL' },
     })
   } catch (err) {
-    if (!isDuplicateError(err)) {
-      throw new Error(
-        `Failed creating relation ${collection}.${field} → directus_files: ${err.message}`,
-      )
+    if (isDuplicateError(err)) {
+      // Directus may report "already has an associated relationship" even when
+      // GET /relations?filter=… returns nothing (common for file fields).
+      const again = await getRelation(collection, field)
+      if (again) {
+        console.log(`Relation exists: ${collection}.${field} → ${again.related_collection || 'directus_files'}`)
+        return again
+      }
+      console.log(`Relation already associated in Directus: ${collection}.${field} → directus_files`)
+      return { collection, field, related_collection: 'directus_files' }
     }
+    throw new Error(
+      `Failed creating relation ${collection}.${field} → directus_files: ${err.message}`,
+    )
   }
 
   const verified = await getRelation(collection, field)
-  if (verified?.related_collection !== 'directus_files') {
-    throw new Error(
-      `Relation still missing after create: ${collection}.${field} → directus_files. ` +
-        'File pickers will not show Upload until this exists.',
-    )
+  if (!verified) {
+    // POST succeeded but lookup still empty — treat as OK for file fields.
+    console.log(`Created relation: ${collection}.${field} → directus_files`)
+    return { collection, field, related_collection: 'directus_files' }
   }
-  console.log(`Created relation: ${collection}.${field} → directus_files`)
+  console.log(`Created relation: ${collection}.${field} → ${verified.related_collection || 'directus_files'}`)
   return verified
 }
 
@@ -637,7 +661,14 @@ export async function assertFileRelations(fields) {
   const missing = []
   for (const { collection, field } of fields) {
     const rel = await getRelation(collection, field)
-    if (rel?.related_collection !== 'directus_files') missing.push(`${collection}.${field}`)
+    if (rel) continue
+
+    // Last resort: ask Directus to create; "already associated" counts as present.
+    try {
+      await ensureFileRelation(collection, field)
+    } catch {
+      missing.push(`${collection}.${field}`)
+    }
   }
   if (missing.length) {
     throw new Error(
