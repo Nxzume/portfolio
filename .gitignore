@@ -16,6 +16,10 @@ coverage
 # CMS media downloaded at build time from Directus
 public/media/
 
+# Local MCP secrets (keep the committed template; don't commit filled tokens)
+.cursor/mcp.local.json
+
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

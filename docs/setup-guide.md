@@ -386,6 +386,16 @@ $env:DIRECTUS_TOKEN = "your_token"
 npm run cms:migrate
 ```
 
+### Directus MCP (Cursor)
+
+To let Cursor inspect/fix the live CMS schema (fields, relations, files), see
+[`docs/directus-mcp.md`](./directus-mcp.md). Short version:
+
+1. Generate a Directus static token
+2. Put it in `.cursor/mcp.json` → `DIRECTUS_TOKEN` (local) **or** add the same
+   `npx @directus/content-mcp` server in the Cloud Agents environment MCP settings
+3. Start a **new** agent run after adding Cloud Agent MCP
+
 ---
 
 ## Troubleshooting
