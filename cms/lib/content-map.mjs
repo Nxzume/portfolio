@@ -4,9 +4,19 @@
 import { readFile, readdir } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { extractFileId } from './media.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 export const CONTENT_DIR = path.resolve(__dirname, '../../content')
+
+/** Prefer UUID from expanded file objects; keep path strings as-is for seed/local. */
+function mediaValue(value) {
+  if (value == null || value === '') return ''
+  const id = extractFileId(value)
+  if (id) return id
+  if (typeof value === 'string') return value
+  return ''
+}
 
 export async function readContentJson(relativePath) {
   return JSON.parse(await readFile(path.join(CONTENT_DIR, relativePath), 'utf8'))
@@ -50,7 +60,7 @@ export function heroToDirectus(hero) {
 export function heroFromDirectus(row) {
   return {
     headline: row.headline ?? '',
-    image: row.image ?? '',
+    image: mediaValue(row.image),
     primaryCta: {
       label: row.primary_cta_label ?? '',
       href: row.primary_cta_href ?? '',
@@ -74,7 +84,7 @@ export function aboutToDirectus(about) {
 
 export function aboutFromDirectus(row) {
   return {
-    portrait: row.portrait ?? '',
+    portrait: mediaValue(row.portrait),
     ...(row.portrait_alt ? { portraitAlt: row.portrait_alt } : {}),
     lead: row.lead ?? '',
     body: row.body ?? [],
@@ -147,14 +157,17 @@ export function sketchTrackToDirectus(track, sort) {
 
 export function sketchesFromDirectus(items) {
   return {
-    tracks: items.map((row) => ({
-      id: row.track_id ?? '',
-      title: row.title ?? '',
-      ...(row.mood ? { mood: row.mood } : {}),
-      ...(row.audio ? { audio: row.audio } : {}),
-      ...(row.bpm != null ? { bpm: row.bpm } : {}),
-      ...(row.base_freq != null ? { baseFreq: row.base_freq } : {}),
-    })),
+    tracks: items.map((row) => {
+      const audio = mediaValue(row.audio)
+      return {
+        id: row.track_id ?? '',
+        title: row.title ?? '',
+        ...(row.mood ? { mood: row.mood } : {}),
+        ...(audio ? { audio } : {}),
+        ...(row.bpm != null ? { bpm: row.bpm } : {}),
+        ...(row.base_freq != null ? { baseFreq: row.base_freq } : {}),
+      }
+    }),
   }
 }
 
@@ -190,19 +203,25 @@ export function projectFromDirectus(row) {
     title: row.title ?? '',
     subtitle: row.subtitle ?? '',
     summary: row.summary ?? '',
-    image: row.image ?? '',
-    gallery: row.gallery ?? [],
+    image: mediaValue(row.image),
+    gallery: (row.gallery ?? []).map((item) => {
+      if (typeof item === 'string') return { image: mediaValue(item) }
+      return { image: mediaValue(item?.image) }
+    }),
     highlights: row.highlights ?? [],
     links: row.links ?? [],
     intro: row.intro ?? [],
-    sections: (row.sections ?? []).map((section) => ({
-      id: section.id ?? '',
-      title: section.title ?? '',
-      ...(section.image ? { image: section.image } : {}),
-      ...(section.image_alt ? { imageAlt: section.image_alt } : {}),
-      ...(section.quote ? { quote: section.quote } : {}),
-      paragraphs: section.paragraphs ?? [],
-    })),
+    sections: (row.sections ?? []).map((section) => {
+      const image = mediaValue(section.image)
+      return {
+        id: section.id ?? '',
+        title: section.title ?? '',
+        ...(image ? { image } : {}),
+        ...(section.image_alt ? { imageAlt: section.image_alt } : {}),
+        ...(section.quote ? { quote: section.quote } : {}),
+        paragraphs: section.paragraphs ?? [],
+      }
+    }),
   }
 }
 

@@ -31,7 +31,7 @@ export type Sketch = {
   mood?: string
   /** Only used for generative placeholders when audio is empty. */
   bpm?: number
-  /** Path under public/, e.g. "/audio/overture.mp3". Empty = generative placeholder. */
+  /** Path under public/, e.g. "/media/track.mp3", or empty for generative placeholder. */
   audio?: string
   baseFreq?: number
   pattern?: number[]

@@ -47,10 +47,13 @@ DIRECTUS_URL=https://alexandreguichet-cms.vancouverly.ca
 If unset, the fetch step is skipped and the build uses whatever is already
 in `content/` — useful for local development without a CMS running.
 
-Images and audio still live in `public/images/` and `public/audio/` —
-Directus stores image fields as plain path strings pointing at files
-already in those folders, so uploading new media is a separate step (add
-the file to `public/`, then reference its path from the Directus admin).
+Images and audio are **Directus Files** — upload them in the CMS admin
+(file picker on image/audio fields). At build time the site downloads those
+assets into `public/media/` so the static nginx image stays self-contained.
+
+Do not commit media into `public/images/` or `public/audio/` anymore; those
+folders are only legacy placeholders. After you change media in Directus,
+redeploy the site app so the next build pulls the new files.
 
 ## Directus schema
 

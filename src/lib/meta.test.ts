@@ -6,6 +6,10 @@ describe('absoluteUrl', () => {
   it('joins the configured site url with a path', () => {
     expect(absoluteUrl('/projects/arena')).toBe(`${site.url}/projects/arena`)
   })
+
+  it('passes through absolute http(s) urls', () => {
+    expect(absoluteUrl('https://cdn.example/a.png')).toBe('https://cdn.example/a.png')
+  })
 })
 
 describe('metaForPath', () => {
