@@ -12,4 +12,6 @@ Quick checklist:
 
 After editing content in Directus, **redeploy the site app** (content is fetched at build time).
 
-Verify build log shows: `Wrote 8 global file(s) and N project(s).`
+Media (images/audio) is uploaded in Directus and pulled into `public/media/` during the site build. After switching to file fields, redeploy the **migrate app** once so existing path strings are uploaded and converted.
+
+Verify build log shows: `Wrote 8 global file(s) and N project(s); media under public/media/.`

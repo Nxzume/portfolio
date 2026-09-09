@@ -1,8 +1,19 @@
 /**
  * Idempotent CMS migration — structured fields for normal editing in Directus.
  */
-import { api, ensureCollection, ensureField, grantPublicRead, removeField, requireConfig, verifyToken } from './lib/directus.mjs'
-import { COLLECTIONS, PUBLIC_COLLECTIONS } from './lib/schema.mjs'
+import {
+  api,
+  ensureCollection,
+  ensureField,
+  ensureFileField,
+  ensureFileRelation,
+  grantPublicRead,
+  removeField,
+  requireConfig,
+  verifyToken,
+} from './lib/directus.mjs'
+import { COLLECTIONS, FILE_RELATION_FIELDS, PUBLIC_COLLECTIONS } from './lib/schema.mjs'
+import { isMediaPath, isUuid, rewriteMediaFieldsToFileIds } from './lib/media.mjs'
 import {
   aboutToDirectus,
   contactToDirectus,
@@ -19,12 +30,150 @@ import {
 requireConfig()
 await verifyToken()
 
+const uploadCache = new Map()
+
+function fieldDef(collection, field) {
+  return COLLECTIONS[collection].fields.find((f) => f.field === field)
+}
+
 async function ensureSchema() {
   for (const def of Object.values(COLLECTIONS)) {
     await ensureCollection(def)
-    for (const fieldDef of def.fields) {
-      if (fieldDef.field === 'id') continue
-      await ensureField(def.collection, fieldDef)
+    for (const fieldDefItem of def.fields) {
+      if (fieldDefItem.field === 'id') continue
+      const isFileRelation = FILE_RELATION_FIELDS.some(
+        (f) => f.collection === def.collection && f.field === fieldDefItem.field,
+      )
+      if (isFileRelation) {
+        await ensureFileField(def.collection, fieldDefItem)
+      } else {
+        await ensureField(def.collection, fieldDefItem)
+        // Refresh list field meta so nested image pickers become file-image
+        if (fieldDefItem.type === 'json' && fieldDefItem.meta?.interface === 'list') {
+          try {
+            await api(`/fields/${def.collection}/${fieldDefItem.field}`, 'PATCH', {
+              meta: fieldDefItem.meta,
+            })
+          } catch {
+            // non-fatal — field may already match
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Convert legacy string path media fields → uuid file fields, uploading assets.
+ */
+async function migrateStringFileFields() {
+  for (const { collection, field } of FILE_RELATION_FIELDS) {
+    const def = fieldDef(collection, field)
+    if (!def) continue
+    const result = await ensureFileField(collection, def)
+    if (!result.needsPathMigration) continue
+
+    console.log(`Converting ${collection}.${field} string → file…`)
+
+    const isSingleton = COLLECTIONS[collection]?.meta?.singleton
+    let rows = []
+    if (isSingleton) {
+      const res = await api(`/items/${collection}`, 'GET')
+      if (res.data) rows = [res.data]
+    } else {
+      const res = await api(`/items/${collection}?limit=-1`, 'GET')
+      rows = res.data ?? []
+    }
+
+    const pathById = new Map()
+    for (const row of rows) {
+      const value = row[field]
+      if (typeof value === 'string' && (isMediaPath(value) || value.startsWith('/'))) {
+        pathById.set(row.id, value)
+      }
+    }
+
+    await removeField(collection, field)
+    await api(`/fields/${collection}`, 'POST', def)
+    console.log(`Recreated file field: ${collection}.${field}`)
+    await ensureFileRelation(collection, field)
+
+    for (const [id, mediaPath] of pathById) {
+      try {
+        const fileId = await rewriteMediaFieldsToFileIds({ [field]: mediaPath }, uploadCache).then(
+          (o) => o[field],
+        )
+        if (isSingleton) {
+          await api(`/items/${collection}`, 'PATCH', { [field]: fileId })
+        } else {
+          await api(`/items/${collection}/${id}`, 'PATCH', { [field]: fileId })
+        }
+        console.log(`  Set ${collection}.${field} → ${fileId}`)
+      } catch (err) {
+        console.warn(`  Warning: could not migrate ${collection} id=${id} ${field}=${mediaPath}: ${err.message}`)
+      }
+    }
+  }
+}
+
+/** Rewrite path strings inside JSON galleries / sections / audio leftovers to file UUIDs. */
+async function migrateEmbeddedMediaPaths() {
+  console.log('Converting embedded media paths (gallery, sections, …) to file UUIDs…')
+
+  // Projects: image (if still path somehow), gallery, sections
+  const projects = (await api('/items/projects?limit=-1', 'GET')).data ?? []
+  for (const row of projects) {
+    const rewritten = await rewriteMediaFieldsToFileIds(
+      {
+        image: row.image,
+        gallery: row.gallery,
+        sections: row.sections,
+      },
+      uploadCache,
+    )
+    const patch = {}
+    if (rewritten.image !== row.image && (isUuid(rewritten.image) || rewritten.image === '' || rewritten.image == null)) {
+      patch.image = rewritten.image || null
+    }
+    if (JSON.stringify(rewritten.gallery) !== JSON.stringify(row.gallery)) patch.gallery = rewritten.gallery
+    if (JSON.stringify(rewritten.sections) !== JSON.stringify(row.sections)) patch.sections = rewritten.sections
+    if (Object.keys(patch).length) {
+      await api(`/items/projects/${row.id}`, 'PATCH', patch)
+      console.log(`  Updated project ${row.slug || row.id} media refs`)
+    }
+  }
+
+  // Hero / about singletons (in case string→uuid conversion already done but values still paths)
+  for (const { collection, fields } of [
+    { collection: 'hero', fields: ['image'] },
+    { collection: 'about', fields: ['portrait'] },
+  ]) {
+    try {
+      const row = (await api(`/items/${collection}`, 'GET')).data
+      if (!row) continue
+      const slice = Object.fromEntries(fields.map((f) => [f, row[f]]))
+      const rewritten = await rewriteMediaFieldsToFileIds(slice, uploadCache)
+      const patch = {}
+      for (const f of fields) {
+        if (typeof row[f] === 'string' && isMediaPath(row[f]) && rewritten[f] !== row[f]) {
+          patch[f] = rewritten[f]
+        }
+      }
+      if (Object.keys(patch).length) {
+        await api(`/items/${collection}`, 'PATCH', patch)
+        console.log(`  Updated ${collection} media refs`)
+      }
+    } catch (err) {
+      console.warn(`  Warning updating ${collection}: ${err.message}`)
+    }
+  }
+
+  const tracks = (await api('/items/sketch_tracks?limit=-1', 'GET')).data ?? []
+  for (const row of tracks) {
+    if (typeof row.audio === 'string' && isMediaPath(row.audio)) {
+      const rewritten = await rewriteMediaFieldsToFileIds({ audio: row.audio }, uploadCache)
+      await api(`/items/sketch_tracks/${row.id}`, 'PATCH', { audio: rewritten.audio })
+      console.log(`  Updated sketch_tracks ${row.track_id || row.id} audio`)
     }
   }
 }
@@ -65,8 +214,14 @@ async function migrateFromLegacyGlobals() {
   const structured = legacyGlobalsToStructured(globals)
 
   if (structured.site_settings) await api('/items/site_settings', 'PATCH', structured.site_settings)
-  if (structured.hero) await api('/items/hero', 'PATCH', structured.hero)
-  if (structured.about) await api('/items/about', 'PATCH', structured.about)
+  if (structured.hero) {
+    const hero = await rewriteMediaFieldsToFileIds(structured.hero, uploadCache)
+    await api('/items/hero', 'PATCH', hero)
+  }
+  if (structured.about) {
+    const about = await rewriteMediaFieldsToFileIds(structured.about, uploadCache)
+    await api('/items/about', 'PATCH', about)
+  }
   if (structured.contact) await api('/items/contact', 'PATCH', structured.contact)
   if (structured.score_section) await api('/items/score_section', 'PATCH', structured.score_section)
   if (structured.projects_section) await api('/items/projects_section', 'PATCH', structured.projects_section)
@@ -79,7 +234,8 @@ async function migrateFromLegacyGlobals() {
 
   if ((await collectionCount('sketch_tracks')) === 0 && structured.sketch_tracks.length) {
     for (const track of structured.sketch_tracks) {
-      await api('/items/sketch_tracks', 'POST', track)
+      const row = await rewriteMediaFieldsToFileIds(track, uploadCache)
+      await api('/items/sketch_tracks', 'POST', row)
     }
   }
 
@@ -92,7 +248,10 @@ async function migrateLegacyProjects() {
 
   for (const row of res.data ?? []) {
     if (!row.payload || row.title) continue
-    const patch = projectToDirectus(row.payload, row.sort ?? migrated + 1)
+    const patch = await rewriteMediaFieldsToFileIds(
+      projectToDirectus(row.payload, row.sort ?? migrated + 1),
+      uploadCache,
+    )
     await api(`/items/projects/${row.id}`, 'PATCH', {
       ...patch,
       slug: row.slug || patch.slug,
@@ -116,13 +275,21 @@ async function seedFromContentFiles() {
     return
   }
 
-  console.log('Seeding from content/*.json …')
+  console.log('Seeding from content/*.json (uploading media to Directus)…')
   const content = await loadContentFiles()
 
   if (!hasSite) {
     await api('/items/site_settings', 'PATCH', siteToDirectus(content.site))
-    await api('/items/hero', 'PATCH', heroToDirectus(content.hero))
-    await api('/items/about', 'PATCH', aboutToDirectus(content.about))
+    await api(
+      '/items/hero',
+      'PATCH',
+      await rewriteMediaFieldsToFileIds(heroToDirectus(content.hero), uploadCache),
+    )
+    await api(
+      '/items/about',
+      'PATCH',
+      await rewriteMediaFieldsToFileIds(aboutToDirectus(content.about), uploadCache),
+    )
     await api('/items/contact', 'PATCH', contactToDirectus(content.contact))
     await api('/items/score_section', 'PATCH', sectionCopyToDirectus(content.score))
     await api('/items/projects_section', 'PATCH', sectionCopyToDirectus(content.projectsSection))
@@ -136,13 +303,15 @@ async function seedFromContentFiles() {
 
   if ((await collectionCount('sketch_tracks')) === 0) {
     for (const [i, track] of content.sketches.tracks.entries()) {
-      await api('/items/sketch_tracks', 'POST', sketchTrackToDirectus(track, i + 1))
+      const row = await rewriteMediaFieldsToFileIds(sketchTrackToDirectus(track, i + 1), uploadCache)
+      await api('/items/sketch_tracks', 'POST', row)
     }
   }
 
   if (hasProjects === 0) {
     for (const [i, project] of content.projects.entries()) {
-      await api('/items/projects', 'POST', projectToDirectus(project, i + 1))
+      const row = await rewriteMediaFieldsToFileIds(projectToDirectus(project, i + 1), uploadCache)
+      await api('/items/projects', 'POST', row)
     }
   }
 
@@ -160,13 +329,17 @@ async function ensurePermissions() {
   for (const collection of PUBLIC_COLLECTIONS) {
     await grantPublicRead(collection)
   }
+  // Public asset URLs (/assets/:id) need read on directus_files
+  await grantPublicRead('directus_files')
 }
 
 console.log('CMS migrate starting…')
 await ensureSchema()
+await migrateStringFileFields()
 await migrateFromLegacyGlobals()
 await migrateLegacyProjects()
 await seedFromContentFiles()
+await migrateEmbeddedMediaPaths()
 await cleanupLegacySchema()
 await ensurePermissions()
 console.log('CMS migrate done.')

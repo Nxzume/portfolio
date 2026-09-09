@@ -336,11 +336,16 @@ Log in at `https://alexandreguichet-cms.vancouverly.ca`.
 | `sketch_tracks` | Audio tracks |
 | `projects` | Each game project — title, summary, gallery, sections, links |
 
-Image and audio fields use **paths** under `public/`, e.g. `/images/hero.jpg`.
-Add new media files to the repo under `public/images/` or `public/audio/`,
-then reference the path in Directus.
+Image and audio fields use **Directus file uploads** (image/file pickers in
+the admin). Upload media in Directus — do not commit files under `public/`.
+The site build downloads published files into `public/media/` automatically.
 
 After saving in Directus, **redeploy the site app** to publish changes.
+
+**First deploy of this media change:** redeploy the **migrate app** before
+(or with) the site app so path strings are converted to file fields and
+existing assets are uploaded into Directus (migrate can pull them from the
+live site if they are no longer in git).
 
 ---
 
@@ -349,6 +354,7 @@ After saving in Directus, **redeploy the site app** to publish changes.
 | Task | How |
 |------|-----|
 | Edit copy or projects | Directus → save → **Deploy site app** in Coolify |
+| Add or replace images/audio | Directus file picker on the field → save → **Deploy site app** |
 | Change code or design | Push to `master` → Coolify redeploy **site app** |
 | Add CMS fields / schema | Push `cms/` changes → migrate auto-runs (if webhook set) or **Deploy migrate app** |
 | New portfolio instance | New Directus + new site app + new migrate app |

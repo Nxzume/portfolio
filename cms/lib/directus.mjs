@@ -164,6 +164,16 @@ export async function ensureField(collection, fieldDef) {
   }
 }
 
+export async function getField(collection, field) {
+  try {
+    const res = await api(`/fields/${collection}/${field}`, 'GET')
+    return res.data ?? null
+  } catch (err) {
+    if (err.status === 404 || err.status === 403) return null
+    throw err
+  }
+}
+
 export async function removeField(collection, field) {
   try {
     await api(`/fields/${collection}/${field}`, 'DELETE')
@@ -178,6 +188,69 @@ export async function removeField(collection, field) {
     }
     throw err
   }
+}
+
+/** Ensure a M2O relation from collection.field → directus_files. */
+export async function ensureFileRelation(collection, field) {
+  const existing = await api(
+    `/relations?filter[collection][_eq]=${collection}&filter[field][_eq]=${field}`,
+    'GET',
+  )
+  if (existing.data?.length) {
+    console.log(`Relation exists: ${collection}.${field} → directus_files`)
+    return
+  }
+  await api('/relations', 'POST', {
+    collection,
+    field,
+    related_collection: 'directus_files',
+    meta: {
+      one_field: null,
+      sort_field: null,
+      one_deselect_action: 'nullify',
+    },
+    schema: { on_delete: 'SET NULL' },
+  })
+  console.log(`Created relation: ${collection}.${field} → directus_files`)
+}
+
+/**
+ * Ensure a uuid file field exists. If a legacy string field is present,
+ * returns { needsPathMigration: true } so the caller can convert values.
+ */
+export async function ensureFileField(collection, fieldDef) {
+  const existing = await getField(collection, fieldDef.field)
+  if (!existing) {
+    await api(`/fields/${collection}`, 'POST', fieldDef)
+    console.log(`Created file field: ${collection}.${fieldDef.field}`)
+    await ensureFileRelation(collection, fieldDef.field)
+    return { needsPathMigration: false }
+  }
+
+  if (existing.type === 'uuid') {
+    console.log(`File field exists: ${collection}.${fieldDef.field}`)
+    await ensureFileRelation(collection, fieldDef.field)
+    // Refresh interface/special if still a plain input
+    if (existing.meta?.interface === 'input' || !existing.meta?.special?.includes?.('file')) {
+      try {
+        await api(`/fields/${collection}/${fieldDef.field}`, 'PATCH', {
+          meta: fieldDef.meta,
+        })
+        console.log(`Updated file field meta: ${collection}.${fieldDef.field}`)
+      } catch (err) {
+        console.log(`Could not patch field meta ${collection}.${fieldDef.field}: ${err.message}`)
+      }
+    }
+    return { needsPathMigration: false }
+  }
+
+  if (existing.type === 'string') {
+    console.log(`Legacy string media field: ${collection}.${fieldDef.field} — will convert to file`)
+    return { needsPathMigration: true, existing }
+  }
+
+  console.log(`Unexpected type for ${collection}.${fieldDef.field}: ${existing.type}`)
+  return { needsPathMigration: false }
 }
 
 export async function grantPublicRead(collection) {

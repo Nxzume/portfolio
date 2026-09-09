@@ -16,10 +16,45 @@ export const textField = (field, note) => ({
   meta: { interface: 'input-multiline', width: 'full', ...(note ? { note } : {}) },
 })
 
-export const imagePathField = (field, note = 'Path under public/, e.g. /images/hero.jpg') => ({
+/** Top-level image stored in Directus Files (upload in admin). */
+export const imageFileField = (field, note = 'Upload an image in Directus') => ({
   field,
-  type: 'string',
-  meta: { interface: 'input', width: 'full', note },
+  type: 'uuid',
+  meta: {
+    interface: 'file-image',
+    special: ['file'],
+    width: 'half',
+    ...(note ? { note } : {}),
+  },
+  schema: {},
+})
+
+/** Top-level file (audio, etc.) stored in Directus Files. */
+export const fileField = (field, note = 'Upload a file in Directus') => ({
+  field,
+  type: 'uuid',
+  meta: {
+    interface: 'file',
+    special: ['file'],
+    width: 'full',
+    ...(note ? { note } : {}),
+  },
+  schema: {},
+})
+
+/**
+ * Image picker inside a JSON list/repeater. Stores a file UUID string (no
+ * Directus relation) — fetch resolves UUIDs to local /media/ paths at build.
+ */
+export const imageFileSubfield = (field = 'image', note = 'Upload an image') => ({
+  field,
+  name: 'Image',
+  type: 'uuid',
+  meta: {
+    interface: 'file-image',
+    width: 'full',
+    ...(note ? { note } : {}),
+  },
 })
 
 export const listField = (field, note, subfields, template) => ({
@@ -41,13 +76,6 @@ const paragraphSubfield = {
   name: 'Paragraph',
   type: 'text',
   meta: { interface: 'input-multiline', width: 'full' },
-}
-
-const imageSubfield = {
-  field: 'image',
-  name: 'Image path',
-  type: 'string',
-  meta: { interface: 'input', width: 'full', note: 'e.g. /images/photo.png' },
 }
 
 export const COLLECTIONS = {
@@ -73,7 +101,7 @@ export const COLLECTIONS = {
     fields: [
       { field: 'id', type: 'integer', meta: { hidden: true, interface: 'input' }, schema: { is_primary_key: true, has_auto_increment: true } },
       textField('headline', 'Main headline'),
-      imagePathField('image'),
+      imageFileField('image'),
       stringField('primary_cta_label', 'Primary button label'),
       stringField('primary_cta_href', 'Primary button link, e.g. #compose'),
       stringField('secondary_cta_label', 'Secondary button label'),
@@ -87,7 +115,7 @@ export const COLLECTIONS = {
     schema: {},
     fields: [
       { field: 'id', type: 'integer', meta: { hidden: true, interface: 'input' }, schema: { is_primary_key: true, has_auto_increment: true } },
-      imagePathField('portrait', 'Portrait image path'),
+      imageFileField('portrait', 'Portrait photo'),
       stringField('portrait_alt', 'Portrait alt text (optional)'),
       textField('lead', 'Opening line'),
       listField('body', 'Body paragraphs', [paragraphSubfield], '{{paragraph}}'),
@@ -156,7 +184,7 @@ export const COLLECTIONS = {
       stringField('track_id', 'Unique ID, e.g. 10years'),
       stringField('title', 'Track title'),
       stringField('mood', 'Optional mood line'),
-      stringField('audio', 'Audio path under public/, e.g. /audio/track.mp3'),
+      fileField('audio', 'Track audio file (mp3, flac, …)'),
       { field: 'bpm', type: 'integer', meta: { interface: 'input', note: 'Optional — for generative placeholder' } },
       { field: 'base_freq', type: 'integer', meta: { interface: 'input', note: 'Optional — for generative placeholder' } },
     ],
@@ -173,8 +201,8 @@ export const COLLECTIONS = {
       stringField('title', 'Project title'),
       stringField('subtitle', 'Subtitle under title'),
       textField('summary', 'Short summary for cards'),
-      imagePathField('image', 'Cover image path'),
-      listField('gallery', 'Gallery images', [imageSubfield], '{{image}}'),
+      imageFileField('image', 'Cover image'),
+      listField('gallery', 'Gallery images', [imageFileSubfield('image')], '{{image}}'),
       listField(
         'highlights',
         'Highlight bullets',
@@ -197,7 +225,7 @@ export const COLLECTIONS = {
         [
           { field: 'id', name: 'Section ID', type: 'string', meta: { interface: 'input', width: 'half' } },
           { field: 'title', name: 'Title', type: 'string', meta: { interface: 'input', width: 'half' } },
-          { field: 'image', name: 'Image path', type: 'string', meta: { interface: 'input', width: 'half' } },
+          imageFileSubfield('image', 'Section image'),
           { field: 'image_alt', name: 'Image alt', type: 'string', meta: { interface: 'input', width: 'half' } },
           { field: 'quote', name: 'Quote (optional)', type: 'text', meta: { interface: 'input-multiline', width: 'full' } },
           {
@@ -219,6 +247,14 @@ export const COLLECTIONS = {
     ],
   },
 }
+
+/** Top-level fields that must be uuid + file relation (not nested JSON). */
+export const FILE_RELATION_FIELDS = [
+  { collection: 'hero', field: 'image', kind: 'image' },
+  { collection: 'about', field: 'portrait', kind: 'image' },
+  { collection: 'projects', field: 'image', kind: 'image' },
+  { collection: 'sketch_tracks', field: 'audio', kind: 'file' },
+]
 
 export const PUBLIC_COLLECTIONS = [
   'site_settings',

@@ -21,6 +21,7 @@ function trim(text: string, max = 180) {
 }
 
 export function absoluteUrl(path: string) {
+  if (/^https?:\/\//i.test(path)) return path
   const suffix = path.startsWith('/') ? path : `/${path}`
   return site.url ? `${site.url}${suffix}` : suffix
 }

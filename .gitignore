@@ -13,6 +13,9 @@ dist-ssr
 coverage
 *.local
 
+# CMS media downloaded at build time from Directus
+public/media/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
