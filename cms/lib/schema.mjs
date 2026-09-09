@@ -26,15 +26,12 @@ export const imageFileField = (field, note = 'Upload an image in Directus') => (
     width: 'half',
     ...(note ? { note } : {}),
     options: {
-      // Keep folder unrestricted so the picker shows Upload + Library
       folder: null,
+      enableCreate: true,
+      enableSelect: true,
     },
   },
-  schema: {
-    is_nullable: true,
-    foreign_key_table: 'directus_files',
-    foreign_key_column: 'id',
-  },
+  schema: { is_nullable: true },
 })
 
 /** Top-level file (audio, etc.) stored in Directus Files. */
@@ -48,18 +45,16 @@ export const fileField = (field, note = 'Upload a file in Directus') => ({
     ...(note ? { note } : {}),
     options: {
       folder: null,
+      enableCreate: true,
+      enableSelect: true,
     },
   },
-  schema: {
-    is_nullable: true,
-    foreign_key_table: 'directus_files',
-    foreign_key_column: 'id',
-  },
+  schema: { is_nullable: true },
 })
 
 /**
- * Image picker inside a JSON list/repeater. Stores a file UUID string (no
- * Directus relation) — fetch resolves UUIDs to local /media/ paths at build.
+ * @deprecated Nested file-image inside JSON list cannot upload in Directus.
+ * Gallery/sections use real Files M2M / O2M relations instead.
  */
 export const imageFileSubfield = (field = 'image', note = 'Upload an image') => ({
   field,
@@ -217,7 +212,8 @@ export const COLLECTIONS = {
       stringField('subtitle', 'Subtitle under title'),
       textField('summary', 'Short summary for cards'),
       imageFileField('image', 'Cover image'),
-      listField('gallery', 'Gallery images', [imageFileSubfield('image')], '{{image}}'),
+      // gallery + sections are created as real Files M2M / O2M relations in migrate
+      // (JSON list + file-image cannot show Upload in Directus).
       listField(
         'highlights',
         'Highlight bullets',
@@ -234,31 +230,6 @@ export const COLLECTIONS = {
         '{{label}}',
       ),
       listField('intro', 'Intro paragraphs', [paragraphSubfield], '{{paragraph}}'),
-      listField(
-        'sections',
-        'Project detail sections',
-        [
-          { field: 'id', name: 'Section ID', type: 'string', meta: { interface: 'input', width: 'half' } },
-          { field: 'title', name: 'Title', type: 'string', meta: { interface: 'input', width: 'half' } },
-          imageFileSubfield('image', 'Section image'),
-          { field: 'image_alt', name: 'Image alt', type: 'string', meta: { interface: 'input', width: 'half' } },
-          { field: 'quote', name: 'Quote (optional)', type: 'text', meta: { interface: 'input-multiline', width: 'full' } },
-          {
-            field: 'paragraphs',
-            name: 'Paragraphs',
-            type: 'json',
-            meta: {
-              interface: 'list',
-              width: 'full',
-              options: {
-                template: '{{paragraph}}',
-                fields: [paragraphSubfield],
-              },
-            },
-          },
-        ],
-        '{{title}}',
-      ),
     ],
   },
 }
@@ -281,6 +252,8 @@ export const PUBLIC_COLLECTIONS = [
   'focus_tabs',
   'sketch_tracks',
   'projects',
+  'project_sections',
+  'projects_gallery',
 ]
 
 /** Legacy JSON-blob singleton — removed after migration. */
