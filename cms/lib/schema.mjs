@@ -31,7 +31,11 @@ export const imageFileField = (field, note = 'Upload an image in Directus') => (
       enableSelect: true,
     },
   },
-  schema: { is_nullable: true },
+  schema: {
+    is_nullable: true,
+    foreign_key_table: 'directus_files',
+    foreign_key_column: 'id',
+  },
 })
 
 /** Top-level file (audio, etc.) stored in Directus Files. */
@@ -49,7 +53,11 @@ export const fileField = (field, note = 'Upload a file in Directus') => ({
       enableSelect: true,
     },
   },
-  schema: { is_nullable: true },
+  schema: {
+    is_nullable: true,
+    foreign_key_table: 'directus_files',
+    foreign_key_column: 'id',
+  },
 })
 
 /**

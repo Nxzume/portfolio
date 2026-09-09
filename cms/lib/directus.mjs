@@ -210,18 +210,27 @@ async function getRelation(collection, field) {
     const res = await api(`/relations/${encodeURIComponent(collection)}/${encodeURIComponent(field)}`, 'GET')
     if (res.data) return res.data
   } catch (err) {
+    if (err.status === 403) {
+      // Token may lack directus_relations read — caller must rely on field schema FK.
+      return null
+    }
     if (err.status && err.status !== 404) {
-      // keep trying the list filter below
+      // fall through
     }
   }
 
-  const q = new URLSearchParams({
-    'filter[collection][_eq]': collection,
-    'filter[field][_eq]': field,
-    limit: '5',
-  })
-  const existing = await api(`/relations?${q}`, 'GET')
-  return existing.data?.[0] ?? null
+  try {
+    const q = new URLSearchParams({
+      'filter[collection][_eq]': collection,
+      'filter[field][_eq]': field,
+      limit: '5',
+    })
+    const existing = await api(`/relations?${q}`, 'GET')
+    return existing.data?.[0] ?? null
+  } catch (err) {
+    if (err.status === 403 || err.status === 404) return null
+    throw err
+  }
 }
 
 async function deleteRelation(collection, field) {
@@ -333,22 +342,31 @@ export async function repairBrokenProjectsGalleryField() {
     return
   }
 
-  // Alias Files fields are fine once junction exists; anything else (json /
-  // orphaned column meta) breaks item reads.
-  if (field.type === 'alias' && (field.meta?.special || []).includes?.('files')) {
-    // Probe whether items can be read; if gallery meta is corrupt, drop it.
+  const special = field.meta?.special
+  const hasFilesSpecial = Array.isArray(special)
+    ? special.includes('files')
+    : String(special || '').includes('files')
+
+  // Probe specifically with gallery — fields=id can succeed while gallery 500s.
+  let galleryReadable = false
+  if (field.type === 'alias' && hasFilesSpecial) {
     try {
-      await api('/items/projects?limit=1&fields=id', 'GET')
-      console.log('projects.gallery Files alias present')
+      await api('/items/projects?limit=1&fields=id,gallery', 'GET')
+      galleryReadable = true
+      console.log('projects.gallery Files alias present and readable')
       return
     } catch (err) {
-      console.warn(`projects.gallery alias looks broken (${err.message}); recreating`)
+      console.warn(`projects.gallery alias unreadable (${err.message}); recreating`)
     }
   } else {
-    console.log(`Removing broken projects.gallery (type=${field.type})…`)
+    console.log(
+      `Removing broken projects.gallery (type=${field.type}, special=${JSON.stringify(special)})…`,
+    )
   }
 
-  await removeField('projects', 'gallery')
+  if (!galleryReadable) {
+    await removeField('projects', 'gallery')
+  }
 }
 
 /** Same for projects.sections JSON leftovers before O2M is ready. */
@@ -374,7 +392,7 @@ export async function repairBrokenProjectsSectionsField() {
 
 /**
  * Force file-field meta/schema/relation into the shape Directus expects for a
- * working upload + library picker (uuid + special:file + relation).
+ * working upload + library picker (uuid + special:file + FK → directus_files).
  */
 export async function repairFileField(collection, fieldDef) {
   const existing = await getField(collection, fieldDef.field)
@@ -386,19 +404,49 @@ export async function repairFileField(collection, fieldDef) {
     return ensureFileField(collection, fieldDef)
   }
 
+  const desiredMeta = {
+    ...(existing.meta || {}),
+    ...(fieldDef.meta || {}),
+    special: ['file'],
+    interface: fieldDef.meta?.interface || existing.meta?.interface || 'file',
+    options: {
+      folder: null,
+      enableCreate: true,
+      enableSelect: true,
+      ...(fieldDef.meta?.options || {}),
+    },
+  }
+
   try {
     await api(`/fields/${collection}/${fieldDef.field}`, 'PATCH', {
-      meta: fieldDef.meta,
+      meta: desiredMeta,
       schema: {
+        ...(existing.schema || {}),
         is_nullable: true,
+        foreign_key_table: 'directus_files',
+        foreign_key_column: 'id',
       },
     })
-    console.log(`Repaired file field: ${collection}.${fieldDef.field}`)
+    console.log(
+      `Repaired file field: ${collection}.${fieldDef.field} (interface=${desiredMeta.interface}, fk=directus_files)`,
+    )
   } catch (err) {
     console.warn(`Could not repair ${collection}.${fieldDef.field}: ${err.message}`)
   }
 
   await ensureFileRelation(collection, fieldDef.field)
+
+  // Verify FK landed (relations endpoint may be 403 for some tokens)
+  const after = await getField(collection, fieldDef.field)
+  if (after?.schema?.foreign_key_table !== 'directus_files') {
+    console.warn(
+      `Warning: ${collection}.${fieldDef.field} foreign_key_table is ${after?.schema?.foreign_key_table ?? 'null'} (want directus_files)`,
+    )
+  }
+  if (!after?.meta?.interface) {
+    console.warn(`Warning: ${collection}.${fieldDef.field} still has null interface`)
+  }
+
   return { needsPathMigration: false }
 }
 
@@ -420,25 +468,8 @@ export async function ensureFileField(collection, fieldDef) {
 
   if (existing.type === 'uuid') {
     console.log(`File field exists: ${collection}.${fieldDef.field}`)
-    await ensureFileRelation(collection, fieldDef.field)
-    const special = existing.meta?.special
-    const specialOk = Array.isArray(special)
-      ? special.includes('file')
-      : String(special || '').includes('file')
-    const interfaceOk =
-      existing.meta?.interface === 'file' || existing.meta?.interface === 'file-image'
-    if (!specialOk || !interfaceOk || existing.meta?.interface === 'input') {
-      try {
-        await api(`/fields/${collection}/${fieldDef.field}`, 'PATCH', {
-          meta: fieldDef.meta,
-          schema: { is_nullable: true },
-        })
-        console.log(`Updated file field meta: ${collection}.${fieldDef.field}`)
-      } catch (err) {
-        console.log(`Could not patch field meta ${collection}.${fieldDef.field}: ${err.message}`)
-      }
-    }
-    return { needsPathMigration: false }
+    // Always run full repair so FK + interface are corrected (not only on create).
+    return repairFileField(collection, fieldDef)
   }
 
   if (existing.type === 'string') {
