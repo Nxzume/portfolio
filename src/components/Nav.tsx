@@ -87,11 +87,15 @@ export function Nav({ variant = 'home' }: Props) {
         transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       >
         <Link className="nav__brand" to="/">
+          <span className="nav__mark" aria-hidden />
           {site.name}
         </Link>
         <nav className="nav__links" aria-label="Primary">
-          {homeLinks.map((link) => (
+          {homeLinks.map((link, i) => (
             <Link key={link.href} to={link.href}>
+              <span className="nav__num" aria-hidden>
+                {String(i + 1).padStart(2, '0')}
+              </span>
               {link.label}
             </Link>
           ))}

@@ -1,41 +1,104 @@
+/* About — portrait plate + bio + experience timeline. */
 .about__grid {
   display: grid;
-  grid-template-columns: 0.85fr 1.15fr;
-  gap: 2rem;
-  align-items: center;
+  grid-template-columns: minmax(240px, 340px) 1fr;
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: start;
 }
 
 .about__portrait {
-  border-radius: 1.25rem;
-  overflow: hidden;
+  position: sticky;
+  top: 6rem;
+  margin: 0;
   border: 1px solid var(--line);
-  box-shadow: var(--shadow);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--ink-2);
 }
 
 .about__portrait img {
   width: 100%;
   aspect-ratio: 4 / 5;
   object-fit: cover;
-  filter: grayscale(0.15) contrast(1.05);
+  filter: saturate(0.92);
 }
 
-.about__copy h2 {
-  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
-  max-width: 16ch;
-}
-
-.about__copy p {
+.about__caption {
+  margin: 0;
+  padding: 0.7rem 0.9rem;
+  border-top: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: var(--paper-dim);
 }
 
+.about__copy h2 {
+  font-size: clamp(1.5rem, 2.8vw, 2.1rem);
+  font-weight: 600;
+  line-height: 1.2;
+  max-width: 26ch;
+}
+
+.about__copy > p {
+  color: var(--paper-dim);
+  max-width: 62ch;
+}
+
 .about__note {
-  padding-top: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--slate);
+}
+
+.about__timeline {
+  margin-top: 2.5rem;
+}
+
+.about__timeline ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   border-top: 1px solid var(--line);
-  font-size: 0.95rem;
+}
+
+.about__timeline li {
+  display: grid;
+  grid-template-columns: 8.5rem 1fr;
+  gap: 0.2rem 1.25rem;
+  padding: 0.85rem 0.25rem;
+  border-bottom: 1px solid var(--line);
+  align-items: baseline;
+}
+
+.about__period {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--signal);
+  grid-row: span 2;
+}
+
+.about__role {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--paper);
+}
+
+.about__org {
+  font-size: 0.85rem;
+  color: var(--paper-dim);
 }
 
 @media (max-width: 860px) {
   .about__grid {
     grid-template-columns: 1fr;
+  }
+
+  .about__portrait {
+    position: static;
+    max-width: 320px;
   }
 }

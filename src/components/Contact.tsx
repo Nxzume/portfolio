@@ -32,6 +32,11 @@ export function Contact() {
         <h2>{contact.title}</h2>
         <p className="section__lede">{contact.lede}</p>
       </div>
+      {site.email ? (
+        <a className="contact__email" href={`mailto:${site.email}`}>
+          {site.email}
+        </a>
+      ) : null}
       <div className="contact__actions">
         {actions.map((action) => (
           <a
@@ -57,6 +62,9 @@ export function Footer() {
       <p suppressHydrationWarning>
         © {new Date().getFullYear()} {site.name}
       </p>
+      <a className="footer__top" href="#main">
+        Back to top ↑
+      </a>
     </footer>
   )
 }

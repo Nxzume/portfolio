@@ -44,35 +44,34 @@ export function ProjectPage() {
       <PageHead meta={projectMeta(content, project)} />
       <Nav variant="page" />
       <main id="main" className="project-page">
-        <header className="project-page__hero">
-          <div className="project-page__hero-media" aria-hidden>
-            {project.image ? <img src={project.image} alt="" decoding="async" /> : null}
-            <div className="project-page__hero-veil" />
+        <header className="project-page__hero" id="top">
+          <Link className="project-page__back" to="/#projects">
+            ← All projects
+          </Link>
+          <p className="eyebrow">{project.subtitle}</p>
+          <h1>{project.title}</h1>
+          <p className="project-page__summary">{project.summary}</p>
+          <div className="projects__links">
+            {project.links.map((link, i) => {
+              const external = isExternal(link.href)
+              return (
+                <a
+                  key={`${i}-${link.href}`}
+                  className={link.label.toLowerCase().includes('play') ? 'btn btn--primary' : 'btn btn--ghost'}
+                  href={normalizeHref(link.href)}
+                  target={external ? '_blank' : undefined}
+                  rel={external ? 'noreferrer' : undefined}
+                >
+                  {link.label}
+                </a>
+              )
+            })}
           </div>
-          <div className="project-page__hero-content">
-            <Link className="project-page__back" to="/#projects">
-              ← Projects
-            </Link>
-            <p className="eyebrow">{project.subtitle}</p>
-            <h1>{project.title}</h1>
-            <p className="project-page__summary">{project.summary}</p>
-            <div className="projects__links">
-              {project.links.map((link, i) => {
-                const external = isExternal(link.href)
-                return (
-                  <a
-                    key={`${i}-${link.href}`}
-                    className={link.label.toLowerCase().includes('play') ? 'btn btn--primary' : 'btn btn--ghost'}
-                    href={normalizeHref(link.href)}
-                    target={external ? '_blank' : undefined}
-                    rel={external ? 'noreferrer' : undefined}
-                  >
-                    {link.label}
-                  </a>
-                )
-              })}
-            </div>
-          </div>
+          {project.image ? (
+            <figure className="project-page__plate">
+              <img src={project.image} alt="" decoding="async" />
+            </figure>
+          ) : null}
         </header>
 
         <div className="project-page__body">

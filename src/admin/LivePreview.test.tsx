@@ -91,7 +91,7 @@ describe('LivePreview', () => {
     expect(selections).toEqual(['about'])
   })
 
-  it('clicking a project card selects that project', async () => {
+  it('clicking a project row selects that project', async () => {
     const selections: string[] = []
     root = createRoot(container)
     await act(async () => {
@@ -99,9 +99,9 @@ describe('LivePreview', () => {
         <LivePreview files={files} drafts={{}} selection="site" onSelect={(key) => selections.push(key)} />,
       )
     })
-    const card = container.querySelector('.projects__card')!
+    const row = container.querySelector('.projects__row')!
     await act(async () => {
-      card.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      row.dispatchEvent(new MouseEvent('click', { bubbles: true }))
     })
     expect(selections).toHaveLength(1)
     expect(selections[0]).toMatch(/^projects\//)

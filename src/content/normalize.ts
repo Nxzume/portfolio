@@ -126,12 +126,22 @@ export function normalizeSite(raw: unknown): SiteContent {
 
 export function normalizeAbout(raw: unknown): AboutContent {
   const row = asRow(raw)
+  const timeline = asList(row.timeline)
+    .map((item) => {
+      const entry = asRow(item)
+      const period = str(entry.period).trim()
+      const role = str(entry.role).trim()
+      const org = str(entry.org).trim()
+      return period || role || org ? { period, role, org } : null
+    })
+    .filter((entry): entry is { period: string; role: string; org: string } => entry != null)
   return {
     portrait: str(row.portrait).trim(),
     portraitAlt: optionalStr(str(row.portraitAlt).trim()),
     lead: str(row.lead),
     body: textItems(row.body),
     note: optionalStr(str(row.note).trim()),
+    timeline: timeline.length ? timeline : undefined,
   }
 }
 
