@@ -1,8 +1,8 @@
 {
   "headline": "Music for worlds players inhabit.",
-  "image": "/media/demo-hero.webp",
+  "image": "/images/level-gameplay.png",
   "primaryCta": {
-    "label": "Listen to my music",
+    "label": "Hear music",
     "href": "#compose"
   },
   "secondaryCta": {
