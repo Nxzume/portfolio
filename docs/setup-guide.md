@@ -60,7 +60,7 @@ better because it can only ever touch this one repo.
    | `MEDIA_QUALITY` | optional | `82` | WebP quality for uploaded images. |
 
 3. **No volumes and no databases** are needed — the repo is the store.
-4. Health check path (if Coolify asks): `/healthz`.
+4. Health check path (if Coolify asks): `/healthz`. The image includes `curl` so Coolify's Docker healthcheck works.
 5. Deploy.
 
 > Turn on Coolify's GitHub webhook ("Automatic deployment") only if you want

@@ -14,6 +14,9 @@ FROM node:22-alpine
 ENV NODE_ENV=production
 WORKDIR /app
 
+# Coolify's Docker healthcheck shells out to curl inside the container.
+RUN apk add --no-cache curl
+
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 
