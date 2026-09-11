@@ -32,6 +32,7 @@ export function HomePage() {
           currentTime={player.currentTime}
           duration={player.duration}
           canSeek={player.canSeek}
+          loadErrorId={player.loadErrorId}
           onPlayTrack={(id) => {
             const sketch = sketches.find((s) => s.id === id)
             if (sketch) void player.play(sketch)
