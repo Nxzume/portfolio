@@ -1,12 +1,12 @@
 {
-  "summary": "A succession of floors with their own mechanics. The player controls two characters with different abilities and must combine their skills to solve puzzles and defeat enemies.",
+  "summary": "A Real-Time Strategy / RPG hybrid in Unity. The player controls two characters at once in real-time battles, clears tutorial arenas, then explores a dungeon floor.",
   "slug": "arena",
   "intro": [
     {
-      "paragraph": "The Arena is a 2D top-down RPG still in development. The aim is a succession of floors, each with its own mechanics. The first floor is nearly done."
+      "paragraph": "The Arena plays like a Real-Time Strategy / RPG hybrid. The player controls two characters at once in real-time battles and must clear all battles to advance through the story and levels."
     },
     {
-      "paragraph": "The player controls two characters with different abilities and must combine both skill sets to solve puzzles and defeat enemies."
+      "paragraph": "Four skills plus auto-attack drive both puzzles and combat. Victory means clearing battles and reaching the end of the first floor; failure is when both characters die at once. The build includes a tutorial arena series and a dungeon floor with world / NPC interaction outside the arena."
     }
   ],
   "sections": [
@@ -53,20 +53,20 @@
   "links": [
     {
       "label": "GitHub",
-      "href": "https://github.com/keeganland/the-arena-agda"
+      "href": "https://github.com/alexandreguichet/the-arena-agda"
     }
   ],
   "id": "arena",
   "image": "/images/arena-gameplay.png",
   "highlights": [
     {
-      "item": "Dual-character puzzle combat"
+      "item": "Dual-character real-time battles"
     },
     {
-      "item": "Floor-based mechanical variety"
+      "item": "Tutorial arena into dungeon exploration"
     },
     {
-      "item": "First floor nearly complete in the original build"
+      "item": "Skills used for both puzzles and combat"
     }
   ]
 }

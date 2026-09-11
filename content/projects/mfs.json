@@ -1,0 +1,52 @@
+{
+  "id": "mfs",
+  "slug": "mfs",
+  "order": 4,
+  "title": "Mutual Information Feature Selection",
+  "subtitle": "Open source · ML · Matlab / Python",
+  "image": "",
+  "gallery": [],
+  "summary": "A fast, out-of-the-box feature selection algorithm using mutual information for discrete–continuous datasets — with tunable precision vs speed.",
+  "highlights": [
+    {
+      "item": "Mutual-information feature ranking"
+    },
+    {
+      "item": "Designed for discrete–continuous mixtures"
+    },
+    {
+      "item": "Returns decision matrix and selected features"
+    }
+  ],
+  "links": [
+    {
+      "label": "GitHub",
+      "href": "https://github.com/alexandreguichet/MFS"
+    }
+  ],
+  "intro": [
+    {
+      "paragraph": "Mutual Information Feature Selection (Apr 2020 – Jul 2020) is a fast, efficient open-source feature selection algorithm using mutual information."
+    },
+    {
+      "paragraph": "It targets discrete–continuous datasets. Pick a dataset, choose how many top features to keep, and the algorithm returns a decision matrix, selected features, and the knobs needed to trade precision for speed."
+    }
+  ],
+  "sections": [
+    {
+      "id": "references",
+      "title": "References",
+      "paragraphs": [
+        {
+          "paragraph": "B.C. Ross, “Mutual Information between Discrete and Continuous Data Sets”. PLoS ONE 9(2), 2014."
+        },
+        {
+          "paragraph": "A. Kraskov, H. Stögbauer, and P. Grassberger, “Estimating Mutual Information”. Phys. Rev. E 69, 2003."
+        },
+        {
+          "paragraph": "W. Gao, S. Kannan, S. Oh, P. Viswanath, “Estimating Mutual Information for discrete-continuous mixtures”. arXiv:1709.06212, 2017."
+        }
+      ]
+    }
+  ]
+}
