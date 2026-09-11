@@ -2,9 +2,10 @@
   "name": "Alexandre Guichet",
   "tagline": "Composer for games — with level design craft and Azure DevOps depth.",
   "email": "alexandre.g007@gmail.com",
-  "url": "https://alexandreguichet.vancouverly.ca",
   "links": {
-    "github": "https://github.com/alexandreguichet",
-    "linkedin": ""
-  }
+    "itch": "https://alexandreguichet.itch.io/level",
+    "githubArena": "https://github.com/keeganland/the-arena-agda",
+    "githubLevel": "https://github.com/alexandreguichet/Level-Unity-CSharp"
+  },
+  "url": "https://alexandreguichet.vancouverly.ca"
 }
