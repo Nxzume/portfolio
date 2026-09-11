@@ -88,12 +88,13 @@ app.use((req, res, next) => {
     'Content-Security-Policy',
     [
       "default-src 'self'",
-      "script-src 'self'",
+      // Cloudflare Web Analytics injects beacon.min.js when enabled on the zone.
+      "script-src 'self' https://static.cloudflareinsights.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob:",
       "media-src 'self' blob:",
-      "connect-src 'self'",
+      "connect-src 'self' https://cloudflareinsights.com https://*.cloudflareinsights.com",
       "frame-ancestors 'self'",
       "base-uri 'none'",
       "form-action 'self'",
