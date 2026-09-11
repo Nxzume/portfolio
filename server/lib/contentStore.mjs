@@ -64,9 +64,10 @@ export class HttpError extends Error {
 }
 
 export class ContentStore {
-  constructor({ contentDir, mediaDir, maxUploadBytes, maxDimension, quality }) {
+  constructor({ contentDir, mediaDir, publicDir, maxUploadBytes, maxDimension, quality }) {
     this.contentDir = path.resolve(contentDir)
     this.mediaDir = path.resolve(mediaDir)
+    this.publicDir = path.resolve(publicDir || path.dirname(this.mediaDir))
     this.maxUploadBytes = maxUploadBytes
     this.maxDimension = maxDimension
     this.quality = quality
@@ -169,13 +170,19 @@ export class ContentStore {
       for (const entry of entries) {
         const full = path.join(dir, entry.name)
         if (entry.isDirectory()) await walk(full, `${prefix}${entry.name}/`)
-        else if (entry.isFile()) {
+        else if (entry.isFile() && !entry.name.startsWith('.')) {
           const info = await stat(full)
           out.push({ path: `${prefix}${entry.name}`, size: info.size, modified: info.mtime.toISOString() })
         }
       }
     }
+
+    // Uploaded files live in public/media; the original site assets live in
+    // public/images and public/audio. Show all of them in the library.
     await walk(this.mediaDir, '/media/')
+    await walk(path.join(this.publicDir, 'images'), '/images/')
+    await walk(path.join(this.publicDir, 'audio'), '/audio/')
+
     return out.sort((a, b) => b.modified.localeCompare(a.modified))
   }
 

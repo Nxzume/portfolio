@@ -50,6 +50,7 @@ const auth = createAuth({
 const store = new ContentStore({
   contentDir: config.contentDir,
   mediaDir: config.mediaDir,
+  publicDir: config.publicDir,
   maxUploadBytes: config.maxUploadBytes,
   maxDimension: config.mediaMaxDimension,
   quality: config.mediaQuality,
