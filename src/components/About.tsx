@@ -1,7 +1,8 @@
 import { m } from 'framer-motion'
-import { about, site } from '../content'
+import { useContent } from '../content/context'
 
 export function About() {
+  const { about, site } = useContent()
   return (
     <section className="section about" id="about">
       <div className="about__grid">

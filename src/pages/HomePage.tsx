@@ -7,17 +7,20 @@ import { Nav } from '../components/Nav'
 import { PageHead } from '../components/PageHead'
 import { Projects } from '../components/Projects'
 import { ScoreDesk } from '../components/ScoreDesk'
-import { focuses, sketches, type FocusId } from '../content'
+import { useContent } from '../content/context'
+import type { FocusId } from '../content/types'
 import { useSketchPlayer } from '../hooks/useSketchPlayer'
 import { homeMeta } from '../lib/meta'
 
 export function HomePage() {
+  const content = useContent()
+  const { focuses, sketches } = content
   const [focus, setFocus] = useState<FocusId>(focuses[0]?.id ?? 'compose')
   const player = useSketchPlayer(sketches)
 
   return (
     <div className="app">
-      <PageHead meta={homeMeta()} />
+      <PageHead meta={homeMeta(content)} />
       <Nav variant="home" />
       <main id="main">
         <Hero intensity={player.intensity} />

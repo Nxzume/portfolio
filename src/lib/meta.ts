@@ -1,5 +1,5 @@
-import { hero, projects, site } from '../content'
-import type { Project } from '../content/types'
+import type { Content } from '../content/load'
+import type { Project, SiteContent } from '../content/types'
 
 export type PageMeta = {
   title: string
@@ -20,55 +20,55 @@ function trim(text: string, max = 180) {
   return `${(lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`
 }
 
-export function absoluteUrl(path: string) {
+export function absoluteUrl(siteUrl: string, path: string) {
   if (/^https?:\/\//i.test(path)) return path
   const suffix = path.startsWith('/') ? path : `/${path}`
-  return site.url ? `${site.url}${suffix}` : suffix
+  return siteUrl ? `${siteUrl}${suffix}` : suffix
 }
 
-export function homeMeta(): PageMeta {
+export function homeMeta(content: Content): PageMeta {
   return {
-    title: `${site.name} — Composer & Level Designer`,
-    description: trim(site.tagline),
+    title: `${content.site.name} — Composer & Level Designer`,
+    description: trim(content.site.tagline),
     path: '/',
-    image: hero.image || undefined,
+    image: content.hero.image || undefined,
   }
 }
 
-export function projectMeta(project: Project): PageMeta {
-  const description = project.summary || project.intro[0] || site.tagline
+export function projectMeta(content: Content, project: Project): PageMeta {
+  const description = project.summary || project.intro[0] || content.site.tagline
   return {
-    title: `${project.title} — ${site.name}`,
+    title: `${project.title} — ${content.site.name}`,
     description: trim(description),
     path: `/projects/${project.slug}`,
-    image: project.image || hero.image || undefined,
+    image: project.image || content.hero.image || undefined,
   }
 }
 
-export function notFoundMeta(): PageMeta {
+export function notFoundMeta(content: Content): PageMeta {
   return {
-    title: `Page not found — ${site.name}`,
-    description: trim(`That page does not exist on ${site.name}’s portfolio.`),
+    title: `Page not found — ${content.site.name}`,
+    description: trim(`That page does not exist on ${content.site.name}’s portfolio.`),
     path: '/404',
     noindex: true,
   }
 }
 
 /** Resolves the same metadata the router would render, for build-time prerendering. */
-export function metaForPath(pathname: string): PageMeta {
+export function metaForPath(content: Content, pathname: string): PageMeta {
   const path = pathname.replace(/\/+$/, '') || '/'
-  if (path === '/') return homeMeta()
+  if (path === '/') return homeMeta(content)
   const slug = path.startsWith('/projects/') ? path.slice('/projects/'.length) : ''
-  const project = slug ? projects.find((p) => p.slug === slug) : undefined
-  return project ? projectMeta(project) : notFoundMeta()
+  const project = slug ? content.projects.find((p) => p.slug === slug) : undefined
+  return project ? projectMeta(content, project) : notFoundMeta(content)
 }
 
 type TagSpec = { selector: string; attrs: Record<string, string> }
 
 /** Single source of truth for the tags, so the DOM updater and the HTML emitter agree. */
-export function metaTagSpecs(meta: PageMeta): TagSpec[] {
-  const canonical = absoluteUrl(meta.path)
-  const image = meta.image ? absoluteUrl(meta.image) : ''
+export function metaTagSpecs(meta: PageMeta, site: SiteContent): TagSpec[] {
+  const canonical = absoluteUrl(site.url, meta.path)
+  const image = meta.image ? absoluteUrl(site.url, meta.image) : ''
 
   const specs: TagSpec[] = [
     { selector: 'meta[name="description"]', attrs: { name: 'description', content: meta.description } },
@@ -107,13 +107,13 @@ export function metaTagSpecs(meta: PageMeta): TagSpec[] {
 }
 
 /** Keeps the head correct after client-side navigation. */
-export function applyMeta(meta: PageMeta) {
+export function applyMeta(meta: PageMeta, site: SiteContent) {
   if (typeof document === 'undefined') return
   document.title = meta.title
 
   document.querySelector('meta[name="robots"]')?.remove()
 
-  for (const { selector, attrs } of metaTagSpecs(meta)) {
+  for (const { selector, attrs } of metaTagSpecs(meta, site)) {
     let el = document.head.querySelector(selector)
     if (!el) {
       el = document.createElement(selector.startsWith('link') ? 'link' : 'meta')
@@ -136,8 +136,8 @@ function escapeText(value: string) {
 }
 
 /** Renders the head fragment written into each prerendered HTML file. */
-export function renderMetaHtml(meta: PageMeta) {
-  const tags = metaTagSpecs(meta).map(({ selector, attrs }) => {
+export function renderMetaHtml(meta: PageMeta, site: SiteContent) {
+  const tags = metaTagSpecs(meta, site).map(({ selector, attrs }) => {
     const tag = selector.startsWith('link') ? 'link' : 'meta'
     const attrString = Object.entries(attrs)
       .map(([key, value]) => `${key}="${escapeAttr(value)}"`)
