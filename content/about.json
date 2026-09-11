@@ -1,12 +1,15 @@
 {
   "portrait": "/images/portrait.png",
-  "lead": "Alexandre Guichet builds worlds in sound, space, and systems.",
+  "lead": "Alexandre Guichet is a Python and C++ software engineer with 6.5+ years of experience, based in Vancouver.",
   "body": [
     {
-      "paragraph": "This portfolio started as a Level Design journey — Unity experiments, puzzle teaching, and personal games. It is being reshaped around three paths: composing for video games, crafting level experiences, and shipping with Azure DevOps."
+      "paragraph": "Industry experience in Python, C++, C#, and deep learning / machine learning — plus cloud and big data analysis, data mining with Hadoop, SQL, and Spark. He builds scalable algorithms, ships OOP applications with solid unit testing, and works closely with teams across labs and product orgs."
     },
     {
-      "paragraph": "Much of the project writing below is from the original site and will be refreshed as new scores, levels, and cloud work land. For now it is an honest snapshot of craft in progress."
+      "paragraph": "As Technical Lead at Microsoft he develops ARM silicon firmware (SystemC, C, C++), automates FPGA and silicon validation in Python and C++, and leads automation / SoC validation across four projects — including Azure DevOps standardization and a team of four. Earlier roles include Intel (PCIe / CXL modelling), Evenant and Algolys (full stack), and Bosch (sensor testing and ML for MEMS)."
+    },
+    {
+      "paragraph": "Applied Science at The University of British Columbia (2015–2018). Side craft still shows on this site: Unity games like Level and The Arena, open-source ML / vision work (FindIt, MFS), and music written for games."
     }
   ],
   "note": ""

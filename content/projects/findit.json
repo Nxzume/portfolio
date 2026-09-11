@@ -1,0 +1,53 @@
+{
+  "id": "findit",
+  "slug": "findit",
+  "order": 3,
+  "title": "FindIt",
+  "subtitle": "Computer vision · embedded · UBC",
+  "image": "",
+  "gallery": [],
+  "summary": "An embedded camera system that finds train-track defects with a custom Canny-style edge detector and a classifier for crack vs shelling candidates.",
+  "highlights": [
+    {
+      "item": "Custom Canny-style edge detection tuned for tracks"
+    },
+    {
+      "item": "Crack vs shelling classification pipeline"
+    },
+    {
+      "item": "Associated with The University of British Columbia"
+    }
+  ],
+  "links": [
+    {
+      "label": "GitHub",
+      "href": "https://github.com/alexandreguichet/FindIt"
+    },
+    {
+      "label": "Watch on YouTube",
+      "href": "https://www.youtube.com/watch?v=QuylfWpTdOo&list=PL2kV0kWfWM3CIzJsxYMH7DIDV_0zAp3Bp&index=2"
+    }
+  ],
+  "intro": [
+    {
+      "paragraph": "FindIt (Sep 2020 – May 2021) is an embedded system with a camera that finds track defects using custom computer vision algorithms."
+    },
+    {
+      "paragraph": "The vision stack recreates Canny edge detection tuned for train tracks. Detected candidates then go through a custom classifier that labels crack vs shelling defect types."
+    }
+  ],
+  "sections": [
+    {
+      "id": "overview",
+      "title": "Overview",
+      "paragraphs": [
+        {
+          "paragraph": "Built with collaborators at UBC. The project sits at the intersection of embedded capture, classical CV, and practical defect triage for rail infrastructure."
+        },
+        {
+          "paragraph": "Source and a walkthrough video are linked from this page."
+        }
+      ]
+    }
+  ]
+}

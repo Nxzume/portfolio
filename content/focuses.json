@@ -15,8 +15,8 @@
     {
       "id": "azure",
       "label": "Azure",
-      "headline": "DevOps on Microsoft Azure",
-      "body": "Alongside creative work, Alexandre works with Microsoft Azure DevOps — bringing reliable delivery, automation, and cloud craft to teams that ship."
+      "headline": "Technical Lead · Microsoft Azure",
+      "body": "At Microsoft in Vancouver, Alexandre leads automation and SoC validation across four projects — ARM firmware in SystemC/C/C++, FPGA and silicon test automation in Python and C++, and Azure DevOps (CLI, ADO, REST, AAD, Artifacts). He leads a team of four with SCRUM and standardizes pipelines across orgs."
     }
   ]
 }
