@@ -202,7 +202,24 @@ async function migrateFromLegacyGlobals() {
 }
 
 async function migrateLegacyProjects() {
-  const res = await api('/items/projects?limit=-1', 'GET')
+  // Explicit fields — NOT '*' or unspecified (which defaults to all
+  // columns). This collection has O2M alias fields (gallery, sections)
+  // that aren't real database columns; Directus's query builder throws a
+  // raw SQL error trying to SELECT them without being told to resolve them
+  // as relations, which only 'fields=*' triggers if not scoped like this.
+  let res
+  try {
+    res = await api('/items/projects?limit=-1&fields=id,sort,slug,title,payload', 'GET')
+  } catch (err) {
+    // 'payload' doesn't exist at all on a schema that was never the old
+    // JSON-blob shape (e.g. a fresh install) — nothing to migrate.
+    const msg = JSON.stringify(err.body ?? err.message)
+    if (err.status === 403 && msg.includes('payload')) {
+      console.log('No legacy payload field on projects — nothing to migrate')
+      return
+    }
+    throw err
+  }
   let migrated = 0
 
   for (const row of res.data ?? []) {

@@ -230,6 +230,17 @@ async function deleteRelation(collection, field) {
     console.log(`Removed relation: ${collection}.${field}`)
   } catch (err) {
     if (err.status === 404) return
+    // "Doesn't have a relationship" (400) happens when GET /relations
+    // reports a phantom/system relation (e.g. an implied link to
+    // directus_folders on a fresh file field) that the DELETE endpoint
+    // doesn't actually recognize as a real, deletable relation. Nothing to
+    // delete in that case — safe to treat like a 404 and let the caller
+    // proceed to create the real relation.
+    const msg = JSON.stringify(err.body ?? err.message)
+    if (err.status === 400 && msg.includes("doesn't have a relationship")) {
+      console.log(`No real relation to remove: ${collection}.${field} (was a phantom/system relation)`)
+      return
+    }
     // Some Directus versions only support delete by id
     const existing = await getRelation(collection, field)
     if (existing?.id != null) {
@@ -465,8 +476,14 @@ export async function ensureProjectGalleryFilesField() {
     // Caller should have migrated values first; drop JSON field then recreate.
     await removeField(collection, field)
   } else if (existing && existing.type === 'alias') {
-    console.log('projects.gallery Files field exists')
-    return { junction }
+    // Do NOT return early here. The alias field existing only means the
+    // *field* was created at some point — it says nothing about whether the
+    // junction collection/fields/relations actually exist. They can be
+    // missing (confirmed: found a real instance where the field existed but
+    // zero relation records did), which breaks every read of `projects`
+    // that expands `gallery` — i.e. every site build. Fall through so the
+    // idempotent ensure* calls below can verify and repair them.
+    console.log('projects.gallery Files field exists — verifying junction/relations…')
   }
 
   if (!(await collectionExists(junction))) {
@@ -523,17 +540,30 @@ export async function ensureProjectGalleryFilesField() {
   }
 
   // Relations: projects ↔ junction ↔ files
+  //
+  // NOT gated behind a "does it already exist" pre-check via getRelation().
+  // Confirmed by direct testing: getRelation()'s list-filter fallback query
+  // doesn't actually filter (Directus's /relations list endpoint doesn't
+  // honour filter[collection][_eq]/filter[field][_eq] the way /items/:x
+  // does) — it returns the first relation in the ENTIRE system relations
+  // list, which is always truthy, so the "already exists" check always
+  // reports true even when nothing exists for this collection/field at
+  // all. That silently skipped relation creation forever, which is why
+  // querying projects with fields=* crashed on every read (Directus
+  // treats an alias field with no real relation as a raw, nonexistent
+  // column). Always attempting the POST and treating "already exists" as
+  // success (via isDuplicateError, below) is correct either way and does
+  // not depend on that broken check.
   async function ensureRel(payload, label) {
-    const found = await getRelation(payload.collection, payload.field)
-    if (found) {
-      console.log(`Relation exists: ${label}`)
-      return
-    }
     try {
       await api('/relations', 'POST', payload)
       console.log(`Created relation: ${label}`)
     } catch (err) {
-      if (!isDuplicateError(err)) throw err
+      if (isDuplicateError(err)) {
+        console.log(`Relation already exists: ${label}`)
+        return
+      }
+      throw err
     }
   }
 
@@ -569,21 +599,18 @@ export async function ensureProjectGalleryFilesField() {
     `${junction}.directus_files_id → directus_files`,
   )
 
-  await ensureRel(
-    {
-      collection: 'projects',
-      field,
-      related_collection: junction,
-      meta: {
-        one_field: 'projects_id',
-        sort_field: 'sort',
-        one_deselect_action: 'nullify',
-        junction_field: 'directus_files_id',
-      },
-      schema: null,
-    },
-    `projects.${field} → ${junction}`,
-  )
+  // No separate relation for projects.gallery itself — it's an alias field
+  // (no real column, confirmed: schema is null) and doesn't get its own
+  // relation row. The junction's projects_id relation above, with
+  // meta.one_field: 'gallery', is what fully establishes the M2M in both
+  // directions. A prior version of this code also tried to create a third,
+  // separate relation from projects.gallery -> the junction collection —
+  // that's redundant, and Directus tried to add a real foreign key
+  // constraint on gallery for it despite schema: null, which fails outright
+  // since gallery has no backing column ("column gallery referenced in
+  // foreign key constraint does not exist"). Confirmed removing it entirely
+  // still leaves the M2M fully functional (see cms/lib/directus.mjs commit
+  // history / diagnostic notes if this needs revisiting).
 
   return { junction }
 }
@@ -668,23 +695,28 @@ export async function ensureProjectSectionsCollection() {
   })
 
   // Relation project_sections.project → projects
-  const rel = await getRelation(collection, 'project')
-  if (!rel) {
-    try {
-      await api('/relations', 'POST', {
-        collection,
-        field: 'project',
-        related_collection: 'projects',
-        meta: {
-          one_field: 'sections',
-          sort_field: 'sort',
-          one_deselect_action: 'nullify',
-        },
-        schema: { on_delete: 'CASCADE' },
-      })
-      console.log('Created relation: project_sections.project → projects')
-    } catch (err) {
-      if (!isDuplicateError(err)) throw err
+  //
+  // Not gated behind getRelation() — same broken-filter issue as ensureRel
+  // above. Always attempt the create; isDuplicateError handles "already
+  // exists" as success.
+  try {
+    await api('/relations', 'POST', {
+      collection,
+      field: 'project',
+      related_collection: 'projects',
+      meta: {
+        one_field: 'sections',
+        sort_field: 'sort',
+        one_deselect_action: 'nullify',
+      },
+      schema: { on_delete: 'CASCADE' },
+    })
+    console.log('Created relation: project_sections.project → projects')
+  } catch (err) {
+    if (isDuplicateError(err)) {
+      console.log('Relation already exists: project_sections.project → projects')
+    } else {
+      throw err
     }
   }
 
