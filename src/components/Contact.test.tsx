@@ -1,15 +1,41 @@
 import { describe, expect, it } from 'vitest'
-import { linkLabel } from './Contact'
+import { renderToString } from 'react-dom/server'
+import { ContentProvider } from '../content/context'
+import { buildContent } from '../content/load'
+import { Contact } from './Contact'
 
-describe('linkLabel', () => {
-  it('uses known brand names', () => {
-    expect(linkLabel('github')).toBe('GitHub')
-    expect(linkLabel('linkedin')).toBe('LinkedIn')
-    expect(linkLabel('itch')).toBe('itch.io')
+function contentWithLinks(links: Record<string, string>) {
+  return buildContent({
+    site: { name: 'Alexandre Guichet', email: 'a@b.c', url: '', tagline: '', links },
+    about: {},
+    contact: { eyebrow: '', title: 'Contact', lede: '' },
+    hero: {},
+    focuses: [],
+    sketches: [],
+    score: {},
+    projectsSection: {},
+    projects: [],
+  })
+}
+
+function renderContact(links: Record<string, string>) {
+  return renderToString(
+    <ContentProvider value={contentWithLinks(links)}>
+      <Contact />
+    </ContentProvider>,
+  )
+}
+
+describe('Contact links', () => {
+  it('shows each link name verbatim as the button label', () => {
+    const html = renderContact({ 'My GitHub': 'https://github.com/x', itch: 'https://itch.io/x' })
+    expect(html).toContain('My GitHub')
+    expect(html).toContain('itch')
+    expect(html).not.toContain('>GitHub<')
   })
 
-  it('humanizes camelCase and dashed names', () => {
-    expect(linkLabel('githubArena')).toBe('Github Arena')
-    expect(linkLabel('my-band')).toBe('My Band')
+  it('hides links without a URL', () => {
+    const html = renderContact({ GitHub: '' })
+    expect(html).not.toContain('GitHub')
   })
 })

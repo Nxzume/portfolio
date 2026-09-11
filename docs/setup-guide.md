@@ -131,7 +131,7 @@ takes under a minute.
   audio). Any file can be deleted — the deletion is committed to the repo on
   the next publish, like any other change.
 - **Links** (Site settings): each name + URL becomes a button in the Contact
-  section. The name is the button label (`github` → GitHub, `itch` → itch.io).
+  section. The name is the button label, shown exactly as you type it.
 - **Projects:** `+` next to "Projects" adds a page; the ✎ / ✕ buttons rename
   or delete. New projects get a prerendered page and sitemap entry
   automatically.
