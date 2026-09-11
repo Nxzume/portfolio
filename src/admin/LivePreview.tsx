@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { PreviewModeProvider } from '../components/PreviewMode'
 import { ContentProvider } from '../content/context'
 import { buildContent } from '../content/load'
@@ -31,8 +31,13 @@ export function LivePreview({
     <div className="livepreview">
       <ContentProvider value={content}>
         <PreviewModeProvider>
+          {/* ProjectPage reads the slug from useParams, so it must render
+              through a matching Route — otherwise it falls back to the 404. */}
           <MemoryRouter initialEntries={[path]} key={path}>
-            {slug ? <ProjectPage /> : <HomePage />}
+            <Routes>
+              <Route path="/projects/:slug" element={<ProjectPage />} />
+              <Route path="*" element={<HomePage />} />
+            </Routes>
           </MemoryRouter>
         </PreviewModeProvider>
       </ContentProvider>

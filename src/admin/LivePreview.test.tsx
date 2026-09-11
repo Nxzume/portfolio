@@ -64,11 +64,15 @@ describe('LivePreview', () => {
     expect(container.textContent).toContain('Unsaved draft headline')
   })
 
-  it('renders the selected project page', async () => {
+  it('renders the selected project page, not the 404 fallback', async () => {
     root = createRoot(container)
     await act(async () => {
       root.render(<LivePreview files={files} drafts={{}} selection="projects/arena" />)
     })
+    expect(container.textContent).not.toContain('That page moved or never existed')
+    // The summary only appears on the project page itself; the 404 page
+    // renders project cards with titles, which would fool a weaker check.
+    expect(container.textContent).toContain(arenaJson.summary)
     expect(container.textContent).toContain(arenaJson.title)
   })
 })
