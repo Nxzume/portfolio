@@ -1,10 +1,11 @@
-import { contact, site } from '../content'
+import { useContent } from '../content/context'
+import type { ContactContent, SiteContent } from '../content/types'
 
 function firstName(fullName: string) {
   return fullName.trim().split(/\s+/)[0] || fullName
 }
 
-function contactActions() {
+function contactActions(contact: ContactContent, site: SiteContent) {
   const actions: { label: string; href: string; style: 'primary' | 'ghost' }[] = [
     {
       label: contact.emailButtonText || `Email ${firstName(site.name)}`,
@@ -23,7 +24,8 @@ function contactActions() {
 }
 
 export function Contact() {
-  const actions = contactActions()
+  const { contact, site } = useContent()
+  const actions = contactActions(contact, site)
 
   return (
     <section className="section contact" id="contact">
@@ -50,6 +52,7 @@ export function Contact() {
 }
 
 export function Footer() {
+  const { site } = useContent()
   return (
     <footer className="footer">
       {/* Baked at build time, refreshed on hydration — they differ over New Year. */}

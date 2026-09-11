@@ -3,13 +3,17 @@ import { createRoot, hydrateRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.tsx'
+import { content } from './content'
+import { ContentProvider } from './content/context'
 
 const container = document.getElementById('root')!
 
 const tree = (
   <StrictMode>
     <BrowserRouter>
-      <App />
+      <ContentProvider value={content}>
+        <App />
+      </ContentProvider>
     </BrowserRouter>
   </StrictMode>
 )

@@ -4,43 +4,53 @@ import { BrowserRouter } from 'react-router-dom'
 import { act } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
-import { projects, site } from './content'
+import { content } from './content'
+import { ContentProvider } from './content/context'
 import { render, routes, sitemapRoutes } from './entry-server'
 
 describe('routes', () => {
   it('covers the homepage, every project, and the 404', () => {
-    expect(routes()).toEqual([
+    expect(routes(content)).toEqual([
       '/',
-      ...projects.map((project) => `/projects/${project.slug}`),
+      ...content.projects.map((project) => `/projects/${project.slug}`),
       '/404',
     ])
   })
 
   it('leaves the 404 out of the sitemap', () => {
-    expect(sitemapRoutes()).not.toContain('/404')
+    expect(sitemapRoutes(content)).not.toContain('/404')
   })
 })
 
 describe('render', () => {
   it('puts the homepage copy in the markup instead of an empty shell', () => {
-    const { html, head } = render('/')
-    expect(html).toContain(site.name)
+    const { html, head } = render('/', content)
+    expect(html).toContain(content.site.name)
     expect(html).toContain('id="main"')
     expect(head).toContain('<title>')
   })
 
   it('renders each project page with its own title and canonical url', () => {
-    for (const project of projects) {
-      const { html, head } = render(`/projects/${project.slug}`)
+    for (const project of content.projects) {
+      const { html, head } = render(`/projects/${project.slug}`, content)
       expect(html).toContain(project.title)
-      expect(head).toContain(`${site.url}/projects/${project.slug}`)
+      expect(head).toContain(`${content.site.url}/projects/${project.slug}`)
     }
   })
 
   it('renders the 404 route without falling back to the homepage', () => {
-    const { html, head } = render('/404')
+    const { html, head } = render('/404', content)
     expect(head).toContain('content="noindex"')
     expect(html).toContain('That page moved or never existed')
+  })
+
+  it('renders whatever content is provided, not the baked bundle content', () => {
+    const custom = {
+      ...content,
+      site: { ...content.site, name: 'Override Name' },
+    }
+    const { html } = render('/', custom)
+    expect(html).toContain('Override Name')
   })
 })
 
@@ -53,7 +63,7 @@ describe('hydration', () => {
   it('reuses the prerendered markup without a mismatch', async () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    const { html } = render('/')
+    const { html } = render('/', content)
     const container = document.createElement('div')
     container.innerHTML = html
     document.body.appendChild(container)
@@ -63,7 +73,9 @@ describe('hydration', () => {
         container,
         <StrictMode>
           <BrowserRouter>
-            <App />
+            <ContentProvider value={content}>
+              <App />
+            </ContentProvider>
           </BrowserRouter>
         </StrictMode>,
       )

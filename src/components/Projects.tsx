@@ -1,8 +1,9 @@
 import { m } from 'framer-motion'
-import { projects, projectsSection } from '../content'
+import { useContent } from '../content/context'
 import { ProjectCard } from './ProjectCard'
 
 export function Projects() {
+  const { projects, projectsSection } = useContent()
   return (
     <section className="section projects" id="projects">
       <div className="section__head">

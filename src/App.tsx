@@ -1,9 +1,12 @@
 import { LazyMotion, MotionConfig, domAnimation } from 'framer-motion'
+import { Suspense, lazy } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { HomePage } from './pages/HomePage'
 import { NotFound } from './pages/NotFound'
 import { ProjectPage } from './pages/ProjectPage'
 import './App.css'
+
+const AdminApp = lazy(() => import('./admin/AdminApp'))
 
 /**
  * The router lives in the entry points so the same tree can be prerendered
@@ -16,11 +19,14 @@ function App() {
   return (
     <LazyMotion features={domAnimation} strict>
       <MotionConfig reducedMotion="user">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/projects/:slug" element={<ProjectPage />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Suspense fallback={null}>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/projects/:slug" element={<ProjectPage />} />
+            <Route path="/admin/*" element={<AdminApp />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </MotionConfig>
     </LazyMotion>
   )

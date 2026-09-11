@@ -5,20 +5,23 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/fetch-cms-content.mjs && tsc -b && vite build && npm run build:ssr && npm run prerender",
+    "dev:server": "node --watch server/index.mjs",
+    "build": "tsc -b && vite build && npm run build:ssr && npm run prerender",
     "build:ssr": "vite build --ssr src/entry-server.tsx --outDir dist-ssr",
     "prerender": "node scripts/prerender.mjs",
+    "start": "node server/index.mjs",
     "lint": "oxlint",
     "typecheck": "tsc -b --force",
     "test": "vitest run",
-    "preview": "vite preview",
-    "cms:migrate": "node cms/migrate.mjs"
+    "preview": "vite preview"
   },
   "dependencies": {
+    "express": "^5.1.0",
     "framer-motion": "^13.1.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-router-dom": "^7.18.2"
+    "react-router-dom": "^7.18.2",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
