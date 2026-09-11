@@ -27,6 +27,14 @@ export type ContentResponse = {
   media: MediaItem[]
 }
 
+export type ChangelogEntry = {
+  id: string
+  at: string
+  key: string
+  action: 'save' | 'delete' | 'revert'
+  previous: unknown
+}
+
 export class ApiError extends Error {
   status: number
   constructor(status: number, message: string) {
@@ -75,4 +83,7 @@ export const api = {
     request<{ ok: true }>('/api/admin/media', { method: 'DELETE', body: JSON.stringify({ path }) }),
   status: () => request<AdminStatus>('/api/admin/status'),
   publishNow: () => request<{ ok: true; result: string }>('/api/admin/publish', { method: 'POST' }),
+  changelog: () => request<{ entries: ChangelogEntry[] }>('/api/admin/changelog'),
+  revert: (id: string) =>
+    request<{ ok: true; key: string }>(`/api/admin/changelog/${encodeURIComponent(id)}/revert`, { method: 'POST' }),
 }

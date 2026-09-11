@@ -12,6 +12,7 @@ import { existsSync } from 'node:fs'
 import path from 'node:path'
 import express from 'express'
 import { createAuth, parseCookies } from './lib/auth.mjs'
+import { Changelog } from './lib/changelog.mjs'
 import { loadConfig } from './lib/config.mjs'
 import { ContentStore, HttpError, isValidFileKey } from './lib/contentStore.mjs'
 import { collectContentFiles, publishSite } from './lib/github.mjs'
@@ -55,6 +56,17 @@ const store = new ContentStore({
   maxDimension: config.mediaMaxDimension,
   quality: config.mediaQuality,
 })
+
+const changelog = new Changelog({ contentDir: config.contentDir })
+
+/** Snapshot a content file before it changes; returns undefined when absent. */
+async function currentValue(key) {
+  try {
+    return await store.readJson(store.filePath(key))
+  } catch {
+    return undefined
+  }
+}
 
 const publish = config.publishEnabled
   ? async () => {
@@ -167,7 +179,9 @@ admin.get('/content', requireAuth, async (req, res) => {
 admin.put('/content/:key', requireAuth, express.json({ limit: '5mb' }), async (req, res) => {
   const key = req.params.key
   if (!isValidFileKey(key)) throw new HttpError(400, `Unknown content file: ${key}`)
+  const previous = await currentValue(key)
   await store.writeFile(key, req.body)
+  await changelog.record({ key, action: 'save', previous })
   pipeline.notifyContentChanged()
   res.json({ ok: true })
 })
@@ -182,9 +196,36 @@ admin.post('/projects', requireAuth, express.json({ limit: '100kb' }), async (re
 admin.delete('/content/:key', requireAuth, express.json({ limit: '10kb' }), async (req, res) => {
   const key = req.params.key
   if (!key.startsWith('projects/')) throw new HttpError(400, 'Only projects can be deleted')
+  const previous = await currentValue(key)
   await store.deleteProject(key.slice('projects/'.length))
+  await changelog.record({ key, action: 'delete', previous })
   pipeline.notifyContentChanged()
   res.json({ ok: true })
+})
+
+admin.get('/changelog', requireAuth, async (req, res) => {
+  const limit = Number(req.query.limit || 100)
+  res.json({ entries: await changelog.list(Number.isFinite(limit) ? limit : 100) })
+})
+
+admin.post('/changelog/:id/revert', requireAuth, express.json({ limit: '10kb' }), async (req, res) => {
+  const entry = await changelog.get(req.params.id)
+  if (!entry) throw new HttpError(404, 'Changelog entry not found')
+  const key = entry.key
+  if (!isValidFileKey(key)) throw new HttpError(400, `Unknown content file: ${key}`)
+  const before = await currentValue(key)
+  if (entry.previous === null) {
+    if (!key.startsWith('projects/')) {
+      throw new HttpError(400, 'This entry created a core file; it cannot be removed automatically.')
+    }
+    await store.deleteProject(key.slice('projects/'.length))
+  } else {
+    await store.writeFile(key, entry.previous)
+  }
+  await changelog.record({ key, action: 'revert', previous: before === undefined ? null : before })
+  await changelog.prune()
+  pipeline.notifyContentChanged()
+  res.json({ ok: true, key })
 })
 
 admin.post('/media', requireAuth, express.json({ limit: '60mb' }), async (req, res) => {

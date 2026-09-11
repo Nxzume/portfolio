@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ApiError, api, type AdminStatus, type ContentResponse, type MediaItem } from './api'
+import { ChangelogPanel } from './Changelog'
 import {
   AboutEditor,
   FocusesEditor,
@@ -325,11 +326,25 @@ export default function AdminApp() {
           >
             Media library
           </button>
+          <button
+            type="button"
+            className={`admin__nav ${selection === 'changelog' ? 'is-active' : ''}`}
+            onClick={() => setSelection('changelog')}
+          >
+            Changelog
+          </button>
         </nav>
 
         <main className="admin__main">
           {selection === 'media' ? (
             <MediaLibrary items={media} onChanged={() => { void load().then(pollUntilIdle) }} />
+          ) : selection === 'changelog' ? (
+            <ChangelogPanel
+              onReverted={(key) => {
+                void load().then(pollUntilIdle)
+                setSelection(key)
+              }}
+            />
           ) : selection === 'site' ? (
             <SiteEditor {...editorProps} />
           ) : selection === 'hero' ? (
