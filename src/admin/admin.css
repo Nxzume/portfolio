@@ -165,6 +165,13 @@
   transform: none !important;
 }
 
+/* Click-to-edit affordance */
+.livepreview :is(section, .hero, .projects__card, .footer):hover {
+  outline: 1px dashed rgba(124, 158, 255, 0.55);
+  outline-offset: -2px;
+  cursor: pointer;
+}
+
 .admin__modal {
   position: fixed;
   inset: 0;

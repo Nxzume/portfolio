@@ -20,7 +20,7 @@ export function gitBlobSha(bytes) {
 }
 
 /** Map of repo-relative posix path -> file bytes for every managed file on disk. */
-export async function collectContentFiles({ contentDir, mediaDir }) {
+export async function collectContentFiles({ contentDir, publicDir }) {
   const files = new Map()
 
   async function walk(dir, prefix) {
@@ -38,12 +38,19 @@ export async function collectContentFiles({ contentDir, mediaDir }) {
   }
 
   await walk(contentDir, 'content/')
-  await walk(mediaDir, 'public/media/')
+  for (const sub of ['media', 'images', 'audio']) {
+    await walk(path.join(publicDir, sub), `public/${sub}/`)
+  }
   return files
 }
 
 export function isManagedPath(filePath) {
-  return filePath.startsWith('content/') || filePath.startsWith('public/media/')
+  return (
+    filePath.startsWith('content/') ||
+    filePath.startsWith('public/media/') ||
+    filePath.startsWith('public/images/') ||
+    filePath.startsWith('public/audio/')
+  )
 }
 
 async function gh(token, pathname, { method = 'GET', body } = {}) {

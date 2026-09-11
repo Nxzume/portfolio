@@ -33,7 +33,7 @@ export function SiteEditor({ value, onChange }: EditorProps) {
       <Field label="Site URL" hint="Public origin, no trailing slash. Used for canonical links and the sitemap.">
         <TextInput value={str(raw.url)} onChange={(v) => set('url', v)} />
       </Field>
-      <Field label="Links" hint="e.g. github, linkedin — empty values are hidden.">
+      <Field label="Links" hint="Each link with a URL becomes a button in the Contact section — the name is the button label (e.g. github → GitHub, itch → itch.io).">
         <KeyValueList value={links} onChange={(v) => set('links', v)} />
       </Field>
     </div>

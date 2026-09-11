@@ -63,10 +63,11 @@ better because it can only ever touch this one repo.
 4. Health check path (if Coolify asks): `/healthz`. The image includes `curl` so Coolify's Docker healthcheck works.
 5. Deploy.
 
-> Turn on Coolify's GitHub webhook ("Automatic deployment") only if you want
-> a full redeploy on every content commit. It is **not** required: saves are
-> live instantly without a rebuild, and boot sync covers restarts. Leaving it
-> off avoids a rebuild storm when you save often.
+> Keep Coolify's GitHub webhook ("Automatic deployment") **off** — content
+> saves are live instantly without a rebuild, and every save commits to the
+> repo; with auto-deploy on, each save would trigger a pointless multi-minute
+> rebuild. Rebuilds are only needed for code changes (merge → manual
+> redeploy). Boot sync covers restarts either way.
 
 ## 4. Point the Cloudflare tunnel at it
 
@@ -118,14 +119,19 @@ takes under a minute.
   project (title, slug, order, cover, summary, intro, highlights, links,
   sections with images and pull quotes, gallery), and the media library.
 - The right pane is a **live preview** rendered from your drafts — it updates
-  as you type, before you save. Image fields show the actual image (and warn
-  if the file is missing on the server).
+  as you type, before you save. **Click any section in the preview to jump to
+  its editor.** Image fields show the actual image (and warn if the file is
+  missing on the server).
 - **Save & publish** writes the files, re-renders the pages (live in ~1s),
-  and commits everything to GitHub. The status pill in the top bar shows
-  `Published <commit>` when done.
+  and commits everything to GitHub. No redeploy needed for content changes.
 - **Uploads:** any image/audio field has a "Media library" button — upload
   from your device or pick an existing file. Images are converted to WebP
   and capped at 1920px, so originals never leave your machine.
+- **Media library:** lists every asset (uploads plus the site's images and
+  audio). Any file can be deleted — the deletion is committed to the repo on
+  the next publish, like any other change.
+- **Links** (Site settings): each name + URL becomes a button in the Contact
+  section. The name is the button label (`github` → GitHub, `itch` → itch.io).
 - **Projects:** `+` next to "Projects" adds a page; the ✎ / ✕ buttons rename
   or delete. New projects get a prerendered page and sitemap entry
   automatically.

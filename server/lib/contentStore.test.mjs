@@ -11,10 +11,11 @@ let store
 beforeEach(async () => {
   tmp = await mkdtemp(path.join(os.tmpdir(), 'store-'))
   await mkdir(path.join(tmp, 'content', 'projects'), { recursive: true })
-  await mkdir(path.join(tmp, 'media'), { recursive: true })
+  await mkdir(path.join(tmp, 'public', 'media'), { recursive: true })
   store = new ContentStore({
     contentDir: path.join(tmp, 'content'),
-    mediaDir: path.join(tmp, 'media'),
+    mediaDir: path.join(tmp, 'public', 'media'),
+    publicDir: path.join(tmp, 'public'),
     maxUploadBytes: 5 * 1024 * 1024,
     maxDimension: 1920,
     quality: 80,
@@ -75,7 +76,7 @@ describe('media', () => {
       .toBuffer()
     const publicPath = await store.saveUpload({ name: 'Cover Photo.png', dataBase64: png.toString('base64') })
     expect(publicPath).toBe('/media/cover-photo.webp')
-    const written = await readFile(path.join(tmp, 'media', 'cover-photo.webp'))
+    const written = await readFile(path.join(tmp, 'public', 'media', 'cover-photo.webp'))
     const meta = await sharp(written).metadata()
     expect(meta.format).toBe('webp')
     expect(meta.width).toBe(40)
@@ -86,7 +87,7 @@ describe('media', () => {
       .jpeg()
       .toBuffer()
     const publicPath = await store.saveUpload({ name: 'big.jpg', dataBase64: big.toString('base64') })
-    const meta = await sharp(path.join(tmp, 'media', path.basename(publicPath))).metadata()
+    const meta = await sharp(path.join(tmp, 'public', 'media', path.basename(publicPath))).metadata()
     expect(meta.width).toBe(1920)
   })
 
@@ -94,7 +95,7 @@ describe('media', () => {
     const bytes = Buffer.from('fake-mp3-bytes')
     const publicPath = await store.saveUpload({ name: 'Track 01.mp3', dataBase64: bytes.toString('base64') })
     expect(publicPath).toBe('/media/track-01.mp3')
-    const written = await readFile(path.join(tmp, 'media', 'track-01.mp3'))
+    const written = await readFile(path.join(tmp, 'public', 'media', 'track-01.mp3'))
     expect(written.equals(bytes)).toBe(true)
   })
 
@@ -113,12 +114,26 @@ describe('media', () => {
   })
 
   it('lists and deletes media, blocking traversal', async () => {
-    await writeFile(path.join(tmp, 'media', 'x.mp3'), 'x')
+    await writeFile(path.join(tmp, 'public', 'media', 'x.mp3'), 'x')
     expect((await store.listMedia()).map((m) => m.path)).toEqual(['/media/x.mp3'])
     await expect(store.deleteMedia('/media/../site.json')).rejects.toMatchObject({ status: 400 })
     await expect(store.deleteMedia('/other/x.mp3')).rejects.toMatchObject({ status: 400 })
     await store.deleteMedia('/media/x.mp3')
     expect(await store.listMedia()).toEqual([])
+  })
+
+  it('deletes baked-in images and audio too', async () => {
+    await mkdir(path.join(tmp, 'public', 'images'), { recursive: true })
+    await mkdir(path.join(tmp, 'public', 'audio'), { recursive: true })
+    await writeFile(path.join(tmp, 'public', 'images', 'old.png'), 'img')
+    await writeFile(path.join(tmp, 'public', 'audio', 'old.mp3'), 'audio')
+    const paths = (await store.listMedia()).map((m) => m.path)
+    expect(paths).toContain('/images/old.png')
+    expect(paths).toContain('/audio/old.mp3')
+    await store.deleteMedia('/images/old.png')
+    await store.deleteMedia('/audio/old.mp3')
+    expect((await store.listMedia()).map((m) => m.path)).not.toContain('/images/old.png')
+    await expect(store.deleteMedia('/images/../../etc/passwd')).rejects.toMatchObject({ status: 400 })
   })
 
   it('works with relative directories, like the production config', async () => {

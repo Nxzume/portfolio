@@ -116,11 +116,9 @@ export function MediaLibrary({
                   Copy path
                 </button>
               )}
-              {item.path.startsWith('/media/') ? (
-                <button type="button" className="btn btn--small btn--danger" onClick={() => void remove(item.path)}>
-                  Delete
-                </button>
-              ) : null}
+              <button type="button" className="btn btn--small btn--danger" onClick={() => void remove(item.path)}>
+                Delete
+              </button>
             </div>
           </figure>
         ))}

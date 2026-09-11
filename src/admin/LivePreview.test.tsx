@@ -75,4 +75,35 @@ describe('LivePreview', () => {
     expect(container.textContent).toContain(arenaJson.summary)
     expect(container.textContent).toContain(arenaJson.title)
   })
+
+  it('clicking a section in the preview selects its editor', async () => {
+    const selections: string[] = []
+    root = createRoot(container)
+    await act(async () => {
+      root.render(
+        <LivePreview files={files} drafts={{}} selection="site" onSelect={(key) => selections.push(key)} />,
+      )
+    })
+    const about = container.querySelector('.about')!
+    await act(async () => {
+      about.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    })
+    expect(selections).toEqual(['about'])
+  })
+
+  it('clicking a project card selects that project', async () => {
+    const selections: string[] = []
+    root = createRoot(container)
+    await act(async () => {
+      root.render(
+        <LivePreview files={files} drafts={{}} selection="site" onSelect={(key) => selections.push(key)} />,
+      )
+    })
+    const card = container.querySelector('.projects__card')!
+    await act(async () => {
+      card.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    })
+    expect(selections).toHaveLength(1)
+    expect(selections[0]).toMatch(/^projects\//)
+  })
 })

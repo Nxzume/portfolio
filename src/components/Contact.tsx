@@ -5,6 +5,26 @@ function firstName(fullName: string) {
   return fullName.trim().split(/\s+/)[0] || fullName
 }
 
+const KNOWN_LABELS: Record<string, string> = {
+  github: 'GitHub',
+  linkedin: 'LinkedIn',
+  itch: 'itch.io',
+  youtube: 'YouTube',
+  bandcamp: 'Bandcamp',
+  soundcloud: 'SoundCloud',
+  twitter: 'Twitter',
+}
+
+/** The link name becomes the button label: "itch" → "itch.io", "githubArena" → "Github Arena". */
+export function linkLabel(key: string) {
+  const known = KNOWN_LABELS[key.toLowerCase()]
+  if (known) return known
+  return key
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/[-_]+/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
 function contactActions(contact: ContactContent, site: SiteContent) {
   const actions: { label: string; href: string; style: 'primary' | 'ghost' }[] = [
     {
@@ -14,11 +34,8 @@ function contactActions(contact: ContactContent, site: SiteContent) {
     },
   ]
 
-  if (site.links.github) {
-    actions.push({ label: 'GitHub', href: site.links.github, style: 'ghost' })
-  }
-  if (site.links.linkedin) {
-    actions.push({ label: 'LinkedIn', href: site.links.linkedin, style: 'ghost' })
+  for (const [key, href] of Object.entries(site.links)) {
+    if (href.trim()) actions.push({ label: linkLabel(key), href, style: 'ghost' })
   }
   return actions
 }
