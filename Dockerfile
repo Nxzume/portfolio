@@ -8,7 +8,12 @@ COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci
 
 COPY . .
-RUN npm run build
+# Deploy build skips tsc — CI already typechecks every PR.
+RUN npm run build:deploy
+# The server serves media from public/; the copies vite makes in dist/ are
+# redundant here and would bloat the runtime image. (The Cloudflare Pages
+# mirror workflow builds separately and keeps them.)
+RUN rm -rf dist/images dist/audio dist/media
 
 FROM node:22-alpine
 ENV NODE_ENV=production
