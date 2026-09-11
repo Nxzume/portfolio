@@ -16,6 +16,14 @@
   min-height: 100vh;
 }
 
+/* Fixed-viewport column so sidebar, editor, and preview each scroll on their own. */
+.admin {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
 .admin *, .admin-login * { box-sizing: border-box; }
 
 .admin-login {
@@ -55,7 +63,9 @@
   display: grid;
   grid-template-columns: 230px minmax(0, 1fr) minmax(0, 1.1fr);
   gap: 0;
-  min-height: calc(100vh - 53px);
+  /* Fixed height so each pane scrolls independently instead of the whole page. */
+  flex: 1;
+  min-height: 0;
 }
 
 .admin__sidebar {
@@ -63,6 +73,7 @@
   padding: 14px 10px;
   background: var(--panel);
   overflow-y: auto;
+  min-height: 0;
 }
 
 .admin__group {
@@ -122,6 +133,7 @@
 .admin__main {
   padding: 22px;
   overflow-y: auto;
+  min-height: 0;
   border-right: 1px solid var(--border);
 }
 
