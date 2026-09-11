@@ -11,6 +11,7 @@ type Props = {
   currentTime: number
   duration: number
   canSeek: boolean
+  loadErrorId?: string | null
   onPlayTrack: (id: string) => void
   onSeek: (time: number) => void
 }
@@ -39,6 +40,7 @@ export function ScoreDesk({
   currentTime,
   duration,
   canSeek,
+  loadErrorId,
   onPlayTrack,
   onSeek,
 }: Props) {
@@ -91,6 +93,11 @@ export function ScoreDesk({
                       <span className="score__bpm">{sketch.bpm ?? 100} BPM</span>
                     )}
                   </button>
+                  {loadErrorId === sketch.id ? (
+                    <p className="score__error" role="alert">
+                      Couldn’t load this recording — the file may still be uploading.
+                    </p>
+                  ) : null}
                   {showSeek ? (
                     <div
                       className="score__scrub"

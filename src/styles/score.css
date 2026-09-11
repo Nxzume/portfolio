@@ -206,3 +206,9 @@
     max-height: 18rem;
   }
 }
+
+.score__error {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: #e8a0a0;
+}

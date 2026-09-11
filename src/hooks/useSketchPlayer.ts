@@ -30,6 +30,7 @@ export function useSketchPlayer(sketches: Sketch[]) {
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
   const [mode, setMode] = useState<'file' | 'generative' | null>(null)
+  const [loadErrorId, setLoadErrorId] = useState<string | null>(null)
 
   // Guards against overlapping playback when play is clicked again while an
   // audio file is still loading: the stale start cleans up instead of
@@ -218,12 +219,20 @@ export function useSketchPlayer(sketches: Sketch[]) {
     if (audioSrc) {
       try {
         await playAudioFile(audioSrc, token)
+        setLoadErrorId(null)
         return
       } catch {
-        /* fall back to generative if file missing/blocked */
+        if (token !== startTokenRef.current) return
+        // A track with a real recording should never silently play the
+        // synth placeholder — surface the failure instead.
+        setLoadErrorId(sketch.id)
+        setPlaying(false)
+        setPlayMode(null)
+        return
       }
     }
     if (token !== startTokenRef.current) return
+    setLoadErrorId(null)
     await playGenerative(sketch)
   }
 
@@ -317,6 +326,7 @@ export function useSketchPlayer(sketches: Sketch[]) {
     duration,
     canSeek,
     mode,
+    loadErrorId,
     play,
     pause,
     resume,
