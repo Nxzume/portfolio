@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { collectContentFiles, gitBlobSha, isManagedPath, planChanges } from './github.mjs'
+import { buildTreeEntries, collectContentFiles, gitBlobSha, isManagedPath, planChanges } from './github.mjs'
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
@@ -52,6 +52,19 @@ describe('planChanges', () => {
     const { uploads, deletions } = planChanges(local, remote)
     expect(uploads).toEqual([])
     expect(deletions).toEqual([])
+  })
+})
+
+describe('buildTreeEntries', () => {
+  it('gives deletions a mode and type with a null sha (GitHub rejects modeless entries)', () => {
+    const entries = buildTreeEntries(
+      [{ path: 'content/site.json', sha: 'abc123' }],
+      ['public/media/old.webp'],
+    )
+    expect(entries).toEqual([
+      { path: 'content/site.json', mode: '100644', type: 'blob', sha: 'abc123' },
+      { path: 'public/media/old.webp', mode: '100644', type: 'blob', sha: null },
+    ])
   })
 })
 

@@ -1,434 +1,173 @@
-# Portfolio site — setup & automation guide
-
-Complete instructions for deploying on Coolify with Directus, automating CMS
-migrations, and editing content day-to-day.
-
-**Domains used in examples:**
-
-| Resource | URL |
-|----------|-----|
-| Site | `https://alexandreguichet.vancouverly.ca` |
-| CMS | `https://alexandreguichet-cms.vancouverly.ca` |
-
-Adjust to your actual domain. The `*.vancouverly.ca` wildcard tunnel route
-covers subdomains without extra DNS work.
-
----
-
-## Architecture
-
-Four Coolify resources in one project:
-
-```
-┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│  Site app       │────▶│  Directus (CMS)  │◀────│  Migrate app    │
-│  (this repo)    │     │  + Postgres      │     │  (cms/ folder)  │
-│  Dockerfile     │     │  one-click svc   │     │  runs on deploy │
-└─────────────────┘     └──────────────────┘     └─────────────────┘
-        │                        ▲
-        │  build fetches         │  you edit content here
-        │  content at build      │
-        └────────────────────────┘
-```
-
-- **Site** — static React app with prerendered HTML, nginx. Content is pulled
-  from Directus **during the Docker build**, then baked into static files.
-- **Directus** — headless CMS. Edit copy in normal form fields (not raw JSON).
-- **Migrate app** — runs `cms/migrate.mjs` on your server when deployed.
-  Creates schema, seeds initial content, fixes permissions. Not a public site.
-
-**Important:** Unlike Vancouverly, content changes require a **site redeploy**
-(build-time fetch). Editing Directus alone does not update the live site until
-you rebuild.
-
----
-
-## Before you start
-
-### GitHub repo
-
-`https://github.com/Nxzume/portfolio` — branch **`master`**.
-
----
-
-## Part 1 — Deploy Directus
-
-1. Coolify → your project → **+ Add** → **Service**
-2. Pick **Directus** (with **PostgreSQL**)
-3. Name it something like `portfolio-directus` (separate from Vancouverly’s CMS)
-
-### Environment variables
-
-Left sidebar → **Environment Variables** → **+ Add** for each:
-
-| Key | Value |
-|-----|-------|
-| `ADMIN_EMAIL` | your email |
-| `CORS_ORIGIN` | `https://alexandreguichet.vancouverly.ca` |
-
-Your admin password is auto-generated — find it as **`SERVICE_PASSWORD_ADMIN`**
-on the same page. Copy and save it.
-
-### Domain
-
-1. **Configuration** → **Services** → **`directus`** tab → **Settings**
-2. **Domains** field:
-
-   ```
-   https://alexandreguichet-cms.vancouverly.ca:8055
-   ```
-
-   The `:8055` is required — it tells Coolify which container port to proxy to.
-   Visitors still use `https://alexandreguichet-cms.vancouverly.ca` (no port in the browser).
-
-3. **Save**
-
-### One more env var
-
-**Environment Variables** → **+ Add**:
-
-| Key | Value |
-|-----|-------|
-| `PUBLIC_URL` | `https://alexandreguichet-cms.vancouverly.ca` |
-
-No `:8055` here.
-
-### Deploy and log in
-
-1. Top right → **Deploy**
-2. Open `https://alexandreguichet-cms.vancouverly.ca`
-3. Log in with `ADMIN_EMAIL` + `SERVICE_PASSWORD_ADMIN`
-
----
-
-## Part 2 — Bootstrap the CMS (first time only)
-
-Pick **one** method.
-
-### Option A — Coolify migrate app (recommended)
-
-Set up Part 4 below first, then **Deploy** the migrate app. Check **Logs**
-(left sidebar, not deployment log) for `CMS migrate done.`
-
-### Option B — Your laptop (PowerShell)
-
-```powershell
-git clone https://github.com/Nxzume/portfolio.git
-cd portfolio
-
-$env:DIRECTUS_URL = "https://alexandreguichet-cms.vancouverly.ca"
-$env:DIRECTUS_TOKEN = "your_admin_token"
-npm run cms:migrate
-```
-
-**Get a token:** Directus → **User Directory** → your admin user → **Token** →
-**Generate Token**.
-
-### Verify
-
-Open in a private/incognito window:
-
-```
-https://alexandreguichet-cms.vancouverly.ca/items/site_settings
-```
-
-You should see JSON. If 403, re-run migrate.
-
----
-
-## Part 3 — Deploy the site
-
-1. Coolify → **+ Add** → **Application**
-2. Connect GitHub repo `Nxzume/portfolio`, branch **`master`**
-3. **General** tab:
-
-   | Setting | Value |
-   |---------|-------|
-   | Build Pack | `Dockerfile` (not Nixpacks) |
-   | Ports Exposes | `80` |
-
-4. **Domains:**
-
-   ```
-   https://alexandreguichet.vancouverly.ca
-   ```
-
-   If Coolify requires a port: `https://alexandreguichet.vancouverly.ca:80`
-
-5. **Environment Variables** → **+ Add**:
-
-   | Key | Value | Build-time? |
-   |-----|-------|-------------|
-   | `DIRECTUS_URL` | `https://alexandreguichet-cms.vancouverly.ca` | **Yes** — check "Available at Buildtime" |
-
-6. **Deploy**
-
-### Verify the build pulled CMS content
-
-In the site app’s **deployment build log**, look for:
-
-```
-Wrote 8 global file(s) and 2 project(s).
-```
-
-If you see `DIRECTUS_URL not set — skipping CMS fetch`, the build-time env var
-is missing — add it and redeploy.
-
-Site is live at `https://alexandreguichet.vancouverly.ca`.
-
----
-
-## Part 4 — Migrate app (automation)
-
-Runs CMS schema updates on **your server** — avoids Cloudflare blocking GitHub’s IPs.
-
-### Create the app
-
-1. Coolify → **+ Add** → **Application**
-2. Same repo, branch **`master`**
-3. **General** tab:
-
-   | Setting | Value |
-   |---------|-------|
-   | Build Pack | `Dockerfile` |
-   | Base Directory | `/` (repo root — **not** `/cms`) |
-   | Dockerfile Location | `/cms/Dockerfile` |
-   | Ports Exposes | leave empty |
-
-4. **No domain** — this app is not public
-5. **Save**
-
-### Environment variables (migrate app only)
-
-| Key | Value | Build-time? |
-|-----|-------|-------------|
-| `DIRECTUS_URL` | `https://alexandreguichet-cms.vancouverly.ca` | No (runtime only) |
-| `DIRECTUS_TOKEN` | admin static token | No |
-
-### Deploy and read logs
-
-1. **Deploy**
-2. Wait until status is **Running**
-3. Left sidebar → **Logs** (not the deployment build log)
-
-Success looks like:
-
-```
-=== CMS migrate starting ===
-Directus reachable (public API)
-Admin token verified
-CMS migrate done.
-=== Migrate succeeded — container staying alive for logs ===
-```
-
-### Manual re-run anytime
-
-Coolify → migrate app → **Deploy**. Safe to run repeatedly — migrate is idempotent.
-
----
-
-## Part 5 — Auto-run migrate on push (optional)
-
-**Note:** GitHub blocked this repo's setup from pushing `.github/workflows/*`
-files directly (a token scope restriction) — the workflow file below needs
-to be added once via GitHub's web UI (**Add file → Create new file**,
-path `.github/workflows/coolify-migrate-deploy.yml`) before this section
-applies. Until then, re-run migrate manually (**Deploy** on the migrate
-app) after `cms/` changes.
-
-GitHub does **not** call Directus directly. It only pings Coolify to redeploy the migrate app.
-
-### Step 1 — Copy webhook from Coolify
-
-1. Open the **migrate application** (not the site app)
-2. **Configuration** → **Webhooks**
-3. Copy the **Deploy Webhook** URL
-
-### Step 2 — Add GitHub secret
-
-1. GitHub repo → **Settings** → **Secrets and variables** → **Actions**
-2. Use **Repository secrets** (not Environment secrets)
-3. **New repository secret**:
-
-   | Name | Value |
-   |------|-------|
-   | `COOLIFY_MIGRATE_WEBHOOK` | paste webhook URL from Coolify |
-
-You do **not** need `DIRECTUS_URL` or `DIRECTUS_TOKEN` in GitHub — those live on the migrate app in Coolify.
-
-### Step 3 — Add the workflow file
-
-`.github/workflows/coolify-migrate-deploy.yml`:
-
-```yaml
-name: Trigger Coolify CMS migrate
-
-on:
-  workflow_dispatch:
-  push:
-    branches: [master]
-    paths:
-      - 'cms/**'
-      - '.github/workflows/coolify-migrate-deploy.yml'
-
-jobs:
-  trigger:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Trigger Coolify migrate deploy
-        env:
-          COOLIFY_MIGRATE_WEBHOOK: ${{ secrets.COOLIFY_MIGRATE_WEBHOOK }}
-        run: |
-          if [ -z "$COOLIFY_MIGRATE_WEBHOOK" ]; then
-            echo "COOLIFY_MIGRATE_WEBHOOK secret not set — skip (run migrate manually in Coolify)"
-            exit 0
-          fi
-          curl -fsSL -X GET "$COOLIFY_MIGRATE_WEBHOOK"
-          echo "Coolify migrate deploy triggered"
-```
-
-Note this repo's default branch is `master`, not `main` — the trigger above matches that.
-
-### What triggers it
-
-Pushing changes under `cms/` to `master` runs the **Trigger Coolify CMS migrate**
-workflow, which hits the webhook → Coolify redeploys migrate → migrate runs on your server.
-
-Manual trigger: GitHub → **Actions** → **Trigger Coolify CMS migrate** → **Run workflow**.
-
----
-
-## Part 6 — Auto-deploy the site on push (optional)
-
-In Coolify on the **site application**:
-
-1. **Configuration** → enable **Auto Deploy** / connect GitHub webhook
-2. Every push to `master` rebuilds and redeploys the site
-
-Or deploy manually: **Deploy** button after each push.
-
-**Content edits:** After saving in Directus, click **Deploy** on the **site app**
-(or wait for auto-deploy if you wired a webhook). The migrate app does **not**
-rebuild the site — only the site app does.
-
----
-
-## Editing content in Directus
-
-Log in at `https://alexandreguichet-cms.vancouverly.ca`.
-
-### Singletons (one row each)
-
-| Collection | What you edit |
-|------------|----------------|
-| `site_settings` | Name, tagline, email, site URL, GitHub, LinkedIn |
-| `hero` | Headline, hero image path, CTA buttons |
-| `about` | Portrait, lead, body paragraphs, note |
-| `contact` | Section header + email button label |
-| `score_section` | Music section header |
-| `projects_section` | Projects section header |
-
-### Collections (multiple rows)
-
-| Collection | What you edit |
-|------------|----------------|
-| `focus_tabs` | Compose / Levels / Azure tabs |
-| `sketch_tracks` | Audio tracks |
-| `projects` | Each game project — title, summary, gallery, sections, links |
-
-Image and audio fields use **Directus file uploads** (image/file pickers in
-the admin). Upload media in Directus — do not commit files under `public/`.
-The site build downloads published files into `public/media/` automatically.
-
-After saving in Directus, **redeploy the site app** to publish changes.
-
-**First deploy of this media change:** redeploy the **migrate app** before
-(or with) the site app so path strings are converted to file fields and
-existing assets are uploaded into Directus (migrate can pull them from the
-live site if they are no longer in git).
-
----
-
-## Day-to-day workflows
-
-| Task | How |
-|------|-----|
-| Edit copy or projects | Directus → save → **Deploy site app** in Coolify |
-| Add or replace images/audio | Directus file picker on the field → save → **Deploy site app** |
-| Change code or design | Push to `master` → Coolify redeploy **site app** |
-| Add CMS fields / schema | Push `cms/` changes → migrate auto-runs (if webhook set) or **Deploy migrate app** |
-| New portfolio instance | New Directus + new site app + new migrate app |
-
----
-
-## Local development
+# Setup guide — Coolify + Cloudflare
+
+This gets the site from this repo to `https://alexandreguichet.vancouverly.ca`
+with the admin portal, git-backed publishing, and an always-on mirror.
+
+Everything runs as **one Docker service** on Coolify. There is no database,
+no Directus, and no S3 bucket to manage.
+
+## Architecture in one paragraph
+
+The container serves prerendered static pages plus a small admin API. When
+you save in the admin, the server (1) rewrites the affected HTML files — the
+change is live on your domain in about a second — and (2) commits `content/`
+and `public/media/` to this repo via the GitHub API. On boot the container
+pulls the latest content back from the repo, so restarts never lose edits.
+Separately, a GitHub Action rebuilds the static site on every push and
+deploys it to Cloudflare Pages, so a full copy of the site stays online even
+if the Coolify server is down.
+
+## 1. Make the repo private (do this first)
+
+Content and media are committed to this repo, and the repo is currently
+**public** — that would make everything in it browsable on GitHub.
+
+GitHub → repo **Settings** → **Danger Zone** → **Change visibility** →
+**Private**. Coolify keeps working (it authenticates with its own deploy key
+or GitHub App).
+
+## 2. Create the GitHub token (for publishing)
+
+The server uses this to commit content edits to the repo.
+
+1. Go to <https://github.com/settings/personal-access-tokens/new> (fine-grained token).
+2. **Repository access:** "Only select repositories" → pick `nxzume/portfolio`.
+3. **Permissions → Repository permissions → Contents:** `Read and write`.
+   (Nothing else is needed.)
+4. Generate and copy the token.
+
+A classic PAT with the `repo` scope also works, but the fine-grained token is
+better because it can only ever touch this one repo.
+
+## 3. Deploy on Coolify
+
+1. **New Resource → Application → from Git repository** — select this repo.
+   - Branch: `master` once the PR is merged (or the PR branch to preview).
+   - Build pack: **Dockerfile** (detected automatically).
+   - Port: **3000**.
+2. **Environment variables** (Runtime — none are needed at build time):
+
+   | Variable | Required | Example | What it does |
+   |---|---|---|---|
+   | `ADMIN_PASSWORD` | yes | `…strong password…` | Password for `/admin`. Without it the admin is disabled. |
+   | `GITHUB_TOKEN` | yes | `github_pat_…` | Token from step 2 — publishes edits to the repo. |
+   | `GITHUB_REPO` | yes | `nxzume/portfolio` | Where content gets committed. |
+   | `CONTENT_BRANCH` | yes | `master` | Branch content commits go to. Use the branch Coolify deploys. |
+   | `ADMIN_SECRET` | optional | random 32+ chars | Signs session cookies. Defaults to `ADMIN_PASSWORD`. |
+   | `SYNC_ON_BOOT` | optional | `true` (default) | Pull latest content from the repo on container start. |
+   | `MAX_UPLOAD_MB` | optional | `20` | Upload size cap. |
+   | `MEDIA_MAX_DIMENSION` | optional | `1920` | Images are resized to fit this box. |
+   | `MEDIA_QUALITY` | optional | `82` | WebP quality for uploaded images. |
+
+3. **No volumes and no databases** are needed — the repo is the store.
+4. Health check path (if Coolify asks): `/healthz`.
+5. Deploy.
+
+> Turn on Coolify's GitHub webhook ("Automatic deployment") only if you want
+> a full redeploy on every content commit. It is **not** required: saves are
+> live instantly without a rebuild, and boot sync covers restarts. Leaving it
+> off avoids a rebuild storm when you save often.
+
+## 4. Point the Cloudflare tunnel at it
+
+Your tunnel is already set up — just repoint the public hostname:
+
+- `alexandreguichet.vancouverly.ca` → `http://<coolify-service-address>:3000`
+
+Then browse to `https://alexandreguichet.vancouverly.ca/admin` and sign in.
+
+**Recommended extra protection for `/admin`** (optional, one minute):
+Cloudflare Zero Trust → Access → add an application covering the `/admin`
+path with your email as the allowed identity. The portal already requires
+the password and rate-limits login attempts; Access adds Cloudflare-login in
+front of it.
+
+## 5. The always-on mirror (failover)
+
+A GitHub Action (`.github/workflows/mirror.yml`) rebuilds the static site on
+every push to the content branch — including every admin save — and deploys
+it to Cloudflare Pages.
+
+One-time setup:
+
+1. Cloudflare dashboard → **Workers & Pages** → **Create** → **Pages** →
+   "Direct upload" → create an empty project named `portfolio-mirror`.
+2. Cloudflare → **My Profile → API Tokens** → create a token from the
+   "Edit Cloudflare Workers" template (or a custom token with
+   `Cloudflare Pages: Edit` on your account).
+3. Repo → **Settings → Secrets and variables → Actions**:
+   - Secret `CF_API_TOKEN` = the token above
+   - Secret `CF_ACCOUNT_ID` = account id from the dashboard sidebar
+   - Variable `CF_PAGES_PROJECT` = `portfolio-mirror`
+4. Done — the mirror lives at `https://portfolio-mirror.pages.dev` and
+   updates ~1–2 minutes after every save. (Until the secrets exist, the
+   Action still verifies the build and prints a notice.)
+
+**When the Coolify server is down:** in Cloudflare DNS, switch the
+`alexandreguichet` record from the tunnel to a CNAME for
+`portfolio-mirror.pages.dev` (add the hostname as a custom domain on the
+Pages project first). For automatic failover you can put both origins behind
+a Cloudflare Load Balancer (paid add-on) — the manual DNS switch is free and
+takes under a minute.
+
+## 6. Day-to-day: editing the site
+
+- Open `/admin`, sign in.
+- The sidebar covers **everything**: site settings, hero, about, contact,
+  the score/projects section headers, focus tabs, sketch tracks, every
+  project (title, slug, order, cover, summary, intro, highlights, links,
+  sections with images and pull quotes, gallery), and the media library.
+- The right pane is a **live preview** rendered from your drafts — it updates
+  as you type, before you save. Image fields show the actual image (and warn
+  if the file is missing on the server).
+- **Save & publish** writes the files, re-renders the pages (live in ~1s),
+  and commits everything to GitHub. The status pill in the top bar shows
+  `Published <commit>` when done.
+- **Uploads:** any image/audio field has a "Media library" button — upload
+  from your device or pick an existing file. Images are converted to WebP
+  and capped at 1920px, so originals never leave your machine.
+- **Projects:** `+` next to "Projects" adds a page; the ✎ / ✕ buttons rename
+  or delete. New projects get a prerendered page and sitemap entry
+  automatically.
+
+## 7. What happens when…
+
+- **Container restarts or is rebuilt:** boot sync pulls the latest content +
+  media from the repo before serving. Nothing is lost.
+- **Coolify server is down:** the Cloudflare Pages mirror keeps serving the
+  full site; switch DNS per section 5.
+- **The GitHub token expires:** the site keeps running and edits still go
+  live locally; the status pill shows publish failures until you set a new
+  token. Published-then-failed edits are re-committed on the next successful
+  save (every publish syncs the full content state).
+- **You push code changes:** merge to `master`; if Coolify auto-deploy is on,
+  it rebuilds. Content is unaffected either way.
+
+## 8. About S3 (you asked)
+
+You don't need it. Media is small, lives in the repo next to the content that
+references it, is served by the same container, and is mirrored to Pages on
+every save. S3/MinIO would only be worth adding if the media library grows
+past roughly a gigabyte or you need to serve original-resolution files.
+
+## 9. "Not obviously downloadable" — what's in place
+
+- The repo (once private) is not browsable, so raw content and media aren't
+  sitting on GitHub for anyone to scrape.
+- Uploads are stored and served only as resized WebP — no originals.
+- No directory listing, no public content/media API; the admin API requires
+  the session cookie; `/admin` and `/api` send `noindex` and are excluded in
+  `robots.txt`.
+- Honest limit: anything a browser can display can be saved by a determined
+  visitor (devtools, screenshots). These measures stop casual right-click and
+  bulk downloading, which is the realistic goal for a public portfolio.
+
+## 10. Local development
 
 ```bash
 npm install
-npm run dev
+npm run dev          # vite dev server for the public site
+npm run dev:server   # full server incl. /admin on :3000
 ```
 
-Build with live CMS content:
-
-```powershell
-# PowerShell
-$env:DIRECTUS_URL = "https://alexandreguichet-cms.vancouverly.ca"
-npm run build
-```
-
-Without `DIRECTUS_URL`, build uses whatever is already in `content/`.
-
-Run migrate against your CMS:
-
-```powershell
-$env:DIRECTUS_URL = "https://alexandreguichet-cms.vancouverly.ca"
-$env:DIRECTUS_TOKEN = "your_token"
-npm run cms:migrate
-```
-
----
-
-## Troubleshooting
-
-| Problem | Fix |
-|---------|-----|
-| Build skips CMS fetch | `DIRECTUS_URL` must be **build-time** on site app — redeploy |
-| Build log shows 403 on fetch | Re-deploy migrate app (grants public read) |
-| Site shows old content after Directus edit | Redeploy **site app** — content is build-time, not runtime |
-| 403 on `/items/...` in browser | Re-deploy migrate app |
-| Migrate logs empty | Open **Logs** sidebar after app shows **Running**, not deployment log |
-| Migrate 403 on token | Regenerate admin token, update `DIRECTUS_TOKEN` on **migrate app** |
-| GitHub webhook does nothing | Check `COOLIFY_MIGRATE_WEBHOOK` is a **repository** secret |
-| Directus domain won't save | Include port: `https://alexandreguichet-cms.vancouverly.ca:8055` |
-| Migrate can't find content | Migrate app Base Directory must be `/` (repo root), not `/cms` |
-
----
-
-## File reference
-
-| Path | Purpose |
-|------|---------|
-| `cms/migrate.mjs` | Idempotent CMS migration (schema, seed/migrate content, permissions) |
-| `cms/lib/schema.mjs` | Structured Directus collection/field definitions |
-| `cms/lib/content-map.mjs` | Bidirectional mapping between Directus fields and `content/*.json` |
-| `cms/lib/directus.mjs` | Shared Directus API helper (error diagnostics, permission grants) |
-| `cms/Dockerfile` | Migrate app container |
-| `Dockerfile` | Site app (client build → SSR build → prerender → nginx) |
-| `scripts/fetch-cms-content.mjs` | Pulls content from Directus at build time, writes `content/*.json` |
-| `scripts/prerender.mjs` | Renders every page to static HTML at build time |
-| `src/entry-server.tsx` | SSR entry point used by the prerender step |
-| `.github/workflows/coolify-migrate-deploy.yml` | Triggers Coolify migrate via webhook — needs manual one-time add, see Part 5 |
-
----
-
-## Quick command reference
-
-```powershell
-# Migrate from laptop (PowerShell)
-$env:DIRECTUS_URL = "https://alexandreguichet-cms.vancouverly.ca"
-$env:DIRECTUS_TOKEN = "your_token"
-npm run cms:migrate
-
-# Test public API (should return JSON)
-curl https://alexandreguichet-cms.vancouverly.ca/items/site_settings
-```
+For the full flow locally: `ADMIN_PASSWORD=dev GITHUB_TOKEN=… GITHUB_REPO=nxzume/portfolio CONTENT_BRANCH=<branch> npm run dev:server`.

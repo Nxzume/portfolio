@@ -120,4 +120,20 @@ describe('media', () => {
     await store.deleteMedia('/media/x.mp3')
     expect(await store.listMedia()).toEqual([])
   })
+
+  it('works with relative directories, like the production config', async () => {
+    const rel = path.relative(process.cwd(), tmp)
+    const relStore = new ContentStore({
+      contentDir: path.join(rel, 'content'),
+      mediaDir: path.join(rel, 'media'),
+      maxUploadBytes: 1024,
+      maxDimension: 100,
+      quality: 80,
+    })
+    const bytes = Buffer.from('audio')
+    const publicPath = await relStore.saveUpload({ name: 'rel.mp3', dataBase64: bytes.toString('base64') })
+    expect(publicPath).toBe('/media/rel.mp3')
+    await relStore.deleteMedia('/media/rel.mp3')
+    expect(await relStore.listMedia()).toEqual([])
+  })
 })

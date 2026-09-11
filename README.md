@@ -2,16 +2,45 @@
 
 Interactive portfolio for **Alexandre Guichet**: game composition, level design, and Azure DevOps.
 
+One Docker container serves the whole thing: the prerendered static site, the
+media library, and a built-in admin portal at `/admin`. No database, no
+external CMS, no object storage.
+
+## How it works
+
+- **Content lives in this repo** — `content/*.json` + `content/projects/*.json`
+  for text/structure, `public/media/` for images and audio.
+- **Editing:** sign in at `/admin`, change anything (site settings, hero,
+  about, contact, sections, focus tabs, sketch tracks, projects with
+  galleries/sections/links, media uploads), hit **Save & publish**.
+- **Publish:** each save re-renders the affected pages in place (live in
+  ~1s) and commits `content/` + `public/media/` to GitHub through the Git
+  Data API, using a token in the server env. The repo is the durable store.
+- **Restart safety:** on boot the server pulls the latest content back from
+  the repo, so a container restart never loses published edits.
+- **Failover:** a GitHub Action rebuilds the static site on every push to the
+  content branch and deploys it to Cloudflare Pages as an always-on mirror.
+
+Full setup walkthrough (Coolify, Cloudflare tunnel, tokens, mirror, FAQ):
+[`docs/setup-guide.md`](docs/setup-guide.md).
+
 ## Develop
 
 ```bash
 npm install
-npm run dev
+npm run dev          # vite dev server (site only)
+npm run dev:server   # the real server with /admin (needs ADMIN_PASSWORD)
 ```
 
+Useful env for the dev server: `ADMIN_PASSWORD`, `GITHUB_TOKEN`,
+`GITHUB_REPO`, `CONTENT_BRANCH`, `PORT` (default 3000). Without
+`GITHUB_TOKEN`/`GITHUB_REPO` everything works locally; publishing is skipped.
+
+## Build & run (production)
+
 ```bash
-npm run build
-npm run preview
+npm run build        # vite build + SSR bundle + prerender every page
+npm start            # node server/index.mjs on :3000
 ```
 
 Checks:
@@ -22,82 +51,7 @@ npm run typecheck
 npm test
 ```
 
-## Content
-
-Content lives in `content/*.json` and `content/projects/*.json` — but these
-files are **generated at build time** from Directus, not hand-edited or
-committed here. `npm run build` runs `scripts/fetch-cms-content.mjs` first,
-which pulls the current published content and writes it into those files.
-
-**To edit content:** log into the Directus admin for this site (see
-[`docs/setup-guide.md`](docs/setup-guide.md) for full Coolify setup), edit
-`portfolio_globals` or `projects`, save. Then trigger a rebuild of this app
-in Coolify — the next build pulls the new content. Content is fetched at
-**build time**, not at page load, so publishing a change doesn't show up until
-the next build — that trade-off buys prerendered static HTML for every page
-(real `<title>`, description, and Open Graph tags per project, fast first
-paint, good SEO).
-
-Required env for the build (Coolify build-time var):
-
-```env
-DIRECTUS_URL=https://alexandreguichet-cms.vancouverly.ca
-```
-
-If unset, the fetch step is skipped and the build uses whatever is already
-in `content/` — useful for local development without a CMS running.
-
-Images and audio are **Directus Files** — upload them in the CMS with the
-file pickers (Upload from device / Choose from library). Gallery uses the
-Files field; project sections are their own collection with an image picker.
-
-At build time the site downloads those assets into `public/media/` so nginx
-can serve them. Do not commit media under `public/images/` or `public/audio/`.
-
-After changing media in Directus, redeploy the site app.
-
-## Directus schema
-
-Structured collections with normal form fields (not raw JSON):
-
-| Collection | What you edit |
-|------------|----------------|
-| `site_settings` | Name, tagline, email, site URL, GitHub, LinkedIn |
-| `hero` | Headline, image path, CTA buttons |
-| `about` | Portrait, lead, body paragraphs (list), note |
-| `contact` | Section copy + email button label |
-| `score_section` | Music section header |
-| `projects_section` | Projects section header |
-| `focus_tabs` | Compose / Levels / Azure tabs |
-| `sketch_tracks` | Audio tracks on the score desk |
-| `projects` | Each project — title, summary, gallery, sections, etc. |
-
-Bootstrap or upgrade the CMS:
-
-```powershell
-$env:DIRECTUS_URL = "https://alexandreguichet-cms.vancouverly.ca"
-$env:DIRECTUS_TOKEN = "your_admin_token"
-npm run cms:migrate
-```
-
-Migrate is idempotent — safe to re-run. It converts legacy JSON-blob fields into
-structured forms automatically.
-
-## How pages are built
-
-`npm run build` does four things:
-
-1. `scripts/fetch-cms-content.mjs` — pulls published content from Directus.
-2. `vite build` — the client bundle.
-3. `vite build --ssr` — a server bundle from `src/entry-server.tsx`.
-4. `scripts/prerender.mjs` — renders the homepage, every project page, and
-   the 404 to static HTML, then writes `sitemap.xml` and `robots.txt`.
-
-Each page ships with its own `<title>`, description, canonical URL, and
-Open Graph tags. Adding a project in Directus adds a prerendered page
-automatically on the next build — no build config to touch.
-
 ## Stack
 
-Vite, React, TypeScript, Framer Motion, React Router, Directus. Vitest for
-tests, oxlint for linting.
+Vite, React, TypeScript, Framer Motion, React Router, Express, sharp.
+Vitest for tests, oxlint for linting.

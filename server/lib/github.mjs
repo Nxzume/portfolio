@@ -95,6 +95,19 @@ export function planChanges(localFiles, remoteManagedEntries) {
   return { uploads, deletions }
 }
 
+/** Tree entries for the Git Data API; deletions keep mode/type with sha null. */
+export function buildTreeEntries(uploadedBlobs, deletions) {
+  return [
+    ...uploadedBlobs.map(({ path: filePath, sha }) => ({
+      path: filePath,
+      mode: '100644',
+      type: 'blob',
+      sha,
+    })),
+    ...deletions.map((filePath) => ({ path: filePath, mode: '100644', type: 'blob', sha: null })),
+  ]
+}
+
 async function publishOnce({ token, repo, branch, message, files }) {
   const refSha = await getRefSha(token, repo, branch)
   const commit = await gh(token, `/repos/${repo}/git/commits/${refSha}`)
@@ -106,17 +119,15 @@ async function publishOnce({ token, repo, branch, message, files }) {
     return { result: 'unchanged', sha: refSha }
   }
 
-  const treeEntries = []
+  const uploadedBlobs = []
   for (const upload of uploads) {
     const blob = await gh(token, `/repos/${repo}/git/blobs`, {
       method: 'POST',
       body: { content: upload.bytes.toString('base64'), encoding: 'base64' },
     })
-    treeEntries.push({ path: upload.path, mode: '100644', type: 'blob', sha: blob.sha })
+    uploadedBlobs.push({ path: upload.path, sha: blob.sha })
   }
-  for (const filePath of deletions) {
-    treeEntries.push({ path: filePath, sha: null })
-  }
+  const treeEntries = buildTreeEntries(uploadedBlobs, deletions)
 
   const newTree = await gh(token, `/repos/${repo}/git/trees`, {
     method: 'POST',

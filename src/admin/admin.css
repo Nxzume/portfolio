@@ -127,13 +127,26 @@
 
 .admin__preview {
   background: var(--panel);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 0;
 }
 
-.admin__preview iframe {
-  width: 100%;
-  height: 100%;
-  border: 0;
-  background: #fff;
+.admin__preview-label {
+  margin: 0;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.livepreview {
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.livepreview .app {
+  min-height: 100%;
 }
 
 .admin__modal {
@@ -269,13 +282,29 @@ textarea.input { resize: vertical; }
 /* Asset picker + media library */
 
 .assetpicker { display: grid; gap: 8px; }
+.assetpicker__thumb-link { display: block; width: fit-content; }
 .assetpicker__preview {
-  max-width: 260px;
-  max-height: 160px;
+  width: 100%;
+  max-width: 360px;
+  height: 180px;
   border-radius: 8px;
   border: 1px solid var(--border);
   object-fit: cover;
+  display: block;
+  background: var(--panel-2);
 }
+.assetpicker__missing {
+  border: 1px dashed var(--danger);
+  border-radius: 8px;
+  padding: 14px;
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--danger);
+  max-width: 360px;
+  word-break: break-all;
+}
+.assetpicker__missing span { color: var(--muted); }
 .assetpicker__audio { width: 100%; }
 .assetpicker__empty {
   border: 1px dashed var(--border);

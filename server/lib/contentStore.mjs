@@ -65,8 +65,8 @@ export class HttpError extends Error {
 
 export class ContentStore {
   constructor({ contentDir, mediaDir, maxUploadBytes, maxDimension, quality }) {
-    this.contentDir = contentDir
-    this.mediaDir = mediaDir
+    this.contentDir = path.resolve(contentDir)
+    this.mediaDir = path.resolve(mediaDir)
     this.maxUploadBytes = maxUploadBytes
     this.maxDimension = maxDimension
     this.quality = quality
@@ -232,8 +232,8 @@ export class ContentStore {
       throw new HttpError(400, 'Path must start with /media/')
     }
     const rel = publicPath.slice('/media/'.length)
-    const full = path.join(this.mediaDir, rel)
-    if (!full.startsWith(path.resolve(this.mediaDir)) || rel.includes('..')) {
+    const full = path.resolve(this.mediaDir, rel)
+    if (rel.includes('..') || !full.startsWith(`${this.mediaDir}${path.sep}`)) {
       throw new HttpError(400, 'Invalid path')
     }
     await rm(full, { force: true })

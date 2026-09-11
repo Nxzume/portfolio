@@ -8,6 +8,7 @@
  * Also writes dist/_shell.html — the pristine, unrendered SPA shell the
  * server uses for /admin and any client-side-only route.
  */
+import { existsSync } from 'node:fs'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -21,15 +22,27 @@ const { render, routes, sitemapRoutes, loadContentFromDir } = await import(
 
 const content = loadContentFromDir(CONTENT_DIR)
 
-const template = await readFile(path.join(DIST, 'index.html'), 'utf8')
+// Always render from the pristine shell. After the first run, dist/index.html
+// holds the prerendered homepage — using it as the template again would leave
+// the old page body in place (the empty <div id="root"></div> is gone).
+const shellPath = path.join(DIST, '_shell.html')
+let template
+if (existsSync(shellPath)) {
+  template = await readFile(shellPath, 'utf8')
+} else {
+  template = await readFile(path.join(DIST, 'index.html'), 'utf8')
+  await writeFile(shellPath, template, 'utf8')
+}
 
 if (!template.includes('<!--head:start-->')) {
   throw new Error('index.html is missing the <!--head:start--> marker; check vite.config.ts')
 }
 
-// Pristine shell for client-side-only routes (/admin). Written before
-// index.html is overwritten with the prerendered homepage.
-await writeFile(path.join(DIST, '_shell.html'), template, 'utf8')
+if (!template.includes('<div id="root"></div>')) {
+  throw new Error(
+    'dist/_shell.html is not pristine (root div already rendered). Run a full `npm run build` to regenerate it.',
+  )
+}
 
 function outputPath(route) {
   if (route === '/') return path.join(DIST, 'index.html')

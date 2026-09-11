@@ -10,6 +10,7 @@ import {
   SketchesEditor,
 } from './editors'
 import { MediaLibrary } from './MediaLibrary'
+import { LivePreview } from './LivePreview'
 import './admin.css'
 
 const GLOBAL_FILES = [
@@ -25,10 +26,6 @@ const GLOBAL_FILES = [
 
 function projectSlugFromKey(key: string) {
   return key.slice('projects/'.length)
-}
-
-function previewPathFor(selection: string) {
-  return selection.startsWith('projects/') ? `/projects/${projectSlugFromKey(selection)}` : '/'
 }
 
 function StatusPill({ status, saving }: { status: AdminStatus | null; saving: boolean }) {
@@ -96,7 +93,6 @@ export default function AdminApp() {
   const [status, setStatus] = useState<AdminStatus | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [previewNonce, setPreviewNonce] = useState(0)
   const [showPreview, setShowPreview] = useState(true)
   const [library, setLibrary] = useState<{ kind: 'image' | 'audio'; onSelect: (path: string) => void } | null>(null)
   const pollRef = useRef<number | null>(null)
@@ -147,7 +143,6 @@ export default function AdminApp() {
         if (idle || Date.now() - started > 60_000) {
           if (pollRef.current) window.clearInterval(pollRef.current)
           pollRef.current = null
-          setPreviewNonce((n) => n + 1)
         }
       })()
     }, 1000)
@@ -358,11 +353,8 @@ export default function AdminApp() {
 
         {showPreview ? (
           <aside className="admin__preview">
-            <iframe
-              key={`${previewPathFor(selection)}-${previewNonce}`}
-              title="Site preview"
-              src={`${previewPathFor(selection)}?v=${previewNonce}`}
-            />
+            <p className="admin__preview-label">Live preview — updates as you type, before you save</p>
+            <LivePreview files={files} drafts={drafts} selection={selection} />
           </aside>
         ) : null}
       </div>

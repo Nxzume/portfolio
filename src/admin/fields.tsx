@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { move } from './list'
 
 /** Shared form building blocks for the admin editors. */
@@ -215,16 +215,29 @@ export function AssetPicker({
   kind: 'image' | 'audio'
   onOpenLibrary: () => void
 }) {
+  const [failed, setFailed] = useState(false)
+  useEffect(() => setFailed(false), [value])
+
   return (
     <div className="assetpicker">
-      {value ? (
-        kind === 'image' ? (
-          <img className="assetpicker__preview" src={value} alt="" />
+      {kind === 'image' ? (
+        value && !failed ? (
+          <a href={value} target="_blank" rel="noreferrer" className="assetpicker__thumb-link">
+            <img className="assetpicker__preview" src={value} alt="" onError={() => setFailed(true)} />
+          </a>
+        ) : value ? (
+          <div className="assetpicker__missing" role="alert">
+            <strong>Image not found on the server.</strong>
+            <span>{value}</span>
+            <span>Upload it via the media library, or pick a different file.</span>
+          </div>
         ) : (
-          <audio className="assetpicker__audio" src={value} controls preload="none" />
+          <div className="assetpicker__empty">No image selected</div>
         )
+      ) : value ? (
+        <audio className="assetpicker__audio" src={value} controls preload="none" />
       ) : (
-        <div className="assetpicker__empty">No {kind} selected</div>
+        <div className="assetpicker__empty">No audio selected</div>
       )}
       <div className="assetpicker__controls">
         <input
