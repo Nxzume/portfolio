@@ -1,11 +1,8 @@
-# Build-time env (set in Coolify, marked "Available at Buildtime"):
-#   DIRECTUS_URL   e.g. https://alexandreguichet-cms.vancouverly.ca
+# One image = the whole site: static pages + media + admin portal + publishing.
+# No database, no external CMS, no object storage required.
 
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
 WORKDIR /app
-
-ARG DIRECTUS_URL
-ENV DIRECTUS_URL=$DIRECTUS_URL
 
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -13,7 +10,23 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
+FROM node:22-alpine
+ENV NODE_ENV=production
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/dist-ssr ./dist-ssr
+COPY server ./server
+COPY scripts ./scripts
+COPY content ./content
+COPY public ./public
+
+# content/ and public/media/ are written at runtime by the admin portal.
+RUN chown -R node:node /app
+USER node
+
+EXPOSE 3000
+CMD ["node", "server/index.mjs"]
