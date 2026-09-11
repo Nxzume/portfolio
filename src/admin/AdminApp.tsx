@@ -353,8 +353,8 @@ export default function AdminApp() {
 
         {showPreview ? (
           <aside className="admin__preview">
-            <p className="admin__preview-label">Live preview — updates as you type, before you save</p>
-            <LivePreview files={files} drafts={drafts} selection={selection} />
+            <p className="admin__preview-label">Live preview — updates as you type; click a section to edit it</p>
+            <LivePreview files={files} drafts={drafts} selection={selection} onSelect={setSelection} />
           </aside>
         ) : null}
       </div>

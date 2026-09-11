@@ -5,7 +5,7 @@ FROM node:22-alpine AS build
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm npm ci
 
 COPY . .
 RUN npm run build
@@ -17,8 +17,10 @@ WORKDIR /app
 # Coolify's Docker healthcheck shells out to curl inside the container.
 RUN apk add --no-cache curl
 
+# Reuse the build stage's node_modules instead of downloading twice.
+COPY --from=build /app/node_modules ./node_modules
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm prune --omit=dev
 
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/dist-ssr ./dist-ssr
@@ -27,7 +29,7 @@ COPY scripts ./scripts
 COPY content ./content
 COPY public ./public
 
-# content/ and public/media/ are written at runtime by the admin portal.
+# content/ and public/ are written at runtime by the admin portal.
 RUN chown -R node:node /app
 USER node
 

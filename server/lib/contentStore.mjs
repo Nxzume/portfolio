@@ -235,12 +235,15 @@ export class ContentStore {
   }
 
   async deleteMedia(publicPath) {
-    if (typeof publicPath !== 'string' || !publicPath.startsWith('/media/')) {
-      throw new HttpError(400, 'Path must start with /media/')
+    const prefixes = { '/media/': this.mediaDir, '/images/': path.join(this.publicDir, 'images'), '/audio/': path.join(this.publicDir, 'audio') }
+    const prefix = Object.keys(prefixes).find((p) => typeof publicPath === 'string' && publicPath.startsWith(p))
+    if (!prefix) {
+      throw new HttpError(400, 'Path must start with /media/, /images/, or /audio/')
     }
-    const rel = publicPath.slice('/media/'.length)
-    const full = path.resolve(this.mediaDir, rel)
-    if (rel.includes('..') || !full.startsWith(`${this.mediaDir}${path.sep}`)) {
+    const rel = publicPath.slice(prefix.length)
+    const base = prefixes[prefix]
+    const full = path.resolve(base, rel)
+    if (rel.includes('..') || !full.startsWith(`${base}${path.sep}`)) {
       throw new HttpError(400, 'Invalid path')
     }
     await rm(full, { force: true })

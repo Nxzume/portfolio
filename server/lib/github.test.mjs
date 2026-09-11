@@ -17,11 +17,14 @@ describe('gitBlobSha', () => {
 })
 
 describe('isManagedPath', () => {
-  it('only allows content/ and public/media/', () => {
+  it('allows content and all public asset dirs', () => {
     expect(isManagedPath('content/site.json')).toBe(true)
     expect(isManagedPath('public/media/hero.webp')).toBe(true)
+    expect(isManagedPath('public/images/hero.png')).toBe(true)
+    expect(isManagedPath('public/audio/track.mp3')).toBe(true)
     expect(isManagedPath('src/App.tsx')).toBe(false)
     expect(isManagedPath('package.json')).toBe(false)
+    expect(isManagedPath('public/favicon.svg')).toBe(false)
   })
 })
 
@@ -69,21 +72,27 @@ describe('buildTreeEntries', () => {
 })
 
 describe('collectContentFiles', () => {
-  it('walks content and media into repo-relative paths', async () => {
+  it('walks content and all asset dirs into repo-relative paths', async () => {
     const tmp = await mkdtemp(path.join(os.tmpdir(), 'collect-'))
     try {
       const contentDir = path.join(tmp, 'content')
-      const mediaDir = path.join(tmp, 'public', 'media')
+      const publicDir = path.join(tmp, 'public')
       await mkdir(path.join(contentDir, 'projects'), { recursive: true })
-      await mkdir(mediaDir, { recursive: true })
+      await mkdir(path.join(publicDir, 'media'), { recursive: true })
+      await mkdir(path.join(publicDir, 'images'), { recursive: true })
+      await mkdir(path.join(publicDir, 'audio'), { recursive: true })
       await writeFile(path.join(contentDir, 'site.json'), '{}')
       await writeFile(path.join(contentDir, 'projects', 'arena.json'), '{}')
-      await writeFile(path.join(mediaDir, 'hero.webp'), 'img')
+      await writeFile(path.join(publicDir, 'media', 'hero.webp'), 'img')
+      await writeFile(path.join(publicDir, 'images', 'cover.png'), 'img')
+      await writeFile(path.join(publicDir, 'audio', 'track.mp3'), 'audio')
 
-      const files = await collectContentFiles({ contentDir, mediaDir })
+      const files = await collectContentFiles({ contentDir, publicDir })
       expect([...files.keys()].sort()).toEqual([
         'content/projects/arena.json',
         'content/site.json',
+        'public/audio/track.mp3',
+        'public/images/cover.png',
         'public/media/hero.webp',
       ])
     } finally {
@@ -94,7 +103,7 @@ describe('collectContentFiles', () => {
   it('tolerates missing directories', async () => {
     const files = await collectContentFiles({
       contentDir: path.join(os.tmpdir(), 'nope-content'),
-      mediaDir: path.join(os.tmpdir(), 'nope-media'),
+      publicDir: path.join(os.tmpdir(), 'nope-public'),
     })
     expect(files.size).toBe(0)
   })

@@ -42,7 +42,7 @@ async function replaceDir(source, target, log, label) {
   }
 }
 
-export async function syncFromGitHub({ token, repo, branch, contentDir, mediaDir, log = console }) {
+export async function syncFromGitHub({ token, repo, branch, contentDir, publicDir, log = console }) {
   const tarball = await downloadRepoTarball({ token, repo, ref: branch })
   const tmp = await mkdtemp(path.join(os.tmpdir(), 'site-sync-'))
   try {
@@ -53,7 +53,15 @@ export async function syncFromGitHub({ token, repo, branch, contentDir, mediaDir
     const repoRoot = path.join(tmp, root)
 
     const contentCount = await replaceDir(path.join(repoRoot, 'content'), contentDir, log, 'content')
-    const mediaCount = await replaceDir(path.join(repoRoot, 'public', 'media'), mediaDir, log, 'public/media')
+    let mediaCount = 0
+    for (const sub of ['media', 'images', 'audio']) {
+      mediaCount += await replaceDir(
+        path.join(repoRoot, 'public', sub),
+        path.join(publicDir, sub),
+        log,
+        `public/${sub}`,
+      )
+    }
     log.log(`[sync] pulled latest content (${contentCount} files) and media (${mediaCount} files) from ${repo}@${branch}`)
   } finally {
     await rm(tmp, { recursive: true, force: true })

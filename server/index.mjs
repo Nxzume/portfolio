@@ -34,7 +34,7 @@ if (config.publishEnabled && config.syncOnBoot) {
       repo: config.githubRepo,
       branch: config.contentBranch,
       contentDir: config.contentDir,
-      mediaDir: config.mediaDir,
+      publicDir: config.publicDir,
     })
   } catch (err) {
     console.error(`[sync] failed, using content baked into the image: ${err.message}`)
@@ -58,7 +58,7 @@ const store = new ContentStore({
 
 const publish = config.publishEnabled
   ? async () => {
-      const files = await collectContentFiles({ contentDir: config.contentDir, mediaDir: config.mediaDir })
+      const files = await collectContentFiles({ contentDir: config.contentDir, publicDir: config.publicDir })
       return publishSite({
         token: config.githubToken,
         repo: config.githubRepo,

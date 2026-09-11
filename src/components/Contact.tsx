@@ -14,11 +14,9 @@ function contactActions(contact: ContactContent, site: SiteContent) {
     },
   ]
 
-  if (site.links.github) {
-    actions.push({ label: 'GitHub', href: site.links.github, style: 'ghost' })
-  }
-  if (site.links.linkedin) {
-    actions.push({ label: 'LinkedIn', href: site.links.linkedin, style: 'ghost' })
+  // The link name is the button label, shown exactly as typed in the admin.
+  for (const [key, href] of Object.entries(site.links)) {
+    if (href.trim() && key.trim()) actions.push({ label: key.trim(), href, style: 'ghost' })
   }
   return actions
 }
