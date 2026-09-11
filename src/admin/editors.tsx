@@ -117,9 +117,21 @@ export function SectionCopyEditor({ value, onChange, extra }: EditorProps & { ex
   )
 }
 
+/**
+ * focuses.json and sketches.json wrap their lists ({ "tabs": [...] } /
+ * { "tracks": [...] }). Read the wrapped list and write back in the same
+ * shape so the file format never changes under the editor.
+ */
+function useWrappedList(value: unknown, key: string, onChange: (next: unknown) => void) {
+  const raw = asRow(value)
+  const wrapped = !Array.isArray(value) && Array.isArray(raw[key])
+  const items = (Array.isArray(value) ? value : asList(raw[key])).map(asRow)
+  const update = (next: Row[]) => onChange(wrapped ? { ...raw, [key]: next } : next)
+  return { items, update }
+}
+
 export function FocusesEditor({ value, onChange }: EditorProps) {
-  const items = asList(value).map(asRow)
-  const update = (next: Row[]) => onChange(next)
+  const { items, update } = useWrappedList(value, 'tabs', onChange)
   const setItem = (i: number, key: string, v: unknown) => update(items.map((it, j) => (j === i ? { ...it, [key]: v } : it)))
   return (
     <div className="editor">
@@ -147,8 +159,7 @@ export function FocusesEditor({ value, onChange }: EditorProps) {
 }
 
 export function SketchesEditor({ value, onChange, openLibrary }: EditorProps) {
-  const items = asList(value).map(asRow)
-  const update = (next: Row[]) => onChange(next)
+  const { items, update } = useWrappedList(value, 'tracks', onChange)
   const setItem = (i: number, key: string, v: unknown) => update(items.map((it, j) => (j === i ? { ...it, [key]: v } : it)))
   return (
     <div className="editor">
