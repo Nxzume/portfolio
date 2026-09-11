@@ -83,7 +83,8 @@ export function MediaLibrary({
         ) : null}
       </div>
       <p className="editor__hint">
-        Images are converted to WebP and resized to at most 1920px on upload — originals never touch the server.
+        Shows uploads (<code>/media/</code>) plus the site's existing images and audio. New image uploads are
+        converted to WebP and resized to at most 1920px — originals never touch the server.
       </p>
       {error ? <p className="notice notice--error">{error}</p> : null}
       {visible.length === 0 ? <p className="editor__hint">Nothing uploaded yet.</p> : null}
@@ -97,7 +98,7 @@ export function MediaLibrary({
             )}
             <figcaption>
               <span className="medialib__name" title={item.path}>
-                {item.path.replace('/media/', '')}
+                {item.path.replace(/^\//, '')}
               </span>
               <span className="medialib__size">{formatSize(item.size)}</span>
             </figcaption>
@@ -115,9 +116,11 @@ export function MediaLibrary({
                   Copy path
                 </button>
               )}
-              <button type="button" className="btn btn--small btn--danger" onClick={() => void remove(item.path)}>
-                Delete
-              </button>
+              {item.path.startsWith('/media/') ? (
+                <button type="button" className="btn btn--small btn--danger" onClick={() => void remove(item.path)}>
+                  Delete
+                </button>
+              ) : null}
             </div>
           </figure>
         ))}

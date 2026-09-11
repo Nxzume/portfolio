@@ -143,10 +143,26 @@
 .livepreview {
   overflow-y: auto;
   min-height: 0;
+  position: relative;
 }
 
 .livepreview .app {
   min-height: 100%;
+}
+
+/* The site's chrome is position:fixed, which would escape the preview pane
+   and cover the admin top bar (swallowing Save/Logout clicks). Contain it. */
+.livepreview :is(.nav, .nav-dock-wrap, .nav-sheet, .skip-link, .lightbox) {
+  position: absolute;
+}
+
+/* whileInView animations start at opacity:0 and rely on IntersectionObserver,
+   which does not fire reliably inside the nested preview scroller — sections
+   (tracks, project cards, portrait) would stay invisible. A content preview
+   should render the final state instantly, like the site's no-JS fallback. */
+.livepreview [style*='opacity'] {
+  opacity: 1 !important;
+  transform: none !important;
 }
 
 .admin__modal {
