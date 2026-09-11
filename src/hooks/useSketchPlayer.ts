@@ -31,6 +31,11 @@ export function useSketchPlayer(sketches: Sketch[]) {
   const [duration, setDuration] = useState(0)
   const [mode, setMode] = useState<'file' | 'generative' | null>(null)
 
+  // Guards against overlapping playback when play is clicked again while an
+  // audio file is still loading: the stale start cleans up instead of
+  // leaving an orphaned <audio> playing under the new one.
+  const startTokenRef = useRef(0)
+
   // Each setter keeps its ref in step, so callbacks can read current values
   // without being recreated. Writing refs during render is not safe under
   // concurrent rendering.
@@ -168,7 +173,7 @@ export function useSketchPlayer(sketches: Sketch[]) {
     progressTimerRef.current = window.setInterval(sync, 250)
   }
 
-  const playAudioFile = async (src: string) => {
+  const playAudioFile = async (src: string, token: number) => {
     const audio = new Audio(src)
     audioRef.current = audio
     audio.loop = false
@@ -180,6 +185,16 @@ export function useSketchPlayer(sketches: Sketch[]) {
       clearIntensityTimer()
     }
     await audio.play()
+    if (token !== startTokenRef.current) {
+      // Superseded while loading — silence this element; the newer start owns playback.
+      audio.onended = null
+      audio.onloadedmetadata = null
+      audio.ontimeupdate = null
+      audio.pause()
+      audio.src = ''
+      if (audioRef.current === audio) audioRef.current = null
+      return
+    }
     setPlayMode('file')
     setPlaying(true)
     setIntensity(0.55)
@@ -190,6 +205,7 @@ export function useSketchPlayer(sketches: Sketch[]) {
   }
 
   const startSketch = async (sketch: Sketch) => {
+    const token = ++startTokenRef.current
     stopGenerative()
     stopAudioFile()
     setCurrentTime(0)
@@ -201,12 +217,13 @@ export function useSketchPlayer(sketches: Sketch[]) {
     const audioSrc = sketch.audio?.trim()
     if (audioSrc) {
       try {
-        await playAudioFile(audioSrc)
+        await playAudioFile(audioSrc, token)
         return
       } catch {
         /* fall back to generative if file missing/blocked */
       }
     }
+    if (token !== startTokenRef.current) return
     await playGenerative(sketch)
   }
 
