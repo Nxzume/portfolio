@@ -1,6 +1,7 @@
 # Alexandre Guichet — Portfolio
 
-Interactive portfolio for **Alexandre Guichet**: game composition, level design, and Azure DevOps.
+Portfolio for **Alexandre Guichet** — Python & C++ software engineer (Technical
+Lead at Microsoft), game composer, and level designer.
 
 One Docker container serves the whole thing: the prerendered static site, the
 media library, and a built-in admin portal at `/admin`. No database, no
@@ -11,8 +12,14 @@ external CMS, no object storage.
 - **Content lives in this repo** — `content/*.json` + `content/projects/*.json`
   for text/structure, `public/media/` for images and audio.
 - **Editing:** sign in at `/admin`, change anything (site settings, hero,
-  about, contact, sections, focus tabs, sketch tracks, projects with
-  galleries/sections/links, media uploads), hit **Save & publish**.
+  about + experience timeline, contact, sections, focus tabs, sketch tracks,
+  projects with galleries/sections/links, media uploads), hit
+  **Save & publish**. A live preview updates as you type; click a section in
+  the preview to jump to its editor.
+- **Changelog & revert:** every save/delete is recorded in
+  `content/_history/changelog.jsonl` (published with the content, so history
+  survives restarts). The **Changelog** page in the admin lists recent edits
+  and can revert any of them — including deleted projects.
 - **Publish:** each save re-renders the affected pages in place (live in
   ~1s) and commits `content/` + `public/media/` to GitHub through the Git
   Data API, using a token in the server env. The repo is the durable store.
@@ -23,6 +30,12 @@ external CMS, no object storage.
 
 Full setup walkthrough (Coolify, Cloudflare tunnel, tokens, mirror, FAQ):
 [`docs/setup-guide.md`](docs/setup-guide.md).
+
+## Design
+
+"Studio Console" — typography-first dark theme: warm near-black, signal-amber
+accent, Space Grotesk display type, IBM Plex Mono index labels, numbered
+sections, projects as an index list, and an experience timeline in About.
 
 ## Develop
 
