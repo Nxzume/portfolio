@@ -14,6 +14,8 @@ type Props = {
   loadErrorId?: string | null
   onPlayTrack: (id: string) => void
   onSeek: (time: number) => void
+  onScrubStart?: () => void
+  onScrubEnd?: (time: number) => void
 }
 
 function IconPlay() {
@@ -43,6 +45,8 @@ export function ScoreDesk({
   loadErrorId,
   onPlayTrack,
   onSeek,
+  onScrubStart,
+  onScrubEnd,
 }: Props) {
   const { score, sketches } = useContent()
   const progress = canSeek && duration > 0 ? Math.min(1, currentTime / duration) : 0
@@ -114,7 +118,10 @@ export function ScoreDesk({
                         value={canSeek ? currentTime : 0}
                         disabled={!canSeek}
                         aria-label={`Seek in ${sketch.title}`}
+                        onPointerDown={() => onScrubStart?.()}
                         onChange={(e) => onSeek(Number(e.target.value))}
+                        onPointerUp={(e) => onScrubEnd?.(Number((e.target as HTMLInputElement).value))}
+                        onKeyUp={(e) => onScrubEnd?.(Number((e.target as HTMLInputElement).value))}
                         style={{ '--score-progress': `${progress * 100}%` } as CSSProperties}
                       />
                       <span className="score__time">{canSeek ? formatClock(duration) : '0:00'}</span>

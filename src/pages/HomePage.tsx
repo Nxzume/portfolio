@@ -39,6 +39,8 @@ export function HomePage() {
             if (sketch) void player.play(sketch)
           }}
           onSeek={player.seek}
+          onScrubStart={player.beginScrub}
+          onScrubEnd={player.endScrub}
         />
         <About />
         <Contact />
