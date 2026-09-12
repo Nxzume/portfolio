@@ -6,24 +6,11 @@
   "subtitle": "Puzzle · Unity",
   "image": "/images/level-hero.jpg",
   "gallery": [
-    {
-      "image": "/images/level-gameplay.png"
-    },
-    {
-      "image": "/images/level-overview.png"
-    },
-    {
-      "image": "/images/level-detail-1.png"
-    },
-    {
-      "image": "/images/level-detail-2.png"
-    },
-    {
-      "image": "/images/level-proto-1.png"
-    },
-    {
-      "image": "/images/level-token.png"
-    }
+    "/images/level-gameplay.png",
+    "/images/level-detail-1.png",
+    "/images/level-detail-2.png",
+    "/images/level-proto-1.png",
+    "/images/level-token.png"
   ],
   "summary": "A puzzle game where the player moves a ball by tilting the environment. Each stage introduces a mechanic through a unique space — collect tokens, learn jump and attack, and reach the exit.",
   "highlights": [
@@ -107,7 +94,7 @@
     {
       "id": "challenge",
       "title": "Hardest challenge — tilting planes",
-      "image": "/images/level-overview.png",
+      "image": "/images/level-token.png",
       "imageAlt": "Level overview showing segmented planes",
       "paragraphs": [
         {
@@ -124,7 +111,7 @@
     {
       "id": "mid-stage",
       "title": "Mid stage — teaching in the world",
-      "image": "/images/level-token.png",
+      "image": "/images/level-gameplay.png",
       "imageAlt": "Token collection feedback in Level",
       "paragraphs": [
         {
@@ -136,7 +123,8 @@
         {
           "paragraph": "Level 1 teaches tokens, exit, and changing planes. Level 2 teaches jump and falling. Level 3 introduces health and attack."
         }
-      ]
+      ],
+      "quote": ""
     },
     {
       "id": "retrospection",
