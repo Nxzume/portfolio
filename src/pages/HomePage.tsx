@@ -1,21 +1,17 @@
-import { useState } from 'react'
 import { About } from '../components/About'
 import { Contact, Footer } from '../components/Contact'
-import { FocusSwitcher } from '../components/FocusSwitcher'
 import { Hero } from '../components/Hero'
 import { Nav } from '../components/Nav'
 import { PageHead } from '../components/PageHead'
 import { Projects } from '../components/Projects'
 import { ScoreDesk } from '../components/ScoreDesk'
 import { useContent } from '../content/context'
-import type { FocusId } from '../content/types'
 import { useSketchPlayer } from '../hooks/useSketchPlayer'
 import { homeMeta } from '../lib/meta'
 
 export function HomePage() {
   const content = useContent()
-  const { focuses, sketches } = content
-  const [focus, setFocus] = useState<FocusId>(focuses[0]?.id ?? 'compose')
+  const { sketches } = content
   const player = useSketchPlayer(sketches)
 
   return (
@@ -24,7 +20,6 @@ export function HomePage() {
       <Nav variant="home" />
       <main id="main">
         <Hero intensity={player.intensity} />
-        <FocusSwitcher active={focus} onChange={setFocus} />
         <Projects />
         <ScoreDesk
           activeId={player.activeId}

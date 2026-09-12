@@ -164,7 +164,7 @@
 
 /* The site's chrome is position:fixed, which would escape the preview pane
    and cover the admin top bar (swallowing Save/Logout clicks). Contain it. */
-.livepreview :is(.nav, .nav-dock-wrap, .nav-sheet, .skip-link, .lightbox) {
+.livepreview :is(.nav, .skip-link, .lightbox) {
   position: absolute;
 }
 

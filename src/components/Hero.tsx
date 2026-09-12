@@ -7,7 +7,7 @@ type Props = {
 }
 
 export function Hero({ intensity }: Props) {
-  const { hero, site, focuses } = useContent()
+  const { hero, site } = useContent()
   return (
     <section className="hero" id="top">
       <div className="hero__media" aria-hidden>
@@ -25,27 +25,17 @@ export function Hero({ intensity }: Props) {
 
       <div className="hero__content">
         <m.p
-          className="hero__disciplines"
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.05 }}
-        >
-          {focuses.map((f) => (
-            <span key={f.id}>{f.label}</span>
-          ))}
-        </m.p>
-        <m.p
           className="hero__brand"
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.15 }}
+          transition={{ duration: 0.8, delay: 0.1 }}
         >
           {site.name}
         </m.p>
         <m.h1
           initial={{ opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.85, delay: 0.28 }}
+          transition={{ duration: 0.85, delay: 0.22 }}
         >
           {hero.headline}
         </m.h1>
@@ -53,7 +43,7 @@ export function Hero({ intensity }: Props) {
           className="hero__lede"
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
+          transition={{ duration: 0.8, delay: 0.34 }}
         >
           {site.tagline}
         </m.p>
@@ -61,7 +51,7 @@ export function Hero({ intensity }: Props) {
           className="hero__cta"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.75, delay: 0.52 }}
+          transition={{ duration: 0.75, delay: 0.46 }}
         >
           <a className="btn btn--primary" href={hero.primaryCta.href}>
             {hero.primaryCta.label}

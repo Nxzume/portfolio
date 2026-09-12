@@ -42,28 +42,8 @@
     clamp(7rem, 15vh, 9rem);
 }
 
-.hero__disciplines {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem 1.6rem;
-  margin: 0 0 1.6rem;
-  font-family: var(--font-mono);
-  font-size: 0.74rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--paper-dim);
-}
 
-.hero__disciplines span {
-  display: inline-flex;
-  align-items: baseline;
-}
 
-.hero__disciplines span + span::before {
-  content: '·';
-  margin-right: 1.6rem;
-  color: var(--signal);
-}
 
 .hero__brand {
   font-family: var(--font-display);
