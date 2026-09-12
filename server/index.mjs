@@ -268,7 +268,19 @@ app.use(
     redirect: false,
     maxAge: '1h',
     setHeaders(res, filePath) {
-      if (filePath.includes(`${path.sep}media${path.sep}`)) res.setHeader('Cache-Control', 'public, max-age=604800')
+      if (filePath.includes(`${path.sep}media${path.sep}`)) {
+        res.setHeader('Cache-Control', 'public, max-age=604800')
+      }
+      // Audio must advertise byte ranges. Cloudflare caches full MP3s and
+      // otherwise answers Range seeks with a 200 (no Accept-Ranges), which
+      // breaks HTMLMediaElement seeking. Keep the browser cache, but ask the
+      // CDN not to store audio so Range hits the origin.
+      if (/\.(mp3|ogg|wav|m4a|flac)$/i.test(filePath)) {
+        res.setHeader('Accept-Ranges', 'bytes')
+        res.setHeader('Cache-Control', 'public, max-age=604800')
+        res.setHeader('CDN-Cache-Control', 'no-store')
+        res.setHeader('Cloudflare-CDN-Cache-Control', 'no-store')
+      }
     },
   }),
 )

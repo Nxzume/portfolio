@@ -12,6 +12,36 @@ export function formatClock(seconds: number) {
   return `${m}:${s.toString().padStart(2, '0')}`
 }
 
+/**
+ * Cloudflare (and some proxies) cache MP3s and then answer Range seeks with a
+ * full 200 and no Accept-Ranges — which makes HTMLAudioElement.currentTime
+ * assignments no-ops. Fetching once into a blob URL keeps seeking entirely
+ * local, so scrubbing works regardless of CDN behavior.
+ */
+const audioBlobUrls = new Map<string, string>()
+
+/** Test helper — clears the in-memory blob URL cache. */
+export function resetAudioBlobCache() {
+  for (const url of audioBlobUrls.values()) {
+    try {
+      URL.revokeObjectURL(url)
+    } catch {
+      /* ignore */
+    }
+  }
+  audioBlobUrls.clear()
+}
+
+export async function resolvePlayableSrc(src: string): Promise<string> {
+  const cached = audioBlobUrls.get(src)
+  if (cached) return cached
+  const res = await fetch(src)
+  if (!res.ok) throw new Error(`Failed to load audio (${res.status})`)
+  const url = URL.createObjectURL(await res.blob())
+  audioBlobUrls.set(src, url)
+  return url
+}
+
 export function useSketchPlayer(sketches: Sketch[]) {
   const ctxRef = useRef<AudioContext | null>(null)
   const nodesRef = useRef<{ osc: OscillatorNode; gain: GainNode }[]>([])
@@ -23,6 +53,8 @@ export function useSketchPlayer(sketches: Sketch[]) {
   const activeIdRef = useRef<string | null>(null)
   const isPlayingRef = useRef(false)
   const modeRef = useRef<'file' | 'generative' | null>(null)
+  const durationRef = useRef(0)
+  const scrubbingRef = useRef(false)
 
   const [activeId, setActiveId] = useState<string | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -57,6 +89,11 @@ export function useSketchPlayer(sketches: Sketch[]) {
   const setPlayMode = (value: 'file' | 'generative' | null) => {
     modeRef.current = value
     setMode(value)
+  }
+
+  const setTrackDuration = (value: number) => {
+    durationRef.current = value
+    setDuration(value)
   }
 
   const ensureCtx = async () => {
@@ -102,12 +139,15 @@ export function useSketchPlayer(sketches: Sketch[]) {
   const stopAudioFile = () => {
     clearIntensityTimer()
     clearProgressTimer()
+    scrubbingRef.current = false
     if (audioRef.current) {
       audioRef.current.onended = null
       audioRef.current.onloadedmetadata = null
+      audioRef.current.ondurationchange = null
       audioRef.current.ontimeupdate = null
       audioRef.current.pause()
-      audioRef.current.src = ''
+      audioRef.current.removeAttribute('src')
+      audioRef.current.load()
       audioRef.current = null
     }
   }
@@ -119,7 +159,7 @@ export function useSketchPlayer(sketches: Sketch[]) {
     setPlaying(false)
     setIntensity(0)
     setCurrentTime(0)
-    setDuration(0)
+    setTrackDuration(0)
     setPlayMode(null)
   }
 
@@ -156,26 +196,34 @@ export function useSketchPlayer(sketches: Sketch[]) {
     strike()
     timerRef.current = window.setInterval(strike, beatMs)
     setPlayMode('generative')
-    setDuration(0)
+    setTrackDuration(0)
     setCurrentTime(0)
     setPlaying(true)
   }
 
   const attachFileProgress = (audio: HTMLAudioElement) => {
     const sync = () => {
-      setCurrentTime(audio.currentTime)
+      if (!scrubbingRef.current) setCurrentTime(audio.currentTime)
       if (Number.isFinite(audio.duration) && audio.duration > 0) {
-        setDuration(audio.duration)
+        setTrackDuration(audio.duration)
       }
     }
+    // Metadata may already be ready by the time we attach (blob URLs often
+    // are) — read it now, and also listen for the late events.
+    sync()
     audio.onloadedmetadata = sync
+    audio.ondurationchange = sync
     audio.ontimeupdate = sync
     clearProgressTimer()
     progressTimerRef.current = window.setInterval(sync, 250)
   }
 
   const playAudioFile = async (src: string, token: number) => {
-    const audio = new Audio(src)
+    const playable = await resolvePlayableSrc(src)
+    if (token !== startTokenRef.current) return
+
+    const audio = new Audio()
+    audio.preload = 'auto'
     audioRef.current = audio
     audio.loop = false
     attachFileProgress(audio)
@@ -185,18 +233,58 @@ export function useSketchPlayer(sketches: Sketch[]) {
       setIntensity(0.2)
       clearIntensityTimer()
     }
-    await audio.play()
+
+    // Blob URLs are fully buffered, so metadata (and seekability) arrives as
+    // soon as src is assigned — wait for it before play so the scrub UI can
+    // enable without a race against the first timeupdate.
+    await new Promise<void>((resolve, reject) => {
+      const onReady = () => {
+        cleanup()
+        resolve()
+      }
+      const onError = () => {
+        cleanup()
+        reject(new Error('Audio failed to load'))
+      }
+      const cleanup = () => {
+        audio.removeEventListener('loadedmetadata', onReady)
+        audio.removeEventListener('error', onError)
+      }
+      audio.addEventListener('loadedmetadata', onReady)
+      audio.addEventListener('error', onError)
+      audio.src = playable
+      if (audio.readyState >= 1) onReady()
+    })
     if (token !== startTokenRef.current) {
-      // Superseded while loading — silence this element; the newer start owns playback.
       audio.onended = null
       audio.onloadedmetadata = null
+      audio.ondurationchange = null
       audio.ontimeupdate = null
       audio.pause()
-      audio.src = ''
+      audio.removeAttribute('src')
+      audio.load()
       if (audioRef.current === audio) audioRef.current = null
       return
     }
+
     setPlayMode('file')
+    if (Number.isFinite(audio.duration) && audio.duration > 0) {
+      setTrackDuration(audio.duration)
+    }
+
+    await audio.play()
+    if (token !== startTokenRef.current) {
+      // Superseded while starting — silence this element; the newer start owns playback.
+      audio.onended = null
+      audio.onloadedmetadata = null
+      audio.ondurationchange = null
+      audio.ontimeupdate = null
+      audio.pause()
+      audio.removeAttribute('src')
+      audio.load()
+      if (audioRef.current === audio) audioRef.current = null
+      return
+    }
     setPlaying(true)
     setIntensity(0.55)
     clearIntensityTimer()
@@ -210,7 +298,7 @@ export function useSketchPlayer(sketches: Sketch[]) {
     stopGenerative()
     stopAudioFile()
     setCurrentTime(0)
-    setDuration(0)
+    setTrackDuration(0)
     setActive(sketch.id)
     setPlaying(false)
     setPlayMode(null)
@@ -297,10 +385,29 @@ export function useSketchPlayer(sketches: Sketch[]) {
 
   const seek = (time: number) => {
     if (modeRef.current !== 'file' || !audioRef.current) return
-    const max = audioRef.current.duration || duration || 0
+    const audio = audioRef.current
+    const max =
+      (Number.isFinite(audio.duration) && audio.duration > 0 && audio.duration) ||
+      durationRef.current ||
+      0
+    if (!(max > 0)) return
     const next = Math.max(0, Math.min(time, max))
-    audioRef.current.currentTime = next
+    try {
+      audio.currentTime = next
+    } catch {
+      // Some browsers throw if the media isn't seekable yet — ignore and
+      // keep the UI time so the scrub still feels responsive.
+    }
     setCurrentTime(next)
+  }
+
+  const beginScrub = () => {
+    scrubbingRef.current = true
+  }
+
+  const endScrub = (time: number) => {
+    seek(time)
+    scrubbingRef.current = false
   }
 
   const playByOffset = async (delta: number) => {
@@ -333,6 +440,8 @@ export function useSketchPlayer(sketches: Sketch[]) {
     togglePause,
     stop,
     seek,
+    beginScrub,
+    endScrub,
     playNext: () => void playByOffset(1),
     playPrev: () => void playByOffset(-1),
   }
