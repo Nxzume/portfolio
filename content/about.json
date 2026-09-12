@@ -12,5 +12,14 @@
       "paragraph": "Applied Science at The University of British Columbia (2015–2018). Side craft still shows on this site: Unity games like Level and The Arena, open-source ML work (MFS), and music written for games."
     }
   ],
-  "note": ""
+  "note": "",
+  "timeline": [
+    { "period": "2023 — now", "role": "Technical Lead", "org": "Microsoft · Vancouver" },
+    { "period": "2022 — 2023", "role": "Software Engineer", "org": "Intel · Vancouver" },
+    { "period": "2021 — 2022", "role": "Full Stack Engineer", "org": "Evenant · Remote" },
+    { "period": "2021", "role": "Full Stack Engineer", "org": "Algolys · France" },
+    { "period": "2020 — 2021", "role": "Software Engineer", "org": "Bosch Sensortec · Reutlingen" },
+    { "period": "2018 — 2020", "role": "ML Engineering Co-op", "org": "Bosch · Stuttgart" },
+    { "period": "2015 — 2018", "role": "Applied Science", "org": "University of British Columbia" }
+  ]
 }

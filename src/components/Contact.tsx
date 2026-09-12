@@ -57,6 +57,9 @@ export function Footer() {
       <p suppressHydrationWarning>
         © {new Date().getFullYear()} {site.name}
       </p>
+      <a className="footer__top" href="#main">
+        Back to top ↑
+      </a>
     </footer>
   )
 }

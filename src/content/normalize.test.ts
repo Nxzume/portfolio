@@ -170,6 +170,25 @@ describe('normalizeHero and normalizeAbout', () => {
   it('treats a whitespace-only note as absent', () => {
     expect(normalizeAbout({ note: '   ' }).note).toBeUndefined()
   })
+
+  it('keeps only timeline rows with something in them', () => {
+    const about = normalizeAbout({
+      timeline: [
+        { period: '2023 — now', role: 'Technical Lead', org: 'Microsoft' },
+        { period: '', role: '', org: '' },
+        { period: '  ', role: 'Solo', org: undefined },
+      ],
+    })
+    expect(about.timeline).toEqual([
+      { period: '2023 — now', role: 'Technical Lead', org: 'Microsoft' },
+      { period: '', role: 'Solo', org: '' },
+    ])
+  })
+
+  it('omits the timeline when every row is empty', () => {
+    expect(normalizeAbout({ timeline: [{ period: '', role: '', org: '' }] }).timeline).toBeUndefined()
+    expect(normalizeAbout({}).timeline).toBeUndefined()
+  })
 })
 
 describe('normalizeFocuses', () => {

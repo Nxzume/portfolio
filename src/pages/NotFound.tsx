@@ -14,7 +14,7 @@ export function NotFound() {
       <PageHead meta={notFoundMeta(content)} />
       <Nav variant="page" />
       <main id="main" className="notfound">
-        <p className="eyebrow">404</p>
+        <p className="eyebrow">404 — Off the map</p>
         <h1>That page moved or never existed</h1>
         <p className="notfound__lede">
           The link may be out of date. Head back to the homepage, or pick up a project below.

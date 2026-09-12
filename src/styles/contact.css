@@ -1,37 +1,41 @@
+/* Contact — lede, then action buttons. */
 .contact__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.65rem;
 }
 
+/* Footer — hairline, small print, back-to-top. */
 .footer {
-  width: min(1120px, calc(100% - 2.5rem));
-  margin: 4rem auto 0;
-  padding: 1.75rem 0 2.5rem;
+  width: min(1160px, calc(100% - clamp(2.5rem, 8vw, 5rem)));
+  margin: 5rem auto 0;
+  padding: 1.4rem 0 2.2rem;
   border-top: 1px solid var(--line);
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  color: var(--paper-dim);
-  font-size: 0.9rem;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .footer p {
   margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--paper-dim);
 }
 
-.footer a {
-  color: var(--brass-soft);
+.footer__top {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--paper-dim);
+  transition: color 0.2s var(--ease);
 }
 
-.footer a:hover {
-  color: var(--paper);
-}
-
-/* Clears the floating mobile Menu button. */
-@media (max-width: 720px) {
-  .footer {
-    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
-  }
+.footer__top:hover {
+  color: var(--signal);
 }

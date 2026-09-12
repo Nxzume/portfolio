@@ -7,42 +7,51 @@ type Props = {
   onChange: (id: FocusId) => void
 }
 
+/** Numbered accordion — each craft is a row that opens in place. */
 export function FocusSwitcher({ active, onChange }: Props) {
   const { focuses } = useContent()
-  const current = focuses.find((f) => f.id === active) ?? focuses[0]
 
-  if (!current) return null
+  if (focuses.length === 0) return null
 
   return (
     <section className="focus" aria-label="Areas of focus">
-      <div className="focus__tabs" role="tablist">
-        {focuses.map((f) => (
-          <button
-            key={f.id}
-            role="tab"
-            type="button"
-            aria-selected={active === f.id}
-            className={`focus__tab ${active === f.id ? 'is-active' : ''}`}
-            onClick={() => onChange(f.id)}
-          >
-            {f.label}
-          </button>
-        ))}
+      <div className="focus__list">
+        {focuses.map((f) => {
+          const open = f.id === active
+          return (
+            <div key={f.id} className={`focus__row ${open ? 'is-open' : ''}`}>
+              <button
+                type="button"
+                className="focus__row-head"
+                aria-expanded={open}
+                aria-controls={`focus-panel-${f.id}`}
+                onClick={() => onChange(f.id)}
+              >
+                <span className="focus__label">{f.label}</span>
+                <span className="focus__headline">{f.headline}</span>
+                <span className="focus__toggle" aria-hidden>
+                  {open ? '−' : '+'}
+                </span>
+              </button>
+              <AnimatePresence initial={false}>
+                {open ? (
+                  <m.div
+                    key={f.id}
+                    id={`focus-panel-${f.id}`}
+                    className="focus__panel"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <p>{f.body}</p>
+                  </m.div>
+                ) : null}
+              </AnimatePresence>
+            </div>
+          )
+        })}
       </div>
-      <AnimatePresence mode="wait">
-        <m.div
-          key={current.id}
-          className="focus__panel"
-          role="tabpanel"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.35 }}
-        >
-          <h2>{current.headline}</h2>
-          <p>{current.body}</p>
-        </m.div>
-      </AnimatePresence>
     </section>
   )
 }

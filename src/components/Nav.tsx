@@ -9,8 +9,8 @@ type Props = {
 }
 
 const homeLinks = [
-  { href: '/#compose', label: 'Music' },
   { href: '/#projects', label: 'Projects' },
+  { href: '/#compose', label: 'Music' },
   { href: '/#about', label: 'About' },
   { href: '/#contact', label: 'Contact' },
 ]
@@ -87,6 +87,7 @@ export function Nav({ variant = 'home' }: Props) {
         transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       >
         <Link className="nav__brand" to="/">
+          <span className="nav__mark" aria-hidden />
           {site.name}
         </Link>
         <nav className="nav__links" aria-label="Primary">

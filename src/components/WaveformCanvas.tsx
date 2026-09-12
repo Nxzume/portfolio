@@ -39,7 +39,7 @@ export function WaveformCanvas({ intensity = 0.25, className, fill = false }: Pr
         ctx.beginPath()
         const alpha = 0.32 - l * 0.045
         ctx.strokeStyle =
-          l % 2 === 0 ? `rgba(212, 168, 75, ${alpha})` : `rgba(61, 155, 143, ${alpha * 0.95})`
+          l % 2 === 0 ? `rgba(245, 165, 36, ${alpha})` : `rgba(143, 163, 184, ${alpha * 0.95})`
         ctx.lineWidth = l === 0 ? 2 : 1.2
         const mid = height * (0.22 + (l / Math.max(bands - 1, 1)) * 0.56)
         for (let x = 0; x <= width; x += 4) {

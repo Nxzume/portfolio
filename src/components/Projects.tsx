@@ -1,7 +1,8 @@
 import { m } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import { useContent } from '../content/context'
-import { ProjectCard } from './ProjectCard'
 
+/** Projects as a numbered index — rows, not cards. */
 export function Projects() {
   const { projects, projectsSection } = useContent()
   return (
@@ -12,19 +13,33 @@ export function Projects() {
         <p className="section__lede">{projectsSection.lede}</p>
       </div>
 
-      <div className="projects__grid">
+      <ol className="projects__index">
         {projects.map((p, i) => (
-          <m.div
+          <m.li
             key={p.id}
-            initial={{ opacity: 0, x: 18 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.35 }}
-            transition={{ delay: Math.min(i, 8) * 0.06, duration: 0.45 }}
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ delay: Math.min(i, 8) * 0.05, duration: 0.4 }}
           >
-            <ProjectCard project={p} showSummary />
-          </m.div>
+            <Link className="projects__row" to={`/projects/${p.slug}`}>
+              <span className="projects__row-main">
+                <span className="projects__row-title">{p.title}</span>
+                <span className="projects__row-sub">{p.subtitle}</span>
+                {p.summary ? <span className="projects__row-summary">{p.summary}</span> : null}
+              </span>
+              {p.image ? (
+                <span className="projects__row-thumb" aria-hidden>
+                  <img src={p.image} alt="" loading="lazy" decoding="async" />
+                </span>
+              ) : null}
+              <span className="projects__row-arrow" aria-hidden>
+                →
+              </span>
+            </Link>
+          </m.li>
         ))}
-      </div>
+      </ol>
     </section>
   )
 }

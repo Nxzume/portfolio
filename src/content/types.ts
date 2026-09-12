@@ -46,6 +46,12 @@ export type SiteContent = {
   links: Record<string, string>
 }
 
+export type TimelineEntry = {
+  period: string
+  role: string
+  org: string
+}
+
 export type AboutContent = {
   portrait: string
   /** Optional; defaults to site.name */
@@ -53,6 +59,8 @@ export type AboutContent = {
   lead: string
   body: string[]
   note?: string
+  /** Optional career timeline shown under the bio. */
+  timeline?: TimelineEntry[]
 }
 
 export type Focus = {

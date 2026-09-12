@@ -76,6 +76,45 @@ export function HeroEditor({ value, onChange, openLibrary }: EditorProps) {
   )
 }
 
+type TimelineRow = { period: string; role: string; org: string }
+
+function TimelineEditor({ value, onChange }: { value: unknown; onChange: (v: TimelineRow[]) => void }) {
+  const items: TimelineRow[] = asList(value).map((item) => {
+    const row = asRow(item)
+    return { period: str(row.period), role: str(row.role), org: str(row.org) }
+  })
+  const setItem = (i: number, key: keyof TimelineRow, v: string) =>
+    onChange(items.map((it, j) => (j === i ? { ...it, [key]: v } : it)))
+  return (
+    <div className="stringlist">
+      {items.map((item, i) => (
+        <ListRow
+          key={i}
+          index={i}
+          count={items.length}
+          onMove={(from, to) => onChange(move(items, from, to))}
+          onRemove={(at) => onChange(items.filter((_, j) => j !== at))}
+        >
+          <div className="card">
+          <div className="listrow__pair">
+            <TextInput value={item.period} onChange={(v) => setItem(i, 'period', v)} placeholder="2023 — now" />
+            <TextInput value={item.role} onChange={(v) => setItem(i, 'role', v)} placeholder="Role" />
+          </div>
+          <TextInput value={item.org} onChange={(v) => setItem(i, 'org', v)} placeholder="Company · Location" />
+          </div>
+        </ListRow>
+      ))}
+      <button
+        type="button"
+        className="btn btn--small"
+        onClick={() => onChange([...items, { period: '', role: '', org: '' }])}
+      >
+        + Add entry
+      </button>
+    </div>
+  )
+}
+
 export function AboutEditor({ value, onChange, openLibrary }: EditorProps) {
   const raw = asRow(value)
   const set = (key: string, v: unknown) => onChange({ ...raw, [key]: v })
@@ -93,6 +132,9 @@ export function AboutEditor({ value, onChange, openLibrary }: EditorProps) {
       </Field>
       <Field label="Note" hint="Small line under the body; leave empty to hide.">
         <TextInput value={str(raw.note)} onChange={(v) => set('note', v)} />
+      </Field>
+      <Field label="Experience timeline" hint="Period, role, and company per row. Leave all rows empty to hide the timeline.">
+        <TimelineEditor value={raw.timeline} onChange={(v) => set('timeline', v)} />
       </Field>
     </div>
   )

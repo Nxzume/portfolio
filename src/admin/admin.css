@@ -178,7 +178,7 @@
 }
 
 /* Click-to-edit affordance */
-.livepreview :is(section, .hero, .projects__card, .footer):hover {
+.livepreview :is(section, .hero, .projects__card, .projects__row, .footer):hover {
   outline: 1px dashed rgba(124, 158, 255, 0.55);
   outline-offset: -2px;
   cursor: pointer;
