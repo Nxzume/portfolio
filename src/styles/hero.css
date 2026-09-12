@@ -57,12 +57,12 @@
 .hero__disciplines span {
   display: inline-flex;
   align-items: baseline;
-  gap: 0.5rem;
 }
 
-.hero__discipline-num {
+.hero__disciplines span + span::before {
+  content: '·';
+  margin-right: 1.6rem;
   color: var(--signal);
-  font-size: 0.66rem;
 }
 
 .hero__brand {

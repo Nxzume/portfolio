@@ -16,7 +16,7 @@ export function FocusSwitcher({ active, onChange }: Props) {
   return (
     <section className="focus" aria-label="Areas of focus">
       <div className="focus__list">
-        {focuses.map((f, i) => {
+        {focuses.map((f) => {
           const open = f.id === active
           return (
             <div key={f.id} className={`focus__row ${open ? 'is-open' : ''}`}>
@@ -27,9 +27,6 @@ export function FocusSwitcher({ active, onChange }: Props) {
                 aria-controls={`focus-panel-${f.id}`}
                 onClick={() => onChange(f.id)}
               >
-                <span className="focus__num" aria-hidden>
-                  {String(i + 1).padStart(2, '0')}
-                </span>
                 <span className="focus__label">{f.label}</span>
                 <span className="focus__headline">{f.headline}</span>
                 <span className="focus__toggle" aria-hidden>

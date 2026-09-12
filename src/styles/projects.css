@@ -13,7 +13,7 @@
 .projects__row {
   position: relative;
   display: grid;
-  grid-template-columns: 3rem 1fr auto;
+  grid-template-columns: 1fr auto auto;
   align-items: center;
   gap: 1.25rem;
   padding: 1.6rem 0.25rem;
@@ -23,13 +23,6 @@
 .projects__row:hover {
   background: rgba(240, 236, 227, 0.03);
   padding-left: 0.9rem;
-}
-
-.projects__row-num {
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  color: var(--signal);
-  letter-spacing: 0.1em;
 }
 
 .projects__row-main {
@@ -186,7 +179,7 @@
 
 @media (max-width: 720px) {
   .projects__row {
-    grid-template-columns: 2.2rem 1fr auto;
+    grid-template-columns: 1fr auto;
     gap: 0.9rem;
   }
 

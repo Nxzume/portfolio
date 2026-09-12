@@ -40,7 +40,7 @@
 
 .score__row {
   display: grid;
-  grid-template-columns: 2.4rem 2.6rem 1fr auto;
+  grid-template-columns: 2.6rem 1fr auto;
   align-items: center;
   gap: 0.75rem;
   width: 100%;
@@ -57,17 +57,6 @@
 
 .score__row.is-playing {
   border-left-color: var(--signal);
-}
-
-.score__num {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  color: var(--paper-dim);
-  letter-spacing: 0.1em;
-}
-
-.score__item.is-active .score__num {
-  color: var(--signal);
 }
 
 .score__play {
@@ -142,7 +131,7 @@
   grid-template-columns: 3rem 1fr 3rem;
   align-items: center;
   gap: 0.75rem;
-  padding: 0 1rem 0.9rem calc(2.4rem + 2.6rem + 1.5rem);
+  padding: 0 1rem 0.9rem calc(1rem + 2.6rem + 0.75rem);
 }
 
 .score__time {
@@ -183,18 +172,4 @@
 .score__range:disabled {
   cursor: default;
   opacity: 0.5;
-}
-
-@media (max-width: 640px) {
-  .score__row {
-    grid-template-columns: 2.6rem 1fr auto;
-  }
-
-  .score__num {
-    display: none;
-  }
-
-  .score__scrub {
-    padding-left: calc(2.6rem + 1.75rem);
-  }
 }

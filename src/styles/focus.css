@@ -15,7 +15,7 @@
 
 .focus__row-head {
   display: grid;
-  grid-template-columns: 3rem minmax(7rem, 12rem) 1fr 2rem;
+  grid-template-columns: minmax(7rem, 12rem) 1fr 2rem;
   align-items: baseline;
   gap: 1rem;
   width: 100%;
@@ -26,13 +26,6 @@
 
 .focus__row-head:hover {
   background: rgba(240, 236, 227, 0.03);
-}
-
-.focus__num {
-  font-family: var(--font-mono);
-  font-size: 0.74rem;
-  color: var(--signal);
-  letter-spacing: 0.1em;
 }
 
 .focus__label {
@@ -65,7 +58,7 @@
 }
 
 .focus__panel {
-  padding: 0 0.25rem 1.6rem calc(3rem + 1rem);
+  padding: 0 0.25rem 1.6rem;
   max-width: 46rem;
 }
 
@@ -77,15 +70,11 @@
 
 @media (max-width: 720px) {
   .focus__row-head {
-    grid-template-columns: 2.2rem 1fr 2rem;
+    grid-template-columns: 1fr 2rem;
   }
 
   .focus__headline {
-    grid-column: 2 / 3;
+    grid-column: 1 / 2;
     font-size: 0.85rem;
-  }
-
-  .focus__panel {
-    padding-left: calc(2.2rem + 1rem);
   }
 }

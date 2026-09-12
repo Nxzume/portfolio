@@ -23,9 +23,6 @@ export function Projects() {
             transition={{ delay: Math.min(i, 8) * 0.05, duration: 0.4 }}
           >
             <Link className="projects__row" to={`/projects/${p.slug}`}>
-              <span className="projects__row-num" aria-hidden>
-                {String(i + 1).padStart(2, '0')}
-              </span>
               <span className="projects__row-main">
                 <span className="projects__row-title">{p.title}</span>
                 <span className="projects__row-sub">{p.subtitle}</span>

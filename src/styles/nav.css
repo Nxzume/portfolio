@@ -60,11 +60,6 @@
   border-bottom-color: var(--signal);
 }
 
-.nav__num {
-  color: var(--signal);
-  font-size: 0.66rem;
-}
-
 /* Mobile: top bar hides on scroll; bottom Menu button opens a sheet */
 .nav-dock-wrap,
 .nav-dock,

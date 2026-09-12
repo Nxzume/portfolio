@@ -9,8 +9,8 @@ type Props = {
 }
 
 const homeLinks = [
-  { href: '/#compose', label: 'Music' },
   { href: '/#projects', label: 'Projects' },
+  { href: '/#compose', label: 'Music' },
   { href: '/#about', label: 'About' },
   { href: '/#contact', label: 'Contact' },
 ]
@@ -91,11 +91,8 @@ export function Nav({ variant = 'home' }: Props) {
           {site.name}
         </Link>
         <nav className="nav__links" aria-label="Primary">
-          {homeLinks.map((link, i) => (
+          {homeLinks.map((link) => (
             <Link key={link.href} to={link.href}>
-              <span className="nav__num" aria-hidden>
-                {String(i + 1).padStart(2, '0')}
-              </span>
               {link.label}
             </Link>
           ))}

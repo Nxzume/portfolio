@@ -25,6 +25,7 @@ export function HomePage() {
       <main id="main">
         <Hero intensity={player.intensity} />
         <FocusSwitcher active={focus} onChange={setFocus} />
+        <Projects />
         <ScoreDesk
           activeId={player.activeId}
           intensity={player.intensity}
@@ -39,7 +40,6 @@ export function HomePage() {
           }}
           onSeek={player.seek}
         />
-        <Projects />
         <About />
         <Contact />
       </main>

@@ -80,9 +80,6 @@ export function ScoreDesk({
                     aria-pressed={playingThis}
                     aria-label={playingThis ? `Pause ${sketch.title}` : `Play ${sketch.title}`}
                   >
-                    <span className="score__num" aria-hidden>
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
                     <span className="score__play" aria-hidden>
                       {playingThis ? <IconPause /> : <IconPlay />}
                     </span>

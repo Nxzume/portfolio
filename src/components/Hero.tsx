@@ -30,11 +30,8 @@ export function Hero({ intensity }: Props) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.05 }}
         >
-          {focuses.map((f, i) => (
-            <span key={f.id}>
-              <span className="hero__discipline-num">{String(i + 1).padStart(2, '0')}</span>
-              {f.label}
-            </span>
+          {focuses.map((f) => (
+            <span key={f.id}>{f.label}</span>
           ))}
         </m.p>
         <m.p
