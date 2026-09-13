@@ -27,6 +27,9 @@ external CMS, no object storage.
 Full setup walkthrough (Coolify, Cloudflare tunnel, tokens, mirror, FAQ):
 [`docs/setup-guide.md`](docs/setup-guide.md).
 
+Reusing this repo as a client-site skeleton (content model, admin, clone
+checklist): [`docs/portal-foundation.md`](docs/portal-foundation.md).
+
 ## Develop
 
 ```bash
