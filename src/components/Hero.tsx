@@ -1,5 +1,6 @@
 import { m } from 'framer-motion'
 import { useContent } from '../content/context'
+import { safeHref } from '../lib/urls'
 import { WaveformCanvas } from './WaveformCanvas'
 
 type Props = {
@@ -53,10 +54,10 @@ export function Hero({ intensity }: Props) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.75, delay: 0.46 }}
         >
-          <a className="btn btn--primary" href={hero.primaryCta.href}>
+          <a className="btn btn--primary" href={safeHref(hero.primaryCta.href)}>
             {hero.primaryCta.label}
           </a>
-          <a className="btn btn--ghost" href={hero.secondaryCta.href}>
+          <a className="btn btn--ghost" href={safeHref(hero.secondaryCta.href)}>
             {hero.secondaryCta.label}
           </a>
         </m.div>

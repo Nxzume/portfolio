@@ -188,7 +188,12 @@ export async function downloadRepoTarball({ token, repo, ref }) {
   }
   const location = res.headers.get('location')
   if (!location) throw new Error('GitHub tarball request missing redirect location')
-  const tar = await fetch(location, { headers: { Authorization: `Bearer ${token}` } })
+  const redirectUrl = new URL(location, API)
+  if (redirectUrl.protocol !== 'https:' || !/(^|\.)githubusercontent\.com$/i.test(redirectUrl.hostname)) {
+    throw new Error(`Refusing tarball redirect to unexpected host: ${redirectUrl.hostname}`)
+  }
+  // Codeload redirects do not need the GitHub API token.
+  const tar = await fetch(redirectUrl)
   if (!tar.ok) throw new Error(`Tarball download failed: ${tar.status}`)
   return Buffer.from(await tar.arrayBuffer())
 }

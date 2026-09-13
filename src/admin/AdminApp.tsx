@@ -206,13 +206,18 @@ export default function AdminApp() {
     const current = projectSlugFromKey(key)
     const slug = window.prompt('New slug:', current)
     if (!slug || slug === current) return
+    const nextKey = `projects/${slug}`
+    if (nextKey in files || nextKey in drafts) {
+      setError(`A project named "${slug}" already exists`)
+      return
+    }
     const data = { ...(draftOf(key) as Record<string, unknown>), slug }
     setError(null)
     try {
-      await api.saveFile(`projects/${slug}`, data)
+      await api.saveFile(nextKey, data)
       await api.deleteFile(key)
       await load()
-      setSelection(`projects/${slug}`)
+      setSelection(nextKey)
       pollUntilIdle()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not rename project')

@@ -28,7 +28,6 @@ const IMAGE_TYPES = new Map([
   ['.webp', 'image'],
   ['.gif', 'image'],
   ['.avif', 'image'],
-  ['.svg', 'svg'],
 ])
 const AUDIO_TYPES = new Map([
   ['.mp3', 'audio'],
@@ -210,7 +209,7 @@ export class ContentStore {
 
     const ext = path.extname(String(name || '')).toLowerCase()
     const kind = IMAGE_TYPES.get(ext) || AUDIO_TYPES.get(ext)
-    if (!kind) throw new HttpError(415, `Unsupported file type "${ext || '?'}" — images (png, jpg, webp, gif, avif, svg) or audio (mp3, ogg, wav, m4a, flac).`)
+    if (!kind) throw new HttpError(415, `Unsupported file type "${ext || '?'}" — images (png, jpg, webp, gif, avif) or audio (mp3, ogg, wav, m4a, flac). SVGs are not accepted.`)
 
     const base = sanitizeFilename(name)
     await mkdir(this.mediaDir, { recursive: true })

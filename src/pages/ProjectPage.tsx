@@ -8,20 +8,8 @@ import { useContent } from '../content/context'
 import { findProject } from '../content/load'
 import { useDialog } from '../hooks/useDialog'
 import { projectMeta } from '../lib/meta'
+import { isExternalHref, safeHref } from '../lib/urls'
 import { NotFound } from './NotFound'
-
-/** Editors often type "google.com" or an in-page "#anchor" instead of a full URL. */
-function isExternal(href: string) {
-  return /^(https?:)?\/\//i.test(href) || /^[\w.-]+\.[a-z]{2,}(\/|$)/i.test(href)
-}
-
-function normalizeHref(href: string) {
-  const value = href.trim()
-  if (!value) return '#'
-  if (/^(https?:|mailto:|tel:|#|\/)/i.test(value)) return value
-  if (isExternal(value)) return `https://${value}`
-  return value
-}
 
 type Lightbox = { src: string; alt: string }
 
@@ -53,12 +41,12 @@ export function ProjectPage() {
           <p className="project-page__summary">{project.summary}</p>
           <div className="projects__links">
             {project.links.map((link, i) => {
-              const external = isExternal(link.href)
+              const external = isExternalHref(link.href)
               return (
                 <a
                   key={`${i}-${link.href}`}
                   className={link.label.toLowerCase().includes('play') ? 'btn btn--primary' : 'btn btn--ghost'}
-                  href={normalizeHref(link.href)}
+                  href={safeHref(link.href)}
                   target={external ? '_blank' : undefined}
                   rel={external ? 'noreferrer' : undefined}
                 >
