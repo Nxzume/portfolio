@@ -93,7 +93,7 @@ pipeline.notifyContentChanged()
 const app = express()
 app.disable('x-powered-by')
 // Trust a single reverse-proxy hop (Coolify/Cloudflare). `true` would let
-# clients spoof X-Forwarded-For and bypass the login lockout.
+// clients spoof X-Forwarded-For and bypass the login lockout.
 app.set('trust proxy', 1)
 
 app.use((req, res, next) => {
