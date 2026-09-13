@@ -50,4 +50,8 @@ describe('parseCookies', () => {
     expect(parseCookies('a=1; b=two%20words')).toEqual({ a: '1', b: 'two words' })
     expect(parseCookies(undefined)).toEqual({})
   })
+
+  it('tolerates malformed percent-encoding', () => {
+    expect(parseCookies('ag_session=%ZZ')).toEqual({ ag_session: '%ZZ' })
+  })
 })

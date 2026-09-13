@@ -92,11 +92,18 @@ pipeline.notifyContentChanged()
 
 const app = express()
 app.disable('x-powered-by')
-app.set('trust proxy', true)
+// Trust a single reverse-proxy hop (Coolify/Cloudflare). `true` would let
+# clients spoof X-Forwarded-For and bypass the login lockout.
+app.set('trust proxy', 1)
 
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff')
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN')
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+  if (req.secure) {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+  }
   res.setHeader(
     'Content-Security-Policy',
     [
@@ -189,6 +196,8 @@ admin.put('/content/:key', requireAuth, express.json({ limit: '5mb' }), async (r
 admin.post('/projects', requireAuth, express.json({ limit: '100kb' }), async (req, res) => {
   const slug = String(req.body?.slug || '')
   const file = await store.createProject(slug)
+  // previous: null marks a create so changelog revert can delete the project
+  await changelog.record({ key: file, action: 'save', previous: null })
   pipeline.notifyContentChanged()
   res.json({ ok: true, file })
 })

@@ -313,6 +313,7 @@ export function useSketchPlayer(sketches: Sketch[]) {
         if (token !== startTokenRef.current) return
         // A track with a real recording should never silently play the
         // synth placeholder — surface the failure instead.
+        stopAudioFile()
         setLoadErrorId(sketch.id)
         setPlaying(false)
         setPlayMode(null)
