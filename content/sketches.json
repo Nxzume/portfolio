@@ -1,14 +1,3 @@
 {
-  "tracks": [
-    {
-      "id": "10years",
-      "title": "10 Years",
-      "audio": "/audio/alexandre-guichet-10-years.mp3"
-    },
-    {
-      "id": "mothership",
-      "title": "Mothership's Return",
-      "audio": "/audio/mothership-s-return.mp3"
-    }
-  ]
+  "tracks": []
 }
