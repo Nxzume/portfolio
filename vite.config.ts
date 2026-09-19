@@ -88,4 +88,9 @@ function headPlugin(): Plugin {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), staticRoutingPlugin(), headPlugin()],
+  server: {
+    // Preview tunnels (localtunnel / cloudflared quick tunnels) hit Vite with
+    // a foreign Host header; allow those suffixes without opening arbitrary hosts.
+    allowedHosts: ['.loca.lt', '.trycloudflare.com'],
+  },
 })
