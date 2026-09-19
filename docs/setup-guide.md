@@ -115,9 +115,12 @@ takes under a minute.
 
 - Open `/admin`, sign in.
 - The sidebar covers **everything**: site settings, hero, about, contact,
-  the score/projects section headers, focus tabs, sketch tracks, every
+  the Music / projects section headers, focus tabs, sketch tracks, every
   project (title, slug, order, cover, summary, intro, highlights, links,
   sections with images and pull quotes, gallery), and the media library.
+- **Music section:** paste a public Spotify artist / album / playlist / track
+  URL under “Spotify embeds” — the live preview shows the player as you type.
+  Clear the Spotify links to fall back to uploaded Sketch tracks.
 - The right pane is a **live preview** rendered from your drafts — it updates
   as you type, before you save. **Click any section in the preview to jump to
   its editor.** Image fields show the actual image (and warn if the file is

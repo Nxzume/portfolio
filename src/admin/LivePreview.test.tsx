@@ -106,4 +106,57 @@ describe('LivePreview', () => {
     expect(selections).toHaveLength(1)
     expect(selections[0]).toMatch(/^projects\//)
   })
+
+  it('renders Spotify embeds from score drafts in the live preview', async () => {
+    root = createRoot(container)
+    const drafts = {
+      score: {
+        ...scoreJson,
+        spotifyUrls: ['https://open.spotify.com/artist/55kd5PVj4U0ytkH8lP9PDN'],
+      },
+    }
+    await act(async () => {
+      root.render(<LivePreview files={files} drafts={drafts} selection="score" />)
+    })
+    const frame = container.querySelector('iframe.score__spotify-frame') as HTMLIFrameElement | null
+    expect(frame).not.toBeNull()
+    expect(frame?.getAttribute('src')).toContain('open.spotify.com/embed/artist/55kd5PVj4U0ytkH8lP9PDN')
+    expect(frame?.getAttribute('data-kind')).toBe('artist')
+    // Uploaded sketches stay hidden while a Spotify link is set.
+    expect(container.querySelector('.score__stage')).toBeNull()
+  })
+
+  it('swaps the Spotify embed when the draft URL changes', async () => {
+    root = createRoot(container)
+    await act(async () => {
+      root.render(
+        <LivePreview
+          files={files}
+          drafts={{
+            score: {
+              ...scoreJson,
+              spotifyUrls: ['https://open.spotify.com/artist/55kd5PVj4U0ytkH8lP9PDN'],
+            },
+          }}
+          selection="score"
+        />,
+      )
+    })
+    await act(async () => {
+      root.render(
+        <LivePreview
+          files={files}
+          drafts={{
+            score: {
+              ...scoreJson,
+              spotifyUrls: ['https://open.spotify.com/album/3L7Uc171AQBKX0lKxPYWud'],
+            },
+          }}
+          selection="score"
+        />,
+      )
+    })
+    const frame = container.querySelector('iframe.score__spotify-frame') as HTMLIFrameElement | null
+    expect(frame?.getAttribute('src')).toContain('open.spotify.com/embed/album/3L7Uc171AQBKX0lKxPYWud')
+  })
 })

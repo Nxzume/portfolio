@@ -1,4 +1,5 @@
-import { useMemo } from 'react'
+import { LazyMotion, MotionConfig, domAnimation } from 'framer-motion'
+import { useEffect, useMemo, useRef } from 'react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { PreviewModeProvider } from '../components/PreviewMode'
 import { ContentProvider } from '../content/context'
@@ -51,9 +52,28 @@ export function LivePreview({
   const content = useMemo(() => buildContent(rawFromFiles({ ...files, ...drafts })), [files, drafts])
   const slug = selection.startsWith('projects/') ? selection.slice('projects/'.length) : null
   const path = slug ? `/projects/${slug}` : '/'
+  const scrollerRef = useRef<HTMLDivElement>(null)
+
+  // Keep the Music / Spotify embed in view while editing those fields.
+  useEffect(() => {
+    if (selection !== 'score' && selection !== 'sketches') return
+    const root = scrollerRef.current
+    if (!root) return
+    // Wait a frame so draft-driven remounts paint the embed first.
+    const id = window.requestAnimationFrame(() => {
+      const section = root.querySelector('#compose')
+      if (section && typeof section.scrollIntoView === 'function') {
+        section.scrollIntoView({ block: 'start', behavior: 'smooth' })
+      }
+    })
+    return () => window.cancelAnimationFrame(id)
+  }, [selection, content.score, content.sketches])
 
   const handleClick = (e: React.MouseEvent) => {
     if (!onSelect || !(e.target instanceof Element)) return
+    // Let visitors play / follow links inside the Spotify iframe; clicks on the
+    // iframe element itself never reach here (cross-origin), but guard anyway.
+    if (e.target.closest('iframe.score__spotify-frame')) return
     const key = editKeyFor(e.target, slug)
     if (key) {
       // Keep the preview router from following links on its own — the
@@ -65,17 +85,22 @@ export function LivePreview({
   }
 
   return (
-    <div className="livepreview" onClickCapture={handleClick}>
+    <div className="livepreview" ref={scrollerRef} onClickCapture={handleClick}>
       <ContentProvider value={content}>
         <PreviewModeProvider>
-          {/* ProjectPage reads the slug from useParams, so it must render
-              through a matching Route — otherwise it falls back to the 404. */}
-          <MemoryRouter initialEntries={[path]} key={path}>
-            <Routes>
-              <Route path="/projects/:slug" element={<ProjectPage />} />
-              <Route path="*" element={<HomePage />} />
-            </Routes>
-          </MemoryRouter>
+          {/* Same motion setup as the public site so ScoreDesk / cards render. */}
+          <LazyMotion features={domAnimation} strict>
+            <MotionConfig reducedMotion="user">
+              {/* ProjectPage reads the slug from useParams, so it must render
+                  through a matching Route — otherwise it falls back to the 404. */}
+              <MemoryRouter initialEntries={[path]} key={path}>
+                <Routes>
+                  <Route path="/projects/:slug" element={<ProjectPage />} />
+                  <Route path="*" element={<HomePage />} />
+                </Routes>
+              </MemoryRouter>
+            </MotionConfig>
+          </LazyMotion>
         </PreviewModeProvider>
       </ContentProvider>
     </div>

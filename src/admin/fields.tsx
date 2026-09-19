@@ -118,11 +118,13 @@ export function StringList({
   onChange,
   addLabel = 'Add item',
   multiline = false,
+  placeholder,
 }: {
   items: string[]
   onChange: (items: string[]) => void
   addLabel?: string
   multiline?: boolean
+  placeholder?: string
 }) {
   return (
     <div className="stringlist">
@@ -135,9 +137,18 @@ export function StringList({
           onRemove={(at) => onChange(items.filter((_, j) => j !== at))}
         >
           {multiline ? (
-            <TextArea value={item} rows={3} onChange={(v) => onChange(items.map((x, j) => (j === i ? v : x)))} />
+            <TextArea
+              value={item}
+              rows={3}
+              onChange={(v) => onChange(items.map((x, j) => (j === i ? v : x)))}
+              placeholder={placeholder}
+            />
           ) : (
-            <TextInput value={item} onChange={(v) => onChange(items.map((x, j) => (j === i ? v : x)))} />
+            <TextInput
+              value={item}
+              onChange={(v) => onChange(items.map((x, j) => (j === i ? v : x)))}
+              placeholder={placeholder}
+            />
           )}
         </ListRow>
       ))}
