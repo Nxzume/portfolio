@@ -50,7 +50,8 @@ function embed(kind: SpotifyEmbedKind, id: string): SpotifyEmbed | null {
   }
 }
 
-/** Default iframe height — taller for catalog views, compact for a single track. */
+/** Fallback iframe height attribute — CSS overrides responsively for artist/album/playlist. */
 export function spotifyEmbedHeight(kind: SpotifyEmbedKind): number {
-  return kind === 'track' ? 152 : 352
+  if (kind === 'track') return 152
+  return 560
 }

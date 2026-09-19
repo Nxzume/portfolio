@@ -40,7 +40,7 @@ describe('parseSpotifyEmbed', () => {
 
   it('picks compact height for tracks and tall height for catalogs', () => {
     expect(spotifyEmbedHeight('track')).toBe(152)
-    expect(spotifyEmbedHeight('artist')).toBe(352)
-    expect(spotifyEmbedHeight('playlist')).toBe(352)
+    expect(spotifyEmbedHeight('artist')).toBe(560)
+    expect(spotifyEmbedHeight('playlist')).toBe(560)
   })
 })

@@ -81,6 +81,7 @@ export function ScoreDesk({
                 src={embed.src}
                 width="100%"
                 height={spotifyEmbedHeight(embed.kind)}
+                data-kind={embed.kind}
                 allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                 loading="lazy"
                 referrerPolicy="strict-origin-when-cross-origin"

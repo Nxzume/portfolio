@@ -14,8 +14,20 @@
 .score__spotify-frame {
   display: block;
   width: 100%;
+  height: 380px;
   border: 0;
   vertical-align: top;
+}
+
+.score__spotify-frame[data-kind='track'] {
+  height: 152px;
+}
+
+/* Narrow screens: Spotify’s Popular rows need more vertical room or only ~3 show. */
+@media (max-width: 720px) {
+  .score__spotify-frame:not([data-kind='track']) {
+    height: 560px;
+  }
 }
 
 .score__spotify-more {
