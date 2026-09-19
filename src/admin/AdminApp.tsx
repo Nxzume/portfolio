@@ -14,6 +14,18 @@ import { MediaLibrary } from './MediaLibrary'
 import { LivePreview } from './LivePreview'
 import './admin.css'
 
+function heroImageFrom(files: Record<string, unknown>, drafts: Record<string, unknown>) {
+  const draft = drafts['hero']
+  const file = files['hero']
+  const row =
+    draft && typeof draft === 'object' && !Array.isArray(draft)
+      ? (draft as Record<string, unknown>)
+      : file && typeof file === 'object' && !Array.isArray(file)
+        ? (file as Record<string, unknown>)
+        : null
+  return typeof row?.image === 'string' ? row.image : ''
+}
+
 const GLOBAL_FILES = [
   { key: 'site', label: 'Site settings' },
   { key: 'hero', label: 'Hero' },
@@ -351,7 +363,7 @@ export default function AdminApp() {
               }}
             />
           ) : selection === 'site' ? (
-            <SiteEditor {...editorProps} />
+            <SiteEditor {...editorProps} fallbackShareImage={heroImageFrom(files, drafts)} />
           ) : selection === 'hero' ? (
             <HeroEditor {...editorProps} />
           ) : selection === 'about' ? (

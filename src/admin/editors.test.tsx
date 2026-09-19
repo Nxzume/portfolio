@@ -27,8 +27,9 @@ describe('list editors with wrapped file shapes', () => {
       )
     })
     const values = [...container.querySelectorAll('input')].map((input) => input.value)
-    for (const track of sketchesJson.tracks) {
-      expect(values).toContain(track.title)
+    const tracks = sketchesJson.tracks as { title?: string }[]
+    for (const track of tracks) {
+      if (track.title) expect(values).toContain(track.title)
     }
   })
 
@@ -46,7 +47,7 @@ describe('list editors with wrapped file shapes', () => {
     })
     const next = saved as { tracks: unknown[] }
     expect(Array.isArray(next.tracks)).toBe(true)
-    expect(next.tracks).toHaveLength(sketchesJson.tracks.length + 1)
+    expect(next.tracks).toHaveLength((sketchesJson.tracks as unknown[]).length + 1)
   })
 
   it('FocusesEditor lists tabs from { tabs: [...] } files', async () => {
@@ -55,8 +56,9 @@ describe('list editors with wrapped file shapes', () => {
       root.render(<FocusesEditor value={focusesJson} onChange={() => {}} openLibrary={() => {}} />)
     })
     const values = [...container.querySelectorAll('input')].map((input) => input.value)
-    for (const tab of focusesJson.tabs) {
-      expect(values).toContain(tab.label)
+    const tabs = focusesJson.tabs as { label?: string }[]
+    for (const tab of tabs) {
+      if (tab.label) expect(values).toContain(tab.label)
     }
   })
 
@@ -72,6 +74,6 @@ describe('list editors with wrapped file shapes', () => {
     })
     const next = saved as { tabs: unknown[] }
     expect(Array.isArray(next.tabs)).toBe(true)
-    expect(next.tabs).toHaveLength(focusesJson.tabs.length + 1)
+    expect(next.tabs).toHaveLength((focusesJson.tabs as unknown[]).length + 1)
   })
 })

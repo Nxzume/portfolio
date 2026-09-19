@@ -27,11 +27,12 @@ export function absoluteUrl(siteUrl: string, path: string) {
 }
 
 export function homeMeta(content: Content): PageMeta {
+  const { site, hero } = content
   return {
-    title: `${content.site.name} — Composer & Level Designer`,
-    description: trim(content.site.tagline),
+    title: site.shareTitle?.trim() || `${site.name} — Composer & Level Designer`,
+    description: trim(site.shareDescription?.trim() || site.tagline),
     path: '/',
-    image: content.hero.image || undefined,
+    image: site.shareImage?.trim() || hero.image || undefined,
   }
 }
 

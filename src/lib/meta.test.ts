@@ -42,6 +42,26 @@ describe('renderMetaHtml', () => {
     expect(html).toContain('name="twitter:card"')
   })
 
+  it('uses site share overrides on the homepage when set', () => {
+    const overridden = {
+      ...content,
+      site: {
+        ...content.site,
+        shareTitle: 'Custom share title',
+        shareDescription: 'Custom share blurb for messengers.',
+        shareImage: '/images/portrait.png',
+      },
+    }
+    const meta = homeMeta(overridden)
+    expect(meta.title).toBe('Custom share title')
+    expect(meta.description).toBe('Custom share blurb for messengers.')
+    expect(meta.image).toBe('/images/portrait.png')
+    const html = renderMetaHtml(meta, overridden.site)
+    expect(html).toContain('content="Custom share title"')
+    expect(html).toContain('property="og:image"')
+    expect(html).toContain(`${overridden.site.url}/images/portrait.png`)
+  })
+
   it('escapes quotes and angle brackets so content cannot break out of an attribute', () => {
     const html = renderMetaHtml(
       {

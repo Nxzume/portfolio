@@ -191,6 +191,20 @@ describe('normalizeSite', () => {
   it('strips a trailing slash from the site url', () => {
     expect(normalizeSite({ url: 'https://example.test/' }).url).toBe('https://example.test')
   })
+
+  it('keeps optional share-preview overrides and drops blanks', () => {
+    expect(
+      normalizeSite({
+        shareTitle: ' Hello ',
+        shareDescription: '',
+        shareImage: '/images/a.webp',
+      }),
+    ).toMatchObject({
+      shareTitle: 'Hello',
+      shareDescription: undefined,
+      shareImage: '/images/a.webp',
+    })
+  })
 })
 
 describe('normalizeHero and normalizeAbout', () => {
