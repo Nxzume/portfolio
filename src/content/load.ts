@@ -4,6 +4,7 @@ import {
   normalizeFocuses,
   normalizeHero,
   normalizeProjects,
+  normalizeScore,
   normalizeSite,
   normalizeSketches,
   sectionCopy,
@@ -14,6 +15,7 @@ import type {
   Focus,
   HeroContent,
   Project,
+  ScoreContent,
   SectionCopy,
   SiteContent,
   Sketch,
@@ -40,7 +42,7 @@ export type Content = {
   hero: HeroContent
   focuses: Focus[]
   sketches: Sketch[]
-  score: SectionCopy
+  score: ScoreContent
   projectsSection: SectionCopy
   projects: Project[]
 }
@@ -53,7 +55,7 @@ export function buildContent(raw: RawContentFiles): Content {
     hero: normalizeHero(raw.hero),
     focuses: normalizeFocuses(raw.focuses),
     sketches: normalizeSketches(raw.sketches),
-    score: sectionCopy(raw.score),
+    score: normalizeScore(raw.score),
     projectsSection: sectionCopy(raw.projectsSection),
     projects: normalizeProjects(raw.projects),
   }

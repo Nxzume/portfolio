@@ -18,6 +18,7 @@ export function editKeyFor(target: Element, currentSlug: string | null): string 
   if (target.closest('.hero')) return 'hero'
   if (target.closest('.focus')) return 'focuses'
   if (target.closest('.score__item')) return 'sketches'
+  if (target.closest('.score__spotify')) return 'score'
   if (target.closest('.score')) return 'score'
   if (target.closest('.projects')) return 'projects-section'
   if (target.closest('.about')) return 'about'

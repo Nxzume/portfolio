@@ -358,7 +358,9 @@ export default function AdminApp() {
             <AboutEditor {...editorProps} />
           ) : selection === 'contact' ? (
             <SectionCopyEditor {...editorProps} extra="emailButton" />
-          ) : selection === 'score' || selection === 'projects-section' ? (
+          ) : selection === 'score' ? (
+            <SectionCopyEditor {...editorProps} extra="spotify" />
+          ) : selection === 'projects-section' ? (
             <SectionCopyEditor {...editorProps} />
           ) : selection === 'focuses' ? (
             <FocusesEditor {...editorProps} />

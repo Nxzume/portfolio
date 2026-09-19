@@ -140,7 +140,11 @@ export function AboutEditor({ value, onChange, openLibrary }: EditorProps) {
   )
 }
 
-export function SectionCopyEditor({ value, onChange, extra }: EditorProps & { extra?: 'emailButton' }) {
+export function SectionCopyEditor({
+  value,
+  onChange,
+  extra,
+}: EditorProps & { extra?: 'emailButton' | 'spotify' }) {
   const raw = asRow(value)
   const set = (key: string, v: unknown) => onChange({ ...raw, [key]: v })
   return (
@@ -153,6 +157,32 @@ export function SectionCopyEditor({ value, onChange, extra }: EditorProps & { ex
       {extra === 'emailButton' ? (
         <Field label="Email button label" hint="Defaults to “Email {first name}” when empty.">
           <TextInput value={str(raw.emailButtonText)} onChange={(v) => set('emailButtonText', v)} />
+        </Field>
+      ) : null}
+      {extra === 'spotify' ? (
+        <Field
+          label="Spotify links"
+          hint="One album, playlist, track, or artist URL per row. An artist link shows Popular tracks. When any link is set, uploaded tracks are hidden."
+        >
+          <StringList
+            items={
+              asList(raw.spotifyUrls).length
+                ? asList(raw.spotifyUrls).map((item) =>
+                    typeof item === 'string' ? item : str(asRow(item).url || asRow(item).href),
+                  )
+                : str(raw.spotifyUrl) || str(raw.spotifyPlaylist)
+                  ? [str(raw.spotifyUrl) || str(raw.spotifyPlaylist)]
+                  : ['']
+            }
+            onChange={(items) => {
+              const { spotifyUrl: _u, spotifyPlaylist: _p, spotifyMoreHref: _m, ...rest } = raw
+              onChange({
+                ...rest,
+                spotifyUrls: items.map((s) => s.trim()).filter(Boolean),
+              })
+            }}
+            addLabel="+ Add Spotify link"
+          />
         </Field>
       ) : null}
     </div>
@@ -206,8 +236,9 @@ export function SketchesEditor({ value, onChange, openLibrary }: EditorProps) {
   return (
     <div className="editor">
       <p className="editor__hint">
-        Tracks on the score desk. With an audio file visitors hear the recording; without one the site synthesizes a
-        placeholder from BPM / base frequency / pattern.
+        Uploaded tracks for the score desk. Hidden on the site while a Spotify link is set under Score section.
+        With an audio file visitors hear the recording; without one the site synthesizes a placeholder from BPM /
+        base frequency / pattern.
       </p>
       {items.map((item, i) => (
         <ListRow

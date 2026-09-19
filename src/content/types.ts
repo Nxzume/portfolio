@@ -76,6 +76,17 @@ export type SectionCopy = {
   lede: string
 }
 
+/** Score / Music section — optional Spotify embeds for previews. */
+export type ScoreContent = SectionCopy & {
+  /**
+   * Public Spotify album / playlist / track / artist URLs (or `spotify:…` URIs).
+   * Each entry becomes its own embed. Prefer albums (and playlists) over an
+   * artist link — artist embeds only show a short “Popular” list.
+   * When any URL is set, uploaded local tracks are hidden on the site.
+   */
+  spotifyUrls?: string[]
+}
+
 export type HeroContent = {
   headline: string
   image: string

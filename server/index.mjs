@@ -115,6 +115,8 @@ app.use((req, res, next) => {
       "img-src 'self' data: blob:",
       "media-src 'self' blob:",
       "connect-src 'self' https://cloudflareinsights.com https://*.cloudflareinsights.com",
+      // Spotify artist / album / playlist / track embeds on the score section.
+      "frame-src https://open.spotify.com",
       "frame-ancestors 'self'",
       "base-uri 'none'",
       "form-action 'self'",

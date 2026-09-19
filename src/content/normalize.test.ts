@@ -5,6 +5,7 @@ import {
   normalizeHero,
   normalizeProject,
   normalizeProjects,
+  normalizeScore,
   normalizeSite,
   normalizeSketch,
   normalizeSketches,
@@ -133,6 +134,38 @@ describe('normalizeSketch', () => {
   it('derives an id from the title', () => {
     expect(normalizeSketch({ title: 'Mothership Return' }, 0).id).toBe('mothership-return')
     expect(normalizeSketch({}, 4).id).toBe('track-5')
+  })
+})
+
+describe('normalizeScore', () => {
+  it('keeps section copy and a list of Spotify URLs', () => {
+    expect(
+      normalizeScore({
+        eyebrow: 'Listen',
+        title: 'Music',
+        lede: 'Hi',
+        spotifyUrls: [
+          'https://open.spotify.com/album/abc',
+          '  ',
+          { url: 'https://open.spotify.com/album/def' },
+        ],
+      }),
+    ).toEqual({
+      eyebrow: 'Listen',
+      title: 'Music',
+      lede: 'Hi',
+      spotifyUrls: ['https://open.spotify.com/album/abc', 'https://open.spotify.com/album/def'],
+    })
+  })
+
+  it('promotes legacy single URL fields into the list', () => {
+    expect(normalizeScore({ spotifyUrl: 'https://open.spotify.com/artist/abc' }).spotifyUrls).toEqual([
+      'https://open.spotify.com/artist/abc',
+    ])
+    expect(normalizeScore({ spotifyPlaylist: 'https://open.spotify.com/playlist/abc' }).spotifyUrls).toEqual([
+      'https://open.spotify.com/playlist/abc',
+    ])
+    expect(normalizeScore({ spotifyUrl: '  ' }).spotifyUrls).toBeUndefined()
   })
 })
 
