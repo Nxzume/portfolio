@@ -107,6 +107,10 @@ export default function AdminApp() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showPreview, setShowPreview] = useState(true)
+  // Desktop: open. Phone: closed so the editor gets the full width.
+  const [sidebarOpen, setSidebarOpen] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia('(min-width: 721px)').matches : true,
+  )
   const [library, setLibrary] = useState<{ kind: 'image' | 'audio'; onSelect: (path: string) => void } | null>(null)
   const pollRef = useRef<number | null>(null)
 
@@ -169,6 +173,15 @@ export default function AdminApp() {
     setDrafts((prev) => ({ ...prev, [key]: next }))
   }
 
+  function selectSection(key: string) {
+    setSelection(key)
+    // On phones the sidebar is a drawer — close it after picking a section
+    // so the form gets the full width again.
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 720px)').matches) {
+      setSidebarOpen(false)
+    }
+  }
+
   async function saveAll() {
     setSaving(true)
     setError(null)
@@ -195,7 +208,7 @@ export default function AdminApp() {
     try {
       const { file } = await api.createProject(slug)
       await load()
-      setSelection(file)
+      selectSection(file)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not create project')
     }
@@ -207,7 +220,7 @@ export default function AdminApp() {
     try {
       await api.deleteFile(key)
       await load()
-      setSelection('site')
+      selectSection('site')
       pollUntilIdle()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not delete project')
@@ -229,7 +242,7 @@ export default function AdminApp() {
       await api.saveFile(nextKey, data)
       await api.deleteFile(key)
       await load()
-      setSelection(nextKey)
+      selectSection(nextKey)
       pollUntilIdle()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not rename project')
@@ -256,13 +269,22 @@ export default function AdminApp() {
   return (
     <div className="admin">
       <header className="admin__topbar">
+        <button
+          type="button"
+          className="btn btn--small"
+          aria-expanded={sidebarOpen}
+          aria-controls="admin-sidebar"
+          onClick={() => setSidebarOpen((v) => !v)}
+        >
+          {sidebarOpen ? 'Hide menu' : 'Menu'}
+        </button>
         <strong>Site admin</strong>
         <StatusPill status={status} saving={saving} />
         {status?.publish.state === 'error' && status.publish.error ? (
           <span className="pill pill--error" title={status.publish.error}>{status.publish.error}</span>
         ) : null}
         <span className="admin__spacer" />
-        <button type="button" className="btn btn--small" onClick={() => setShowPreview((v) => !v)}>
+        <button type="button" className="btn btn--small admin__preview-toggle" onClick={() => setShowPreview((v) => !v)}>
           {showPreview ? 'Hide preview' : 'Show preview'}
         </button>
         <a className="btn btn--small" href="/" target="_blank" rel="noreferrer">
@@ -289,15 +311,29 @@ export default function AdminApp() {
 
       {error ? <p className="notice notice--error">{error}</p> : null}
 
-      <div className="admin__body">
-        <nav className="admin__sidebar" aria-label="Content">
+      <div
+        className={`admin__body ${sidebarOpen ? 'is-sidebar-open' : 'is-sidebar-collapsed'}`}
+      >
+        {sidebarOpen ? (
+          <button
+            type="button"
+            className="admin__sidebar-backdrop"
+            aria-label="Close menu"
+            onClick={() => setSidebarOpen(false)}
+          />
+        ) : null}
+        <nav
+          id="admin-sidebar"
+          className="admin__sidebar"
+          aria-label="Content"
+        >
           <p className="admin__group">Site</p>
           {GLOBAL_FILES.slice(0, 4).map(({ key, label }) => (
             <button
               key={key}
               type="button"
               className={`admin__nav ${selection === key ? 'is-active' : ''}`}
-              onClick={() => setSelection(key)}
+              onClick={() => selectSection(key)}
             >
               {label}
               {key in drafts ? <span className="admin__dot" aria-label="unsaved changes" /> : null}
@@ -309,7 +345,7 @@ export default function AdminApp() {
               key={key}
               type="button"
               className={`admin__nav ${selection === key ? 'is-active' : ''}`}
-              onClick={() => setSelection(key)}
+              onClick={() => selectSection(key)}
             >
               {label}
               {key in drafts ? <span className="admin__dot" aria-label="unsaved changes" /> : null}
@@ -323,7 +359,7 @@ export default function AdminApp() {
           </p>
           {projectKeys.map((key) => (
             <div key={key} className={`admin__nav admin__nav--project ${selection === key ? 'is-active' : ''}`}>
-              <button type="button" className="admin__nav-main" onClick={() => setSelection(key)}>
+              <button type="button" className="admin__nav-main" onClick={() => selectSection(key)}>
                 {projectSlugFromKey(key)}
                 {key in drafts ? <span className="admin__dot" aria-label="unsaved changes" /> : null}
               </button>
@@ -339,14 +375,14 @@ export default function AdminApp() {
           <button
             type="button"
             className={`admin__nav ${selection === 'media' ? 'is-active' : ''}`}
-            onClick={() => setSelection('media')}
+            onClick={() => selectSection('media')}
           >
             Media library
           </button>
           <button
             type="button"
             className={`admin__nav ${selection === 'changelog' ? 'is-active' : ''}`}
-            onClick={() => setSelection('changelog')}
+            onClick={() => selectSection('changelog')}
           >
             Changelog
           </button>
@@ -359,7 +395,7 @@ export default function AdminApp() {
             <ChangelogPanel
               onReverted={(key) => {
                 void load().then(pollUntilIdle)
-                setSelection(key)
+                selectSection(key)
               }}
             />
           ) : selection === 'site' ? (
@@ -388,7 +424,7 @@ export default function AdminApp() {
         {showPreview ? (
           <aside className="admin__preview">
             <p className="admin__preview-label">Live preview — updates as you type; click a section to edit it</p>
-            <LivePreview files={files} drafts={drafts} selection={selection} onSelect={setSelection} />
+            <LivePreview files={files} drafts={drafts} selection={selection} onSelect={selectSection} />
           </aside>
         ) : null}
       </div>
