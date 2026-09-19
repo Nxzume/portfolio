@@ -160,19 +160,39 @@ export function SectionCopyEditor({
         </Field>
       ) : null}
       {extra === 'spotify' ? (
-        <Field
-          label="Spotify link"
-          hint="Public artist, album, playlist, or track URL. When set, this replaces the uploaded track list on the site — no API key. Clear to show uploaded tracks again."
-        >
-          <TextInput
-            value={str(raw.spotifyUrl) || str(raw.spotifyPlaylist)}
-            onChange={(v) => {
-              const { spotifyPlaylist: _legacy, ...rest } = raw
-              onChange({ ...rest, spotifyUrl: v })
-            }}
-            placeholder="https://open.spotify.com/artist/…"
-          />
-        </Field>
+        <>
+          <Field
+            label="Spotify links"
+            hint="One album, playlist, track, or artist URL per row. Album links show every track in that release — an artist link only shows Popular. When any link is set, uploaded tracks are hidden."
+          >
+            <StringList
+              items={
+                asList(raw.spotifyUrls).length
+                  ? asList(raw.spotifyUrls).map((item) =>
+                      typeof item === 'string' ? item : str(asRow(item).url || asRow(item).href),
+                    )
+                  : str(raw.spotifyUrl) || str(raw.spotifyPlaylist)
+                    ? [str(raw.spotifyUrl) || str(raw.spotifyPlaylist)]
+                    : ['']
+              }
+              onChange={(items) => {
+                const { spotifyUrl: _u, spotifyPlaylist: _p, ...rest } = raw
+                onChange({
+                  ...rest,
+                  spotifyUrls: items.map((s) => s.trim()).filter(Boolean),
+                })
+              }}
+              addLabel="+ Add Spotify link"
+            />
+          </Field>
+          <Field label="“See all on Spotify” link" hint="Optional. Shown under the embeds.">
+            <TextInput
+              value={str(raw.spotifyMoreHref)}
+              onChange={(v) => set('spotifyMoreHref', v)}
+              placeholder="https://open.spotify.com/artist/…"
+            />
+          </Field>
+        </>
       ) : null}
     </div>
   )

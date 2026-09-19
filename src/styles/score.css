@@ -1,6 +1,10 @@
-/* Score desk — console track list over a live signal field. */
+/* Score desk — Spotify embeds and/or local track list. */
+.score__spotify-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
 .score__spotify {
-  margin-bottom: 1rem;
   border: 1px solid var(--line);
   border-radius: 12px;
   overflow: hidden;
@@ -12,6 +16,23 @@
   width: 100%;
   border: 0;
   vertical-align: top;
+}
+
+.score__spotify-more {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+}
+
+.score__spotify-more a {
+  color: var(--signal-soft);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s var(--ease), color 0.2s var(--ease);
+}
+
+.score__spotify-more a:hover {
+  color: var(--signal);
+  border-bottom-color: var(--signal);
 }
 
 .score__stage {

@@ -138,27 +138,34 @@ describe('normalizeSketch', () => {
 })
 
 describe('normalizeScore', () => {
-  it('keeps section copy and optional Spotify URL', () => {
+  it('keeps section copy and a list of Spotify URLs', () => {
     expect(
       normalizeScore({
         eyebrow: 'Listen',
         title: 'Music',
         lede: 'Hi',
-        spotifyUrl: 'https://open.spotify.com/artist/55kd5PVj4U0ytkH8lP9PDN',
+        spotifyUrls: [
+          'https://open.spotify.com/album/abc',
+          '  ',
+          { url: 'https://open.spotify.com/album/def' },
+        ],
       }),
     ).toEqual({
       eyebrow: 'Listen',
       title: 'Music',
       lede: 'Hi',
-      spotifyUrl: 'https://open.spotify.com/artist/55kd5PVj4U0ytkH8lP9PDN',
+      spotifyUrls: ['https://open.spotify.com/album/abc', 'https://open.spotify.com/album/def'],
     })
   })
 
-  it('reads legacy spotifyPlaylist and drops blank URLs', () => {
-    expect(normalizeScore({ spotifyPlaylist: 'https://open.spotify.com/playlist/abc' }).spotifyUrl).toBe(
+  it('promotes legacy single URL fields into the list', () => {
+    expect(normalizeScore({ spotifyUrl: 'https://open.spotify.com/artist/abc' }).spotifyUrls).toEqual([
+      'https://open.spotify.com/artist/abc',
+    ])
+    expect(normalizeScore({ spotifyPlaylist: 'https://open.spotify.com/playlist/abc' }).spotifyUrls).toEqual([
       'https://open.spotify.com/playlist/abc',
-    )
-    expect(normalizeScore({ spotifyUrl: '  ' }).spotifyUrl).toBeUndefined()
+    ])
+    expect(normalizeScore({ spotifyUrl: '  ' }).spotifyUrls).toBeUndefined()
   })
 })
 

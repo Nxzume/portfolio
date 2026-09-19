@@ -111,12 +111,24 @@ export function sectionCopy(raw: unknown): SectionCopy {
 export function normalizeScore(raw: unknown): ScoreContent {
   const row = asRow(raw)
   const copy = sectionCopy(raw)
-  // Prefer spotifyUrl; accept legacy spotifyPlaylist if an older draft still has it.
-  const spotifyUrl =
+
+  const fromList = asList(row.spotifyUrls)
+    .map((item) => {
+      if (typeof item === 'string') return item.trim()
+      const nested = asRow(item)
+      return str(nested.url || nested.href || nested.spotifyUrl).trim()
+    })
+    .filter(Boolean)
+
+  // Legacy single-field drafts still work.
+  const legacy =
     optionalStr(str(row.spotifyUrl).trim()) ?? optionalStr(str(row.spotifyPlaylist).trim())
+
+  const spotifyUrls = fromList.length ? fromList : legacy ? [legacy] : undefined
   return {
     ...copy,
-    spotifyUrl,
+    spotifyUrls,
+    spotifyMoreHref: optionalStr(str(row.spotifyMoreHref).trim()),
   }
 }
 

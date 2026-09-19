@@ -76,15 +76,17 @@ export type SectionCopy = {
   lede: string
 }
 
-/** Score / Music section — optional Spotify embed for previews. */
+/** Score / Music section — optional Spotify embeds for previews. */
 export type ScoreContent = SectionCopy & {
   /**
-   * Public Spotify artist / album / playlist / track URL (or `spotify:…` URI).
-   * When set, the score section embeds Spotify’s player — no API key required.
-   * Most visitors get ~30s previews; Premium listeners signed into Spotify can
-   * often hear full tracks.
+   * Public Spotify album / playlist / track / artist URLs (or `spotify:…` URIs).
+   * Each entry becomes its own embed. Prefer albums (and playlists) over an
+   * artist link — artist embeds only show a short “Popular” list.
+   * When any URL is set, uploaded local tracks are hidden on the site.
    */
-  spotifyUrl?: string
+  spotifyUrls?: string[]
+  /** Optional “see everything on Spotify” link under the embeds. */
+  spotifyMoreHref?: string
 }
 
 export type HeroContent = {

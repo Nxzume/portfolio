@@ -51,7 +51,17 @@ export function ScoreDesk({
 }: Props) {
   const { score, sketches } = useContent()
   const progress = canSeek && duration > 0 ? Math.min(1, currentTime / duration) : 0
-  const spotify = score.spotifyUrl ? parseSpotifyEmbed(score.spotifyUrl) : null
+  const spotifyEmbeds = (score.spotifyUrls ?? [])
+    .map((url) => parseSpotifyEmbed(url))
+    .filter((embed): embed is NonNullable<typeof embed> => embed != null)
+  // Dedupe identical embeds if the same link was pasted twice.
+  const seen = new Set<string>()
+  const spotify = spotifyEmbeds.filter((embed) => {
+    const key = `${embed.kind}:${embed.id}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
 
   return (
     <section className="section score" id="compose">
@@ -61,18 +71,29 @@ export function ScoreDesk({
         <p className="section__lede">{score.lede}</p>
       </div>
 
-      {spotify ? (
-        <div className="score__spotify">
-          <iframe
-            className="score__spotify-frame"
-            title="Spotify player"
-            src={spotify.src}
-            width="100%"
-            height={spotifyEmbedHeight(spotify.kind)}
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"
-            referrerPolicy="strict-origin-when-cross-origin"
-          />
+      {spotify.length ? (
+        <div className="score__spotify-list">
+          {spotify.map((embed) => (
+            <div className="score__spotify" key={`${embed.kind}-${embed.id}`}>
+              <iframe
+                className="score__spotify-frame"
+                title={`Spotify ${embed.kind}`}
+                src={embed.src}
+                width="100%"
+                height={spotifyEmbedHeight(embed.kind)}
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+                referrerPolicy="strict-origin-when-cross-origin"
+              />
+            </div>
+          ))}
+          {score.spotifyMoreHref?.trim() ? (
+            <p className="score__spotify-more">
+              <a href={score.spotifyMoreHref.trim()} target="_blank" rel="noreferrer">
+                Open full catalog on Spotify →
+              </a>
+            </p>
+          ) : null}
         </div>
       ) : sketches.length ? (
         <div className="score__stage">
