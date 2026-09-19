@@ -1,4 +1,19 @@
 /* Score desk — console track list over a live signal field. */
+.score__spotify {
+  margin-bottom: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #121212;
+}
+
+.score__spotify-frame {
+  display: block;
+  width: 100%;
+  border: 0;
+  vertical-align: top;
+}
+
 .score__stage {
   position: relative;
   border: 1px solid var(--line);

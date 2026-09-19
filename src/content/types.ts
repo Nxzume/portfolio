@@ -76,6 +76,17 @@ export type SectionCopy = {
   lede: string
 }
 
+/** Score / Music section — optional Spotify embed for previews. */
+export type ScoreContent = SectionCopy & {
+  /**
+   * Public Spotify artist / album / playlist / track URL (or `spotify:…` URI).
+   * When set, the score section embeds Spotify’s player — no API key required.
+   * Most visitors get ~30s previews; Premium listeners signed into Spotify can
+   * often hear full tracks.
+   */
+  spotifyUrl?: string
+}
+
 export type HeroContent = {
   headline: string
   image: string

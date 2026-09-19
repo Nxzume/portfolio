@@ -12,6 +12,7 @@ import type {
   HeroContent,
   Project,
   ProjectSection,
+  ScoreContent,
   SectionCopy,
   SiteContent,
   Sketch,
@@ -104,6 +105,18 @@ export function sectionCopy(raw: unknown): SectionCopy {
     eyebrow: str(row.eyebrow),
     title: str(row.title),
     lede: str(row.lede),
+  }
+}
+
+export function normalizeScore(raw: unknown): ScoreContent {
+  const row = asRow(raw)
+  const copy = sectionCopy(raw)
+  // Prefer spotifyUrl; accept legacy spotifyPlaylist if an older draft still has it.
+  const spotifyUrl =
+    optionalStr(str(row.spotifyUrl).trim()) ?? optionalStr(str(row.spotifyPlaylist).trim())
+  return {
+    ...copy,
+    spotifyUrl,
   }
 }
 

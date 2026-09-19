@@ -140,7 +140,11 @@ export function AboutEditor({ value, onChange, openLibrary }: EditorProps) {
   )
 }
 
-export function SectionCopyEditor({ value, onChange, extra }: EditorProps & { extra?: 'emailButton' }) {
+export function SectionCopyEditor({
+  value,
+  onChange,
+  extra,
+}: EditorProps & { extra?: 'emailButton' | 'spotify' }) {
   const raw = asRow(value)
   const set = (key: string, v: unknown) => onChange({ ...raw, [key]: v })
   return (
@@ -153,6 +157,21 @@ export function SectionCopyEditor({ value, onChange, extra }: EditorProps & { ex
       {extra === 'emailButton' ? (
         <Field label="Email button label" hint="Defaults to “Email {first name}” when empty.">
           <TextInput value={str(raw.emailButtonText)} onChange={(v) => set('emailButtonText', v)} />
+        </Field>
+      ) : null}
+      {extra === 'spotify' ? (
+        <Field
+          label="Spotify link"
+          hint="Public artist, album, playlist, or track URL. Embeds Spotify’s player on the score section — no API key. Clear to hide."
+        >
+          <TextInput
+            value={str(raw.spotifyUrl) || str(raw.spotifyPlaylist)}
+            onChange={(v) => {
+              const { spotifyPlaylist: _legacy, ...rest } = raw
+              onChange({ ...rest, spotifyUrl: v })
+            }}
+            placeholder="https://open.spotify.com/artist/…"
+          />
         </Field>
       ) : null}
     </div>
