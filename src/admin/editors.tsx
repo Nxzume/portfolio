@@ -19,23 +19,87 @@ function asRow(value: unknown): Row {
   return value && typeof value === 'object' && !Array.isArray(value) ? (value as Row) : {}
 }
 
-export function SiteEditor({ value, onChange }: EditorProps) {
+export function SiteEditor({
+  value,
+  onChange,
+  openLibrary,
+  fallbackShareImage = '',
+}: EditorProps & { fallbackShareImage?: string }) {
   const raw = asRow(value)
   const set = (key: string, v: unknown) => onChange({ ...raw, [key]: v })
   const links = asRow(raw.links) as Record<string, string>
+
+  const previewTitle = str(raw.shareTitle).trim() || `${str(raw.name) || 'Your name'} — Composer & Level Designer`
+  const previewDescription = str(raw.shareDescription).trim() || str(raw.tagline)
+  const previewImage = str(raw.shareImage).trim() || fallbackShareImage.trim()
+  const previewHost = (() => {
+    try {
+      return new URL(str(raw.url) || 'https://example.com').host
+    } catch {
+      return str(raw.url) || 'your-site'
+    }
+  })()
+
   return (
     <div className="editor">
       <Field label="Name"><TextInput value={str(raw.name)} onChange={(v) => set('name', v)} /></Field>
-      <Field label="Tagline" hint="Shown under your name and used as the meta description.">
+      <Field label="Tagline" hint="Shown under your name on the site. Also the default text for link previews if you leave Share description empty.">
         <TextArea value={str(raw.tagline)} rows={2} onChange={(v) => set('tagline', v)} />
       </Field>
       <Field label="Email"><TextInput value={str(raw.email)} onChange={(v) => set('email', v)} /></Field>
-      <Field label="Site URL" hint="Public origin, no trailing slash. Used for canonical links and the sitemap.">
+      <Field label="Site URL" hint="Public origin, no trailing slash. Required for correct link previews (og:url / og:image).">
         <TextInput value={str(raw.url)} onChange={(v) => set('url', v)} />
       </Field>
       <Field label="Links" hint="Each name + URL becomes a button in the Contact section. The name is the button label, shown exactly as you type it.">
         <KeyValueList value={links} onChange={(v) => set('links', v)} keyLabel="Button label" valueLabel="https://…" />
       </Field>
+
+      <fieldset className="fieldset">
+        <legend>Link preview when sharing this site</legend>
+        <p className="editor__hint">
+          What Discord, iMessage, Slack, LinkedIn, etc. show when someone pastes your homepage URL. Leave a field
+          blank to use the defaults (title from your name, description from the tagline, image from the Hero
+          background). Save &amp; publish to update the live tags — some apps cache old previews for a while.
+        </p>
+        <Field label="Share title">
+          <TextInput
+            value={str(raw.shareTitle)}
+            onChange={(v) => set('shareTitle', v)}
+            placeholder={previewTitle}
+          />
+        </Field>
+        <Field label="Share description">
+          <TextArea
+            value={str(raw.shareDescription)}
+            rows={3}
+            onChange={(v) => set('shareDescription', v)}
+            placeholder={str(raw.tagline) || 'Short description for the preview card'}
+          />
+        </Field>
+        <Field label="Share image" hint="Defaults to the Hero background image when empty.">
+          <AssetPicker
+            kind="image"
+            value={str(raw.shareImage)}
+            onChange={(v) => set('shareImage', v)}
+            onOpenLibrary={() => openLibrary('image', (p) => set('shareImage', p))}
+          />
+        </Field>
+        <div className="sharepreview" aria-label="Link preview">
+          <p className="sharepreview__label">Preview</p>
+          <div className="sharepreview__card">
+            {previewImage ? (
+              <img className="sharepreview__image" src={previewImage} alt="" />
+            ) : (
+              <div className="sharepreview__image sharepreview__image--empty">No image yet — set Share image or a Hero background</div>
+            )}
+            <div className="sharepreview__body">
+              <p className="sharepreview__host">{previewHost}</p>
+              <p className="sharepreview__title">{previewTitle}</p>
+              {previewDescription ? <p className="sharepreview__desc">{previewDescription}</p> : null}
+            </div>
+          </div>
+        </div>
+      </fieldset>
     </div>
   )
 }

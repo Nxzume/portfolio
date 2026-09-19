@@ -44,6 +44,14 @@ export type SiteContent = {
   /** Public address of the live site, without a trailing slash. Used for canonical and share links. */
   url: string
   links: Record<string, string>
+  /**
+   * Overrides for the homepage link-preview card (Open Graph / Twitter) when
+   * someone shares the site URL. Empty fields fall back to name, tagline, and
+   * the hero background image.
+   */
+  shareTitle?: string
+  shareDescription?: string
+  shareImage?: string
 }
 
 export type TimelineEntry = {

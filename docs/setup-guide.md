@@ -132,6 +132,10 @@ takes under a minute.
   the next publish, like any other change.
 - **Links** (Site settings): each name + URL becomes a button in the Contact
   section. The name is the button label, shown exactly as you type it.
+- **Link preview** (Site settings): title, description, and image shown when
+  someone shares your homepage URL (Discord, iMessage, Slack, LinkedIn…). A
+  live card preview updates as you type; Save & publish writes the Open Graph
+  tags into the HTML.
 - **Projects:** `+` next to "Projects" adds a page; the ✎ / ✕ buttons rename
   or delete. New projects get a prerendered page and sitemap entry
   automatically.

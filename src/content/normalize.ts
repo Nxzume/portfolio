@@ -145,6 +145,9 @@ export function normalizeSite(raw: unknown): SiteContent {
           typeof entry[1] === 'string' && entry[1].trim() !== '',
       ),
     ),
+    shareTitle: optionalStr(str(row.shareTitle).trim()),
+    shareDescription: optionalStr(str(row.shareDescription).trim()),
+    shareImage: optionalStr(str(row.shareImage).trim()),
   }
 }
 
