@@ -184,6 +184,19 @@
   cursor: pointer;
 }
 
+/* Spotify embeds must stay interactive in the live preview (play / open profile). */
+.livepreview .score__spotify,
+.livepreview .score__spotify-frame {
+  pointer-events: auto;
+  position: relative;
+  z-index: 1;
+}
+
+.livepreview .score__spotify:hover {
+  outline: 1px dashed rgba(124, 158, 255, 0.55);
+  outline-offset: 2px;
+}
+
 .admin__modal {
   position: fixed;
   inset: 0;

@@ -19,7 +19,7 @@ const GLOBAL_FILES = [
   { key: 'hero', label: 'Hero' },
   { key: 'about', label: 'About' },
   { key: 'contact', label: 'Contact' },
-  { key: 'score', label: 'Score section' },
+  { key: 'score', label: 'Music section' },
   { key: 'projects-section', label: 'Projects section' },
   { key: 'focuses', label: 'Focus tabs' },
   { key: 'sketches', label: 'Sketch tracks' },

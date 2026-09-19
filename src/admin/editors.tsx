@@ -161,8 +161,8 @@ export function SectionCopyEditor({
       ) : null}
       {extra === 'spotify' ? (
         <Field
-          label="Spotify links"
-          hint="One album, playlist, track, or artist URL per row. An artist link shows Popular tracks. When any link is set, uploaded tracks are hidden."
+          label="Spotify embeds"
+          hint="Paste a public Spotify artist, album, playlist, or track link. The live preview on the right updates as you type. Clear every link to show uploaded Sketch tracks instead."
         >
           <StringList
             items={
@@ -181,7 +181,8 @@ export function SectionCopyEditor({
                 spotifyUrls: items.map((s) => s.trim()).filter(Boolean),
               })
             }}
-            addLabel="+ Add Spotify link"
+            addLabel="Add Spotify link"
+            placeholder="https://open.spotify.com/artist/… or /album/… /playlist/… /track/…"
           />
         </Field>
       ) : null}
