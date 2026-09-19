@@ -59,6 +59,28 @@
 
 .admin__spacer { flex: 1; }
 
+/* Compact chevron like GitHub/VS Code panel toggles — no “Menu” text. */
+.admin__sidebar-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  background: var(--panel-2, transparent);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.admin__sidebar-toggle:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
 .admin__body {
   display: grid;
   grid-template-columns: 230px minmax(0, 1fr) minmax(0, 1.1fr);
@@ -526,6 +548,12 @@ textarea.input { resize: vertical; }
     width: 40px;
     height: 40px;
     font-size: 15px;
+  }
+
+  .admin__sidebar-toggle {
+    width: 40px;
+    height: 40px;
+    font-size: 26px;
   }
 
   .admin__nav,

@@ -271,12 +271,14 @@ export default function AdminApp() {
       <header className="admin__topbar">
         <button
           type="button"
-          className="btn btn--small"
+          className="admin__sidebar-toggle"
           aria-expanded={sidebarOpen}
           aria-controls="admin-sidebar"
+          aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+          title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
           onClick={() => setSidebarOpen((v) => !v)}
         >
-          {sidebarOpen ? 'Hide menu' : 'Menu'}
+          <span aria-hidden="true">{sidebarOpen ? '‹' : '›'}</span>
         </button>
         <strong>Site admin</strong>
         <StatusPill status={status} saving={saving} />
