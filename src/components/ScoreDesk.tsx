@@ -90,7 +90,7 @@ export function ScoreDesk({
           {score.spotifyMoreHref?.trim() ? (
             <p className="score__spotify-more">
               <a href={score.spotifyMoreHref.trim()} target="_blank" rel="noreferrer">
-                Open full catalog on Spotify →
+                Open profile on Spotify →
               </a>
             </p>
           ) : null}

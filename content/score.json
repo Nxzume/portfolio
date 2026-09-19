@@ -1,13 +1,9 @@
 {
   "eyebrow": "Listen",
   "title": "Music",
-  "lede": "Albums and singles on Spotify — press play to preview.",
+  "lede": "Preview tracks on Spotify — open the profile for the full catalog.",
   "spotifyMoreHref": "https://open.spotify.com/artist/55kd5PVj4U0ytkH8lP9PDN",
   "spotifyUrls": [
-    "https://open.spotify.com/album/3L7Uc171AQBKX0lKxPYWud",
-    "https://open.spotify.com/album/3oTB5eaXpE4Er9cdDQ2px2",
-    "https://open.spotify.com/album/3nRKLTn6597um5XLN9yfoo",
-    "https://open.spotify.com/album/3lk5bBjpO0mT14axorQhBO",
-    "https://open.spotify.com/album/1LUcauRbIBpMSWshCJbvO8"
+    "https://open.spotify.com/artist/55kd5PVj4U0ytkH8lP9PDN"
   ]
 }

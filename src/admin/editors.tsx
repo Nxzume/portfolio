@@ -163,7 +163,7 @@ export function SectionCopyEditor({
         <>
           <Field
             label="Spotify links"
-            hint="One album, playlist, track, or artist URL per row. Album links show every track in that release — an artist link only shows Popular. When any link is set, uploaded tracks are hidden."
+            hint="One album, playlist, track, or artist URL per row. An artist link shows Popular tracks. When any link is set, uploaded tracks are hidden."
           >
             <StringList
               items={
@@ -185,7 +185,7 @@ export function SectionCopyEditor({
               addLabel="+ Add Spotify link"
             />
           </Field>
-          <Field label="“See all on Spotify” link" hint="Optional. Shown under the embeds.">
+          <Field label="“Open profile on Spotify” link" hint="Optional. Shown under the embed.">
             <TextInput
               value={str(raw.spotifyMoreHref)}
               onChange={(v) => set('spotifyMoreHref', v)}
