@@ -74,9 +74,7 @@ export function ScoreDesk({
             referrerPolicy="strict-origin-when-cross-origin"
           />
         </div>
-      ) : null}
-
-      {sketches.length ? (
+      ) : sketches.length ? (
         <div className="score__stage">
           <div className="score__wave-frame" aria-hidden>
             <WaveformCanvas className="score__wave" fill intensity={activeId && isPlaying ? intensity : 0.2} />

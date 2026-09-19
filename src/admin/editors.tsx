@@ -162,7 +162,7 @@ export function SectionCopyEditor({
       {extra === 'spotify' ? (
         <Field
           label="Spotify link"
-          hint="Public artist, album, playlist, or track URL. Embeds Spotify’s player on the score section — no API key. Clear to hide."
+          hint="Public artist, album, playlist, or track URL. When set, this replaces the uploaded track list on the site — no API key. Clear to show uploaded tracks again."
         >
           <TextInput
             value={str(raw.spotifyUrl) || str(raw.spotifyPlaylist)}
@@ -225,8 +225,9 @@ export function SketchesEditor({ value, onChange, openLibrary }: EditorProps) {
   return (
     <div className="editor">
       <p className="editor__hint">
-        Tracks on the score desk. With an audio file visitors hear the recording; without one the site synthesizes a
-        placeholder from BPM / base frequency / pattern.
+        Uploaded tracks for the score desk. Hidden on the site while a Spotify link is set under Score section.
+        With an audio file visitors hear the recording; without one the site synthesizes a placeholder from BPM /
+        base frequency / pattern.
       </p>
       {items.map((item, i) => (
         <ListRow
