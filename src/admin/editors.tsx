@@ -160,39 +160,30 @@ export function SectionCopyEditor({
         </Field>
       ) : null}
       {extra === 'spotify' ? (
-        <>
-          <Field
-            label="Spotify links"
-            hint="One album, playlist, track, or artist URL per row. An artist link shows Popular tracks. When any link is set, uploaded tracks are hidden."
-          >
-            <StringList
-              items={
-                asList(raw.spotifyUrls).length
-                  ? asList(raw.spotifyUrls).map((item) =>
-                      typeof item === 'string' ? item : str(asRow(item).url || asRow(item).href),
-                    )
-                  : str(raw.spotifyUrl) || str(raw.spotifyPlaylist)
-                    ? [str(raw.spotifyUrl) || str(raw.spotifyPlaylist)]
-                    : ['']
-              }
-              onChange={(items) => {
-                const { spotifyUrl: _u, spotifyPlaylist: _p, ...rest } = raw
-                onChange({
-                  ...rest,
-                  spotifyUrls: items.map((s) => s.trim()).filter(Boolean),
-                })
-              }}
-              addLabel="+ Add Spotify link"
-            />
-          </Field>
-          <Field label="“Open profile on Spotify” link" hint="Optional. Shown under the embed.">
-            <TextInput
-              value={str(raw.spotifyMoreHref)}
-              onChange={(v) => set('spotifyMoreHref', v)}
-              placeholder="https://open.spotify.com/artist/…"
-            />
-          </Field>
-        </>
+        <Field
+          label="Spotify links"
+          hint="One album, playlist, track, or artist URL per row. An artist link shows Popular tracks. When any link is set, uploaded tracks are hidden."
+        >
+          <StringList
+            items={
+              asList(raw.spotifyUrls).length
+                ? asList(raw.spotifyUrls).map((item) =>
+                    typeof item === 'string' ? item : str(asRow(item).url || asRow(item).href),
+                  )
+                : str(raw.spotifyUrl) || str(raw.spotifyPlaylist)
+                  ? [str(raw.spotifyUrl) || str(raw.spotifyPlaylist)]
+                  : ['']
+            }
+            onChange={(items) => {
+              const { spotifyUrl: _u, spotifyPlaylist: _p, spotifyMoreHref: _m, ...rest } = raw
+              onChange({
+                ...rest,
+                spotifyUrls: items.map((s) => s.trim()).filter(Boolean),
+              })
+            }}
+            addLabel="+ Add Spotify link"
+          />
+        </Field>
       ) : null}
     </div>
   )

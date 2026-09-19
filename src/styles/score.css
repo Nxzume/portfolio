@@ -30,23 +30,6 @@
   }
 }
 
-.score__spotify-more {
-  margin: 0.25rem 0 0;
-  font-size: 0.9rem;
-}
-
-.score__spotify-more a {
-  color: var(--signal-soft);
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.2s var(--ease), color 0.2s var(--ease);
-}
-
-.score__spotify-more a:hover {
-  color: var(--signal);
-  border-bottom-color: var(--signal);
-}
-
 .score__stage {
   position: relative;
   border: 1px solid var(--line);

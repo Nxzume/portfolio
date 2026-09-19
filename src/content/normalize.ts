@@ -128,7 +128,6 @@ export function normalizeScore(raw: unknown): ScoreContent {
   return {
     ...copy,
     spotifyUrls,
-    spotifyMoreHref: optionalStr(str(row.spotifyMoreHref).trim()),
   }
 }
 

@@ -88,13 +88,6 @@ export function ScoreDesk({
               />
             </div>
           ))}
-          {score.spotifyMoreHref?.trim() ? (
-            <p className="score__spotify-more">
-              <a href={score.spotifyMoreHref.trim()} target="_blank" rel="noreferrer">
-                Open profile on Spotify →
-              </a>
-            </p>
-          ) : null}
         </div>
       ) : sketches.length ? (
         <div className="score__stage">

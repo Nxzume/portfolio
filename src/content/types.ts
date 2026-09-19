@@ -85,8 +85,6 @@ export type ScoreContent = SectionCopy & {
    * When any URL is set, uploaded local tracks are hidden on the site.
    */
   spotifyUrls?: string[]
-  /** Optional “see everything on Spotify” link under the embeds. */
-  spotifyMoreHref?: string
 }
 
 export type HeroContent = {

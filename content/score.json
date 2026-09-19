@@ -1,8 +1,7 @@
 {
   "eyebrow": "Listen",
   "title": "Music",
-  "lede": "Preview tracks on Spotify — open the profile for the full catalog.",
-  "spotifyMoreHref": "https://open.spotify.com/artist/55kd5PVj4U0ytkH8lP9PDN",
+  "lede": "Preview tracks on Spotify.",
   "spotifyUrls": [
     "https://open.spotify.com/artist/55kd5PVj4U0ytkH8lP9PDN"
   ]
