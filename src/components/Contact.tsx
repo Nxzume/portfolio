@@ -3,7 +3,8 @@ import { useRef } from 'react'
 import { SectionReveal } from './SectionReveal'
 import { useContent } from '../content/context'
 import type { ContactContent, SiteContent } from '../content/types'
-import { easeOutExpo } from '../lib/motion'
+import { useMotionBudget } from '../hooks/useMotionBudget'
+import { easeOutExpo, gpuTransformTemplate } from '../lib/motion'
 import { isExternalHref, safeHref } from '../lib/urls'
 
 function firstName(fullName: string) {
@@ -28,25 +29,27 @@ function contactActions(contact: ContactContent, site: SiteContent) {
 export function Contact() {
   const { contact, site } = useContent()
   const actions = contactActions(contact, site)
+  const budget = useMotionBudget()
   const ref = useRef<HTMLElement>(null)
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ['start end', 'end start'],
   })
-  // Translate only — this asset is ~2MB; scroll-scaling it forced fresh GPU uploads.
-  const bgY = useTransform(scrollYProgress, [0, 1], ['6%', '-6%'])
+  const bgScale = useTransform(scrollYProgress, [0, 1], budget.contactScale)
+  const bgY = useTransform(scrollYProgress, [0, 1], budget.contactY)
 
   return (
     <section className="section contact" id="contact" ref={ref}>
       <div className="contact__panel">
         <m.img
-          className="contact__bg"
+          className="contact__bg gpu-media"
           src="/images/piano-detail.png"
           alt=""
           aria-hidden
           loading="lazy"
           decoding="async"
-          style={{ y: bgY }}
+          style={{ scale: bgScale, y: bgY }}
+          transformTemplate={gpuTransformTemplate}
         />
         <div className="contact__veil" />
         <div className="contact__inner">
@@ -73,6 +76,7 @@ export function Contact() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.12 + i * 0.06, duration: 0.45 }}
+                whileHover={budget.compact ? undefined : { y: -3, scale: 1.02 }}
               >
                 {action.label}
               </m.a>

@@ -1,0 +1,50 @@
+/**
+ * Compositor / GPU helpers for scroll and entrance motion.
+ * Prefer transform + opacity; never stack CSS filter on a moving bitmap layer.
+ */
+
+.gpu {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.gpu-scroll {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  contain: paint;
+}
+
+.gpu-media {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  contain: paint;
+}
+
+/* Desktop can afford persistent layer promotion for parallax. */
+@media (min-width: 861px) and (hover: hover) and (pointer: fine) {
+  .gpu-scroll {
+    will-change: transform, opacity;
+  }
+
+  .gpu-media {
+    will-change: transform;
+  }
+}
+
+/* Mobile: promote layers without pinning oversized textures in VRAM. */
+@media (max-width: 860px), (pointer: coarse) {
+  .gpu-scroll,
+  .gpu-media {
+    will-change: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gpu-scroll,
+  .gpu-media {
+    will-change: auto;
+  }
+}

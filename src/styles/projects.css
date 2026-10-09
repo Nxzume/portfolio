@@ -115,13 +115,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* No CSS filter — filters + transform on scroll/hover re-rasterize every frame. */
-  transform: translateZ(0);
-  transition: transform 0.7s var(--ease);
-}
-
-.projects__feature:hover .projects__feature-media img {
-  transform: scale(1.04);
+  /* Scale is owned by Framer scroll motion — no CSS filter (re-rasterizes). */
 }
 
 .projects__feature-media--empty {
@@ -211,17 +205,6 @@
 @media (max-width: 860px) {
   .projects__feature {
     grid-template-columns: auto 1fr;
-    /* Avoid hover translate/shadow thrash on touch scroll. */
-    transition: border-color 0.35s var(--ease);
-  }
-
-  .projects__feature:hover {
-    transform: none;
-    box-shadow: none;
-  }
-
-  .projects__feature:hover .projects__feature-media img {
-    transform: none;
   }
 
   .projects__feature-media {
@@ -229,6 +212,18 @@
     aspect-ratio: 16 / 9;
     min-height: 0;
     order: -1;
+  }
+}
+
+/* Touch / coarse pointers: skip hover lift (fires spuriously during scroll). */
+@media (hover: none), (pointer: coarse) {
+  .projects__feature {
+    transition: border-color 0.35s var(--ease);
+  }
+
+  .projects__feature:hover {
+    transform: none;
+    box-shadow: none;
   }
 }
 

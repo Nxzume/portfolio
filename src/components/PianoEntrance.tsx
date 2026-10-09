@@ -2,6 +2,7 @@ import { Canvas } from '@react-three/fiber'
 import { m } from 'framer-motion'
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { useContent } from '../content/context'
+import { useMotionBudget } from '../hooks/useMotionBudget'
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion'
 import { easeOutExpo, easeStudio } from '../lib/motion'
 import { playPianoNote } from '../lib/pianoAudio'
@@ -17,6 +18,7 @@ type Props = {
 export function PianoEntrance({ onRevealBegin, onComplete }: Props) {
   const { site } = useContent()
   const reduced = usePrefersReducedMotion()
+  const budget = useMotionBudget()
   const [unlocking, setUnlocking] = useState(false)
   const [ready, setReady] = useState(false)
   const done = useRef(false)
@@ -111,12 +113,12 @@ export function PianoEntrance({ onRevealBegin, onComplete }: Props) {
           ) : (
             <Canvas
               className="piano-entrance__canvas"
-              dpr={[1, 1.25]}
+              dpr={budget.compact ? [1, 1] : [1, 1.25]}
               frameloop="demand"
               performance={{ min: 0.5, max: 1, debounce: 200 }}
               camera={{ position: [0, 0.42, 0.72], fov: 26, near: 0.01, far: 20 }}
               gl={{
-                antialias: true,
+                antialias: !budget.compact,
                 alpha: false,
                 powerPreference: 'high-performance',
                 toneMappingExposure: 0.78,
