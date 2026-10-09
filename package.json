@@ -14,15 +14,20 @@
     "lint": "oxlint",
     "typecheck": "tsc -b --force",
     "test": "vitest run",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:piano": "node scripts/blender/run-build.mjs"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.1",
+    "@types/three": "^0.186.0",
     "express": "^5.1.0",
     "framer-motion": "^13.1.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.2",
-    "sharp": "^0.34.5"
+    "sharp": "^0.34.5",
+    "three": "^0.186.1"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
