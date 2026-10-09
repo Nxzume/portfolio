@@ -5,6 +5,7 @@ import { Contact, Footer } from '../components/Contact'
 import { Hero } from '../components/Hero'
 import { Nav } from '../components/Nav'
 import { PageHead } from '../components/PageHead'
+import { usePreviewMode } from '../components/PreviewMode'
 import { Projects } from '../components/Projects'
 import { ScoreDesk } from '../components/ScoreDesk'
 import { HomeRevealProvider, type HomeRevealPhase } from '../context/HomeRevealContext'
@@ -21,12 +22,13 @@ const PianoEntrance = lazy(() =>
 
 export function HomePage() {
   const content = useContent()
+  const preview = usePreviewMode()
   const { sketches } = content
   const player = useSketchPlayer(sketches)
   const [phase, setPhase] = useState<HomeRevealPhase>(() =>
-    isPianoUnlocked() ? 'live' : 'intro',
+    preview || isPianoUnlocked() ? 'live' : 'intro',
   )
-  const showEntrance = phase === 'intro' || phase === 'revealing'
+  const showEntrance = !preview && (phase === 'intro' || phase === 'revealing')
 
   // Lock scroll before the lazy piano chunk loads — otherwise the browser can
   // restore a mid-page position under the intro overlay.

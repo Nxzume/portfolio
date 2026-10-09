@@ -9,7 +9,7 @@ import { rawFromFiles } from './previewContent'
 
 /** Maps a click in the preview to the content file that owns that section. */
 export function editKeyFor(target: Element, currentSlug: string | null): string | null {
-  const projectLink = target.closest('.projects__row, .projects__card')
+  const projectLink = target.closest('.projects__feature, .projects__row, .projects__card')
   if (projectLink) {
     const href = projectLink.getAttribute('href') || ''
     const match = href.match(/\/projects\/([a-z0-9-]+)/)
