@@ -11,7 +11,7 @@ export function About() {
     target: ref,
     offset: ['start end', 'end start'],
   })
-  const portraitY = useTransform(scrollYProgress, [0, 1], [50, -30])
+  const portraitY = useTransform(scrollYProgress, [0, 1], [24, -16])
 
   return (
     <section className="section about" id="about" ref={ref}>
@@ -31,7 +31,14 @@ export function About() {
                 decoding="async"
               />
             ) : null}
-            <img className="about__portrait-overlay" src="/images/piano-detail.png" alt="" aria-hidden />
+            <img
+              className="about__portrait-overlay"
+              src="/images/piano-detail.png"
+              alt=""
+              aria-hidden
+              loading="lazy"
+              decoding="async"
+            />
           </div>
           <figcaption className="about__caption">{site.name}</figcaption>
         </m.figure>
