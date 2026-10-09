@@ -13,10 +13,10 @@ export function SectionReveal({ children, className = 'section__head', delay = 0
   return (
     <m.div
       className={className}
-      initial={{ opacity: 0, y: 40, clipPath: 'inset(0 0 40% 0)' }}
-      whileInView={{ opacity: 1, y: 0, clipPath: 'inset(0 0 0% 0)' }}
-      viewport={{ once: true, amount: 0.5 }}
-      transition={{ duration: 0.85, delay, ease: easeOutExpo }}
+      initial={{ opacity: 0, y: 32 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.45 }}
+      transition={{ duration: 0.75, delay, ease: easeOutExpo }}
     >
       {children}
     </m.div>

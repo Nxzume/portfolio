@@ -79,7 +79,6 @@
 
 .hero__brand-char {
   display: inline-block;
-  will-change: transform;
 }
 
 .hero__brand-space {
