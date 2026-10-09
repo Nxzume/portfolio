@@ -25,8 +25,11 @@ export function WaveformCanvas({ intensity = 0.25, className, fill = false }: Pr
 
     let raf = 0
     let onScreen = true
-    let lastFrame = 0
-    const dpr = Math.min(window.devicePixelRatio || 1, 2)
+    let lastPaint = 0
+    // Cap decorative waves so they don't contend with scroll/intro compositing.
+    const FRAME_MS = 1000 / 30
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
+    const step = fill ? 5 : 4
 
     const paint = (t: number) => {
       const width = canvas.clientWidth
@@ -34,7 +37,7 @@ export function WaveformCanvas({ intensity = 0.25, className, fill = false }: Pr
       ctx.clearRect(0, 0, width, height)
 
       const amp = Math.min(height * 0.12, 16 + intensityRef.current * 36)
-      const bands = fill ? 5 : 3
+      const bands = fill ? 4 : 3
       for (let l = 0; l < bands; l++) {
         ctx.beginPath()
         const alpha = 0.32 - l * 0.045
@@ -42,7 +45,7 @@ export function WaveformCanvas({ intensity = 0.25, className, fill = false }: Pr
           l % 2 === 0 ? `rgba(212, 168, 75, ${alpha})` : `rgba(176, 165, 148, ${alpha * 0.9})`
         ctx.lineWidth = l === 0 ? 2 : 1.2
         const mid = height * (0.22 + (l / Math.max(bands - 1, 1)) * 0.56)
-        for (let x = 0; x <= width; x += 4) {
+        for (let x = 0; x <= width; x += step) {
           const n =
             Math.sin(x * 0.012 + t * 0.0018 + l) * amp +
             Math.sin(x * 0.035 - t * 0.0025 + l * 1.7) * (amp * 0.35)
@@ -79,13 +82,14 @@ export function WaveformCanvas({ intensity = 0.25, className, fill = false }: Pr
       canvas.width = Math.floor(cssWidth * dpr)
       canvas.height = Math.floor(cssHeight * dpr)
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-      paint(lastFrame)
+      paint(lastPaint)
     }
 
     const tick = (t: number) => {
-      lastFrame = t
-      paint(t)
       raf = requestAnimationFrame(tick)
+      if (t - lastPaint < FRAME_MS) return
+      lastPaint = t
+      paint(t)
     }
 
     const stop = () => {

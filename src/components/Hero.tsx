@@ -86,12 +86,8 @@ export function Hero({ intensity }: Props) {
         <SplitBrand text={site.name} reveal={reveal} delay={baseDelay + 0.05} />
 
         <m.h1
-          initial={{ opacity: 0, clipPath: 'inset(0 0 100% 0)' }}
-          animate={
-            reveal
-              ? { opacity: 1, clipPath: 'inset(0 0 0% 0)' }
-              : { opacity: 0, clipPath: 'inset(0 0 100% 0)' }
-          }
+          initial={{ opacity: 0, y: 28 }}
+          animate={reveal ? { opacity: 1, y: 0 } : { opacity: 0, y: 28 }}
           transition={{ duration: 0.9, delay: baseDelay + 0.45, ease: easeOutExpo }}
         >
           {hero.headline}

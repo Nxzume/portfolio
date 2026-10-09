@@ -1,6 +1,8 @@
 /* Premium layer — walnut glass, brass accents, concert-hall depth. */
 
+/* While the intro owns the viewport, skip painting the page underneath. */
 .app--under-intro {
+  content-visibility: hidden;
   pointer-events: none;
   user-select: none;
 }

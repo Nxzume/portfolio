@@ -68,8 +68,8 @@ export function HomePage() {
         initial={false}
         animate={
           phase === 'intro'
-            ? { opacity: 0, scale: 1.05, y: 28, filter: 'blur(10px)' }
-            : { opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }
+            ? { opacity: 0, scale: 1.04, y: 24 }
+            : { opacity: 1, scale: 1, y: 0 }
         }
         transition={{
           ...revealTransition,

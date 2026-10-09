@@ -94,8 +94,8 @@ export function PianoEntrance({ onRevealBegin, onComplete }: Props) {
         className="piano-entrance__stage-inner"
         animate={
           unlocking
-            ? { scale: 1.12, y: -28, filter: 'blur(10px)', opacity: 0 }
-            : { scale: 1, y: 0, filter: 'blur(0px)', opacity: 1 }
+            ? { scale: 1.1, y: -20, opacity: 0 }
+            : { scale: 1, y: 0, opacity: 1 }
         }
         transition={{ duration: exitDuration, ease: easeOutExpo }}
       >
@@ -111,9 +111,18 @@ export function PianoEntrance({ onRevealBegin, onComplete }: Props) {
           ) : (
             <Canvas
               className="piano-entrance__canvas"
-              dpr={[1, 1.5]}
+              dpr={[1, 1.25]}
+              frameloop="demand"
+              performance={{ min: 0.5, max: 1, debounce: 200 }}
               camera={{ position: [0, 0.42, 0.72], fov: 26, near: 0.01, far: 20 }}
-              gl={{ antialias: true, alpha: false, powerPreference: 'high-performance', toneMappingExposure: 0.78 }}
+              gl={{
+                antialias: true,
+                alpha: false,
+                powerPreference: 'high-performance',
+                toneMappingExposure: 0.78,
+                stencil: false,
+                depth: true,
+              }}
               onCreated={({ camera, gl }) => {
                 gl.toneMappingExposure = 0.78
                 camera.lookAt(0, 0.01, -0.05)
@@ -132,8 +141,8 @@ export function PianoEntrance({ onRevealBegin, onComplete }: Props) {
         className="piano-entrance__copy"
         animate={
           unlocking
-            ? { opacity: 0, y: -36, filter: 'blur(6px)' }
-            : { opacity: 1, y: 0, filter: 'blur(0px)' }
+            ? { opacity: 0, y: -28 }
+            : { opacity: 1, y: 0 }
         }
         transition={{ duration: reduced ? 0.25 : exitDuration * 0.75, ease: easeOutExpo }}
       >

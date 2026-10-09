@@ -23,6 +23,9 @@ body.has-piano-intro {
 .piano-entrance__stage-inner {
   z-index: 0;
   transform-origin: 50% 62%;
+  /* Promote to its own layer so opacity/scale unlock stays compositor-bound. */
+  will-change: transform, opacity;
+  contain: layout paint;
 }
 
 .piano-entrance__canvas {
@@ -31,6 +34,8 @@ body.has-piano-intro {
   height: 100% !important;
   cursor: pointer;
   touch-action: none;
+  /* Keep the WebGL surface on the GPU without CSS filter animation. */
+  transform: translateZ(0);
 }
 
 .piano-entrance__copy {
