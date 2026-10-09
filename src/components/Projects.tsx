@@ -1,12 +1,15 @@
-import { m } from 'framer-motion'
+import { m, useScroll, useTransform } from 'framer-motion'
+import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { SectionReveal } from './SectionReveal'
 import { useContent } from '../content/context'
-import { easeOutExpo } from '../lib/motion'
+import { useMotionBudget, type MotionBudget } from '../hooks/useMotionBudget'
+import { easeOutExpo, gpuTransformTemplate } from '../lib/motion'
 
 function ProjectRow({
   project,
   index,
+  budget,
 }: {
   project: {
     id: string
@@ -17,13 +20,24 @@ function ProjectRow({
     image: string
   }
   index: number
+  budget: MotionBudget
 }) {
+  const ref = useRef<HTMLLIElement>(null)
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ['start end', 'center center'],
+  })
+  const slide = budget.projectX
+  const x = useTransform(scrollYProgress, [0, 1], [index % 2 === 0 ? -slide : slide, 0])
+  const opacity = useTransform(scrollYProgress, [0, 0.55], [0.15, 1])
+  const mediaScale = useTransform(scrollYProgress, [0, 1], budget.projectMediaScale)
+
   return (
     <m.li
-      initial={{ opacity: 0, y: 28 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.25, margin: '0px 0px -8% 0px' }}
-      transition={{ duration: 0.65, delay: Math.min(index, 4) * 0.06, ease: easeOutExpo }}
+      ref={ref}
+      className="gpu-scroll"
+      style={{ x, opacity }}
+      transformTemplate={gpuTransformTemplate}
     >
       <Link className="projects__feature" to={`/projects/${project.slug}`}>
         <span className="projects__feature-index" aria-hidden>
@@ -35,15 +49,24 @@ function ProjectRow({
           {project.summary ? (
             <span className="projects__feature-summary">{project.summary}</span>
           ) : null}
-          <span className="projects__feature-cta">Open project →</span>
+          <m.span
+            className="projects__feature-cta"
+            whileHover={budget.compact ? undefined : { x: 6 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+          >
+            Open project →
+          </m.span>
         </span>
         {project.image ? (
           <span className="projects__feature-media" aria-hidden>
-            <img
+            <m.img
+              className="gpu-media"
               src={project.image}
               alt=""
               loading="lazy"
               decoding="async"
+              style={{ scale: mediaScale }}
+              transformTemplate={gpuTransformTemplate}
             />
           </span>
         ) : (
@@ -56,6 +79,7 @@ function ProjectRow({
 
 export function Projects() {
   const { projects, projectsSection } = useContent()
+  const budget = useMotionBudget()
   return (
     <section className="section projects" id="projects">
       <SectionReveal>
@@ -66,7 +90,7 @@ export function Projects() {
 
       <ol className="projects__index">
         {projects.map((p, i) => (
-          <ProjectRow key={p.id} project={p} index={i} />
+          <ProjectRow key={p.id} project={p} index={i} budget={budget} />
         ))}
       </ol>
 

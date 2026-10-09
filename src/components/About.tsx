@@ -2,16 +2,18 @@ import { m, useScroll, useTransform } from 'framer-motion'
 import { useRef } from 'react'
 import { SectionReveal } from './SectionReveal'
 import { useContent } from '../content/context'
-import { easeOutExpo } from '../lib/motion'
+import { useMotionBudget } from '../hooks/useMotionBudget'
+import { easeOutExpo, gpuTransformTemplate } from '../lib/motion'
 
 export function About() {
   const { about, site } = useContent()
+  const budget = useMotionBudget()
   const ref = useRef<HTMLElement>(null)
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ['start end', 'end start'],
   })
-  const portraitY = useTransform(scrollYProgress, [0, 1], [24, -16])
+  const portraitY = useTransform(scrollYProgress, [0, 1], budget.portraitY)
 
   return (
     <section className="section about" id="about" ref={ref}>
@@ -21,7 +23,11 @@ export function About() {
       </SectionReveal>
 
       <div className="about__stage">
-        <m.figure className="about__portrait" style={{ y: portraitY }}>
+        <m.figure
+          className="about__portrait gpu-scroll"
+          style={{ y: portraitY }}
+          transformTemplate={gpuTransformTemplate}
+        >
           <div className="about__portrait-frame">
             {about.portrait ? (
               <img

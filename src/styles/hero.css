@@ -11,8 +11,6 @@
   inset: -8% 0;
   overflow: hidden;
   background: #050504;
-  /* Translate-only layer; avoid permanent will-change (keeps oversized textures hot). */
-  transform: translateZ(0);
 }
 
 .hero__image {

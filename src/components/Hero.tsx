@@ -2,15 +2,52 @@ import { m, useScroll, useTransform } from 'framer-motion'
 import { useRef } from 'react'
 import { useContent } from '../content/context'
 import { useHomeReveal } from '../context/HomeRevealContext'
-import { easeOutExpo, easeStudio } from '../lib/motion'
+import { useMotionBudget } from '../hooks/useMotionBudget'
+import { easeOutExpo, easeStudio, gpuTransformTemplate } from '../lib/motion'
 import { safeHref } from '../lib/urls'
 
 type Props = {
   intensity: number
 }
 
-function SplitBrand({ text, reveal, delay }: { text: string; reveal: boolean; delay: number }) {
+function SplitBrand({
+  text,
+  reveal,
+  delay,
+  compact,
+}: {
+  text: string
+  reveal: boolean
+  delay: number
+  compact: boolean
+}) {
   const words = text.split(' ')
+
+  // Mobile: animate whole words (far fewer compositor layers than per-glyph).
+  if (compact) {
+    return (
+      <m.p className="hero__brand" aria-label={text}>
+        {words.map((word, wi) => (
+          <m.span
+            className="hero__brand-word"
+            key={`${word}-${wi}`}
+            initial={{ y: '110%', opacity: 0 }}
+            animate={reveal ? { y: '0%', opacity: 1 } : { y: '110%', opacity: 0 }}
+            transition={{
+              duration: 0.7,
+              delay: delay + wi * 0.1,
+              ease: easeOutExpo,
+            }}
+            style={{ display: 'inline-block' }}
+          >
+            {word}
+            {wi < words.length - 1 ? <span className="hero__brand-space"> </span> : null}
+          </m.span>
+        ))}
+      </m.p>
+    )
+  }
+
   return (
     <m.p className="hero__brand" aria-label={text}>
       {words.map((word, wi) => (
@@ -42,21 +79,26 @@ export function Hero({ intensity }: Props) {
   const phase = useHomeReveal()
   const reveal = phase !== 'intro'
   const baseDelay = phase === 'revealing' ? 0.7 : 0.05
+  const budget = useMotionBudget()
   const ref = useRef<HTMLElement>(null)
-  // Translate-only parallax — scaling a full-viewport bitmap every scroll frame
-  // was the main hero hitch on mobile.
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ['start start', 'end start'],
   })
-  const mediaY = useTransform(scrollYProgress, [0, 1], ['0%', '18%'])
-  const contentY = useTransform(scrollYProgress, [0, 1], ['0%', '12%'])
-  const contentOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0])
+  const mediaY = useTransform(scrollYProgress, [0, 1], budget.heroMediaY)
+  const mediaScale = useTransform(scrollYProgress, [0, 1], budget.heroMediaScale)
+  const contentY = useTransform(scrollYProgress, [0, 1], budget.heroContentY)
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.65], [1, 0])
   const glow = Math.min(0.55, 0.22 + intensity * 0.35)
 
   return (
     <section className="hero" id="top" ref={ref}>
-      <m.div className="hero__media" aria-hidden style={{ y: mediaY }}>
+      <m.div
+        className="hero__media gpu-scroll"
+        aria-hidden
+        style={{ y: mediaY, scale: mediaScale }}
+        transformTemplate={gpuTransformTemplate}
+      >
         {hero.image ? (
           <img
             className="hero__image"
@@ -74,7 +116,11 @@ export function Hero({ intensity }: Props) {
         />
       </m.div>
 
-      <m.div className="hero__content" style={{ y: contentY, opacity: contentOpacity }}>
+      <m.div
+        className="hero__content gpu-scroll"
+        style={{ y: contentY, opacity: contentOpacity }}
+        transformTemplate={gpuTransformTemplate}
+      >
         <m.p
           className="hero__kicker"
           initial={{ opacity: 0, x: -24 }}
@@ -84,7 +130,12 @@ export function Hero({ intensity }: Props) {
           Composer portfolio
         </m.p>
 
-        <SplitBrand text={site.name} reveal={reveal} delay={baseDelay + 0.05} />
+        <SplitBrand
+          text={site.name}
+          reveal={reveal}
+          delay={baseDelay + 0.05}
+          compact={budget.compact}
+        />
 
         <m.h1
           initial={{ opacity: 0, y: 28 }}

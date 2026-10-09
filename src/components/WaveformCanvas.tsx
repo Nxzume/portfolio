@@ -26,10 +26,13 @@ export function WaveformCanvas({ intensity = 0.25, className, fill = false }: Pr
     let raf = 0
     let onScreen = true
     let lastPaint = 0
+    const compact =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(max-width: 860px), (pointer: coarse)').matches
     // Cap decorative waves so they don't contend with scroll/intro compositing.
-    const FRAME_MS = 1000 / 30
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
-    const step = fill ? 5 : 4
+    const FRAME_MS = 1000 / (compact ? 20 : 30)
+    const dpr = Math.min(window.devicePixelRatio || 1, compact ? 1.25 : 1.5)
+    const step = fill ? (compact ? 6 : 5) : compact ? 5 : 4
 
     const paint = (t: number) => {
       const width = canvas.clientWidth
