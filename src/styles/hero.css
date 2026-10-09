@@ -11,7 +11,8 @@
   inset: -8% 0;
   overflow: hidden;
   background: #050504;
-  will-change: transform;
+  /* Translate-only layer; avoid permanent will-change (keeps oversized textures hot). */
+  transform: translateZ(0);
 }
 
 .hero__image {
@@ -31,10 +32,10 @@
 
 .hero__glow {
   position: absolute;
-  inset: 20% 10% auto;
-  height: 40%;
-  background: radial-gradient(ellipse at center, rgba(232, 197, 106, 0.28), transparent 65%);
-  filter: blur(8px);
+  inset: 12% 0 auto;
+  height: 55%;
+  /* Soft glow without CSS filter blur (filter forces an offscreen pass). */
+  background: radial-gradient(ellipse at center, rgba(232, 197, 106, 0.22), transparent 70%);
   pointer-events: none;
 }
 
@@ -44,7 +45,6 @@
   width: min(1160px, calc(100% - clamp(2.5rem, 8vw, 5rem)));
   margin: 0 auto;
   padding: clamp(6.5rem, 14vh, 8.5rem) 0 clamp(6rem, 12vh, 8rem);
-  will-change: transform, opacity;
 }
 
 .hero__kicker {

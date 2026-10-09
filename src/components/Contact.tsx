@@ -33,8 +33,8 @@ export function Contact() {
     target: ref,
     offset: ['start end', 'end start'],
   })
-  const bgScale = useTransform(scrollYProgress, [0, 1], [1.15, 1])
-  const bgY = useTransform(scrollYProgress, [0, 1], ['8%', '-8%'])
+  // Translate only — this asset is ~2MB; scroll-scaling it forced fresh GPU uploads.
+  const bgY = useTransform(scrollYProgress, [0, 1], ['6%', '-6%'])
 
   return (
     <section className="section contact" id="contact" ref={ref}>
@@ -44,7 +44,9 @@ export function Contact() {
           src="/images/piano-detail.png"
           alt=""
           aria-hidden
-          style={{ scale: bgScale, y: bgY }}
+          loading="lazy"
+          decoding="async"
+          style={{ y: bgY }}
         />
         <div className="contact__veil" />
         <div className="contact__inner">
@@ -71,7 +73,6 @@ export function Contact() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.12 + i * 0.06, duration: 0.45 }}
-                whileHover={{ y: -3, scale: 1.02 }}
               >
                 {action.label}
               </m.a>

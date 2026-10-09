@@ -43,19 +43,20 @@ export function Hero({ intensity }: Props) {
   const reveal = phase !== 'intro'
   const baseDelay = phase === 'revealing' ? 0.7 : 0.05
   const ref = useRef<HTMLElement>(null)
+  // Translate-only parallax — scaling a full-viewport bitmap every scroll frame
+  // was the main hero hitch on mobile.
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ['start start', 'end start'],
   })
-  const mediaY = useTransform(scrollYProgress, [0, 1], ['0%', '28%'])
-  const mediaScale = useTransform(scrollYProgress, [0, 1], [1, 1.18])
-  const contentY = useTransform(scrollYProgress, [0, 1], ['0%', '18%'])
-  const contentOpacity = useTransform(scrollYProgress, [0, 0.65], [1, 0])
+  const mediaY = useTransform(scrollYProgress, [0, 1], ['0%', '18%'])
+  const contentY = useTransform(scrollYProgress, [0, 1], ['0%', '12%'])
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0])
   const glow = Math.min(0.55, 0.22 + intensity * 0.35)
 
   return (
     <section className="hero" id="top" ref={ref}>
-      <m.div className="hero__media" aria-hidden style={{ y: mediaY, scale: mediaScale }}>
+      <m.div className="hero__media" aria-hidden style={{ y: mediaY }}>
         {hero.image ? (
           <img
             className="hero__image"
