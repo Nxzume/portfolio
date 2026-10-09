@@ -99,7 +99,7 @@ describe('LivePreview', () => {
         <LivePreview files={files} drafts={{}} selection="site" onSelect={(key) => selections.push(key)} />,
       )
     })
-    const row = container.querySelector('.projects__row')!
+    const row = container.querySelector('.projects__feature, .projects__row')!
     await act(async () => {
       row.dispatchEvent(new MouseEvent('click', { bubbles: true }))
     })
