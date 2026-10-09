@@ -4,7 +4,7 @@
       "id": "compose",
       "label": "Compose",
       "headline": "Music that carries a world",
-      "body": "Alexandre produces music in his free time and wants to be hired as a composer for video games — writing themes, stingers, and atmospheres that make levels feel alive."
+      "body": "Alexandre produces music in his free time and wants to be hired as a composer for video games writing themes, stingers, and atmospheres that make levels feel alive."
     },
     {
       "id": "levels",
@@ -16,7 +16,7 @@
       "id": "azure",
       "label": "Azure",
       "headline": "Technical Lead · Microsoft Azure",
-      "body": "At Microsoft in Vancouver, Alexandre leads automation and SoC validation across four projects — ARM firmware in SystemC/C/C++, FPGA and silicon test automation in Python and C++, and Azure DevOps (CLI, ADO, REST, AAD, Artifacts). He leads a team of four with SCRUM and standardizes pipelines across orgs."
+      "body": "At Microsoft in Vancouver, Alexandre leads automation and SoC validation across four projects. ARM firmware in SystemC/C/C++, FPGA and silicon test automation in Python and C++, and Azure DevOps (CLI, ADO, REST, AAD, Artifacts). He leads a team of four with SCRUM and standardizes pipelines across orgs."
     }
   ]
 }

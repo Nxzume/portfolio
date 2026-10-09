@@ -6,7 +6,7 @@
   "subtitle": "Open source · ML · Matlab / Python",
   "image": "",
   "gallery": [],
-  "summary": "A fast, out-of-the-box feature selection algorithm using mutual information for discrete–continuous datasets — with tunable precision vs speed.",
+  "summary": "A fast, out-of-the-box feature selection algorithm using mutual information for discrete–continuous datasets with tunable precision vs speed.",
   "highlights": [
     {
       "item": "Mutual-information feature ranking"

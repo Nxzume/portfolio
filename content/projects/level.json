@@ -12,7 +12,7 @@
     "/images/level-proto-1.png",
     "/images/level-token.png"
   ],
-  "summary": "A puzzle game where the player moves a ball by tilting the environment. Each stage introduces a mechanic through a unique space — collect tokens, learn jump and attack, and reach the exit.",
+  "summary": "A puzzle game where the player moves a ball by tilting the environment. Each stage introduces a mechanic through a unique space, collect tokens, learn jump and attack, and reach the exit.",
   "highlights": [
     {
       "item": "Teach-by-space design: no heavy tutorial walls"
@@ -49,17 +49,11 @@
     {
       "id": "history",
       "title": "History",
-      "quote": "The utilisation of computers is not intuitive to humans. We must learn how to use it. — Sjoerd “Hourence” de Jong",
+      "quote": "The utilisation of computers is not intuitive to humans. We must learn how to use it. - Sjoerd “Hourence” de Jong",
       "paragraphs": [
-        {
-          "paragraph": "The project began after studying level design through games and books. A line from “The How’s and Why’s of Level Design” stuck: tools are not intuitive — people must learn them."
-        },
-        {
-          "paragraph": "That raised a question: could a game be intuitive enough that someone plays it naturally without frustration — the way Mario Bros. often feels?"
-        },
-        {
-          "paragraph": "That question became the beginning of Level."
-        }
+        "The project began after studying level design through games and books. A line from “The How’s and Why’s of Level Design” stuck: tools are not intuitive, people must learn them.",
+        "That raised a question: could a game be intuitive enough that someone plays it naturally without frustration, the way Mario Bros. often feels?",
+        "That question became the beginning of Level."
       ]
     },
     {
@@ -76,24 +70,18 @@
     },
     {
       "id": "prototypes",
-      "title": "Early stage — prototypes",
+      "title": "Early stage prototypes",
       "image": "/images/level-proto-1.png",
-      "imageAlt": "Early Level prototype — ball in free fall",
+      "imageAlt": "Early Level prototype - ball in free fall",
       "paragraphs": [
-        {
-          "paragraph": "Unity physics was unfamiliar territory after mostly 2D tutorial work. The goal was a ball that feels recoverable after mistakes — small initial acceleration, later terminal velocity."
-        },
-        {
-          "paragraph": "The first prototype was a free-falling ball used to feel velocity and collisions. Targets like “magnitude 4 from rest on a 10° plane within 5 seconds” became reference feel, then adjusted by play."
-        },
-        {
-          "paragraph": "Wall collisions needed custom bounce logic (reverse pre-impact velocity with AddForce, then correct angles with vector math) before the ground and walls felt natural enough to build levels."
-        }
+        "Unity physics was unfamiliar territory after mostly 2D tutorial work. The goal was a ball that feels recoverable after mistakes, small initial acceleration, later terminal velocity.",
+        "The first prototype was a free-falling ball used to feel velocity and collisions. Targets like “magnitude 4 from rest on a 10° plane within 5 seconds” became reference feel, then adjusted by play.",
+        "Wall collisions needed custom bounce logic (reverse pre-impact velocity with AddForce, then correct angles with vector math) before the ground and walls felt natural enough to build levels."
       ]
     },
     {
       "id": "challenge",
-      "title": "Hardest challenge — tilting planes",
+      "title": "Hardest challenge - tilting planes",
       "image": "/images/level-token.png",
       "imageAlt": "Level overview showing segmented planes",
       "paragraphs": [
@@ -110,7 +98,7 @@
     },
     {
       "id": "mid-stage",
-      "title": "Mid stage — teaching in the world",
+      "title": "Mid stage - teaching in the world",
       "image": "/images/level-gameplay.png",
       "imageAlt": "Token collection feedback in Level",
       "paragraphs": [
@@ -130,27 +118,17 @@
       "id": "retrospection",
       "title": "Retrospection",
       "paragraphs": [
-        {
-          "paragraph": "Playtests with gamers and non-gamers showed the design was not as intuitive as hoped — almost nobody finished without help. Gamers usually learned faster."
-        },
-        {
-          "paragraph": "Common stuck points: not realizing velocity carries when leaving a tilted plane (~70% of testers), and jumping without building speed first. Non-gamers often repeated the same failing action; gamers tried new options."
-        },
-        {
-          "paragraph": "The takeaway: exploration habits from games help, but tools still need to be taught before players can invent solutions."
-        }
+        "Playtests with gamers and non-gamers showed the design was not as intuitive as hoped, almost nobody finished without help. Gamers usually learned faster.",
+        "Common stuck points: not realizing velocity carries when leaving a tilted plane (~70% of testers), and jumping without building speed first. Non-gamers often repeated the same failing action; gamers tried new options.",
+        "The takeaway: exploration habits from games help, but tools still need to be taught before players can invent solutions."
       ]
     },
     {
       "id": "conclusion",
       "title": "Conclusion",
       "paragraphs": [
-        {
-          "paragraph": "Level was meant to keep game design simple so level design could own difficulty, surprise, and fun — introducing mechanics only after earlier ones felt earned."
-        },
-        {
-          "paragraph": "The foundation is complete enough to grow: new puzzles, enemies, and maybe a story. Thank you for playing."
-        }
+        "Level was meant to keep game design simple so level design could own difficulty, surprise, and fun, introducing mechanics only after earlier ones felt earned.",
+        "The foundation is complete enough to grow: new puzzles, enemies, and maybe a story. Thank you for playing."
       ]
     }
   ]

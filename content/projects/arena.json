@@ -14,7 +14,7 @@
       "id": "level-design",
       "title": "Level design",
       "image": "/images/arena-gameplay.png",
-      "imageAlt": "The Arena gameplay — dual characters in combat",
+      "imageAlt": "The Arena gameplay, dual characters in combat",
       "paragraphs": [
         {
           "paragraph": "Floors are designed as distinct mechanical chapters rather than copies of the same combat loop."
