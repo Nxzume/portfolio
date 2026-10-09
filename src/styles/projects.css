@@ -111,11 +111,18 @@
   background: var(--walnut);
 }
 
-.projects__feature-media img {
+.projects__feature-media img,
+.projects__feature-media .gpu-media {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* Scale is owned by Framer scroll motion — no CSS filter (re-rasterizes). */
+}
+
+.projects__feature-media .gpu-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .projects__feature-media--empty {

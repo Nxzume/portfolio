@@ -1,24 +1,94 @@
 import { m, useScroll, useTransform } from 'framer-motion'
-import { useRef } from 'react'
+import { useRef, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
+import { ResponsiveImg } from './ResponsiveImg'
 import { SectionReveal } from './SectionReveal'
 import { useContent } from '../content/context'
+import { useCssScrollTimeline } from '../hooks/useCssScrollTimeline'
 import { useMotionBudget, type MotionBudget } from '../hooks/useMotionBudget'
 import { easeOutExpo, gpuTransformTemplate } from '../lib/motion'
 
-function ProjectRow({
+type Project = {
+  id: string
+  slug: string
+  title: string
+  subtitle: string
+  summary: string
+  image: string
+}
+
+function ProjectBody({
+  project,
+  index,
+  compact,
+}: {
+  project: Project
+  index: number
+  compact: boolean
+}) {
+  return (
+    <Link className="projects__feature" to={`/projects/${project.slug}`}>
+      <span className="projects__feature-index" aria-hidden>
+        {String(index + 1).padStart(2, '0')}
+      </span>
+      <span className="projects__feature-copy">
+        <span className="projects__feature-sub">{project.subtitle}</span>
+        <span className="projects__feature-title">{project.title}</span>
+        {project.summary ? (
+          <span className="projects__feature-summary">{project.summary}</span>
+        ) : null}
+        <m.span
+          className="projects__feature-cta"
+          whileHover={compact ? undefined : { x: 6 }}
+          transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+        >
+          Open project →
+        </m.span>
+      </span>
+      {project.image ? (
+        <span className="projects__feature-media" aria-hidden>
+          <ResponsiveImg
+            className="gpu-media parallax-project-media"
+            src={project.image}
+            layout="project"
+            alt=""
+            loading="lazy"
+            decoding="async"
+          />
+        </span>
+      ) : (
+        <span className="projects__feature-media projects__feature-media--empty" aria-hidden />
+      )}
+    </Link>
+  )
+}
+
+function ProjectRowCss({
   project,
   index,
   budget,
 }: {
-  project: {
-    id: string
-    slug: string
-    title: string
-    subtitle: string
-    summary: string
-    image: string
-  }
+  project: Project
+  index: number
+  budget: MotionBudget
+}) {
+  const xFrom = index % 2 === 0 ? -budget.projectX : budget.projectX
+  return (
+    <li
+      className="gpu-scroll parallax-project"
+      style={{ ['--parallax-x']: `${xFrom}px` } as CSSProperties}
+    >
+      <ProjectBody project={project} index={index} compact={budget.compact} />
+    </li>
+  )
+}
+
+function ProjectRowFramer({
+  project,
+  index,
+  budget,
+}: {
+  project: Project
   index: number
   budget: MotionBudget
 }) {
@@ -28,7 +98,8 @@ function ProjectRow({
     offset: ['start end', 'center center'],
   })
   const slide = budget.projectX
-  const x = useTransform(scrollYProgress, [0, 1], [index % 2 === 0 ? -slide : slide, 0])
+  const xFrom = index % 2 === 0 ? -slide : slide
+  const x = useTransform(scrollYProgress, [0, 1], [xFrom, 0])
   const opacity = useTransform(scrollYProgress, [0, 0.55], [0.15, 1])
   const mediaScale = useTransform(scrollYProgress, [0, 1], budget.projectMediaScale)
 
@@ -59,15 +130,15 @@ function ProjectRow({
         </span>
         {project.image ? (
           <span className="projects__feature-media" aria-hidden>
-            <m.img
-              className="gpu-media"
-              src={project.image}
-              alt=""
-              loading="lazy"
-              decoding="async"
-              style={{ scale: mediaScale }}
-              transformTemplate={gpuTransformTemplate}
-            />
+            <m.div className="gpu-media" style={{ scale: mediaScale }} transformTemplate={gpuTransformTemplate}>
+              <ResponsiveImg
+                src={project.image}
+                layout="project"
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
+            </m.div>
           </span>
         ) : (
           <span className="projects__feature-media projects__feature-media--empty" aria-hidden />
@@ -80,6 +151,7 @@ function ProjectRow({
 export function Projects() {
   const { projects, projectsSection } = useContent()
   const budget = useMotionBudget()
+  const cssTimeline = useCssScrollTimeline()
   return (
     <section className="section projects" id="projects">
       <SectionReveal>
@@ -89,9 +161,13 @@ export function Projects() {
       </SectionReveal>
 
       <ol className="projects__index">
-        {projects.map((p, i) => (
-          <ProjectRow key={p.id} project={p} index={i} budget={budget} />
-        ))}
+        {projects.map((p, i) =>
+          cssTimeline ? (
+            <ProjectRowCss key={p.id} project={p} index={i} budget={budget} />
+          ) : (
+            <ProjectRowFramer key={p.id} project={p} index={i} budget={budget} />
+          ),
+        )}
       </ol>
 
       <m.div
