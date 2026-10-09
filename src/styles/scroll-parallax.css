@@ -1,0 +1,181 @@
+/**
+ * Compositor-only scroll motion (CSS view timelines).
+ * No scroll → JS → React path — same idea as a game owning transforms on the GPU.
+ */
+
+/* Named timeline on the hero section so absolute children can scrub against it. */
+.hero {
+  view-timeline-name: --hero;
+  view-timeline-axis: block;
+}
+
+@supports (animation-timeline: view()) {
+  .parallax-hero-media {
+    animation: parallax-hero-media linear both;
+    animation-timeline: --hero;
+    animation-range: exit 0% exit 100%;
+  }
+
+  .parallax-hero-content {
+    animation: parallax-hero-content linear both;
+    animation-timeline: --hero;
+    animation-range: exit 0% exit 100%;
+  }
+
+  .parallax-project {
+    animation: parallax-project-enter linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 40%;
+  }
+
+  .parallax-project-media {
+    animation: parallax-project-media linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 45%;
+  }
+
+  .parallax-contact-bg {
+    animation: parallax-contact-bg linear both;
+    animation-timeline: view();
+    animation-range: entry 0% exit 100%;
+  }
+
+  .parallax-portrait {
+    animation: parallax-portrait linear both;
+    animation-timeline: view();
+    animation-range: entry 0% exit 100%;
+  }
+
+  @keyframes parallax-hero-media {
+    from {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    to {
+      transform: translate3d(0, 28%, 0) scale(1.18);
+    }
+  }
+
+  @keyframes parallax-hero-content {
+    from {
+      transform: translate3d(0, 0, 0);
+      opacity: 1;
+    }
+    to {
+      transform: translate3d(0, 18%, 0);
+      opacity: 0;
+    }
+  }
+
+  @keyframes parallax-project-enter {
+    from {
+      transform: translate3d(var(--parallax-x, 48px), 0, 0);
+      opacity: 0.15;
+    }
+    to {
+      transform: translate3d(0, 0, 0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes parallax-project-media {
+    from {
+      transform: translate3d(0, 0, 0) scale(1.12);
+    }
+    to {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+  }
+
+  @keyframes parallax-contact-bg {
+    from {
+      transform: translate3d(0, 8%, 0) scale(1.15);
+    }
+    to {
+      transform: translate3d(0, -8%, 0) scale(1);
+    }
+  }
+
+  @keyframes parallax-portrait {
+    from {
+      transform: translate3d(0, 50px, 0);
+    }
+    to {
+      transform: translate3d(0, -30px, 0);
+    }
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (max-width: 860px), (pointer: coarse) {
+    @keyframes parallax-hero-media {
+      from {
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+      to {
+        transform: translate3d(0, 14%, 0) scale(1.08);
+      }
+    }
+
+    @keyframes parallax-hero-content {
+      from {
+        transform: translate3d(0, 0, 0);
+        opacity: 1;
+      }
+      to {
+        transform: translate3d(0, 10%, 0);
+        opacity: 0;
+      }
+    }
+
+    @keyframes parallax-project-enter {
+      from {
+        transform: translate3d(var(--parallax-x, 22px), 0, 0);
+        opacity: 0.15;
+      }
+      to {
+        transform: translate3d(0, 0, 0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes parallax-project-media {
+      from {
+        transform: translate3d(0, 0, 0) scale(1.06);
+      }
+      to {
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+    }
+
+    @keyframes parallax-contact-bg {
+      from {
+        transform: translate3d(0, 4%, 0) scale(1.06);
+      }
+      to {
+        transform: translate3d(0, -4%, 0) scale(1);
+      }
+    }
+
+    @keyframes parallax-portrait {
+      from {
+        transform: translate3d(0, 28px, 0);
+      }
+      to {
+        transform: translate3d(0, -16px, 0);
+      }
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .parallax-hero-media,
+  .parallax-hero-content,
+  .parallax-project,
+  .parallax-project-media,
+  .parallax-contact-bg,
+  .parallax-portrait {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
