@@ -1,6 +1,7 @@
 /* Order matters: later files may override earlier ones at equal specificity. */
 @import './styles/base.css';
 @import './styles/gpu.css';
+@import './styles/scroll-parallax.css';
 @import './styles/nav.css';
 @import './styles/hero.css';
 @import './styles/focus.css';

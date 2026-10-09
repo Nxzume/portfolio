@@ -15,7 +15,8 @@
     "typecheck": "tsc -b --force",
     "test": "vitest run",
     "preview": "vite preview",
-    "build:piano": "node scripts/blender/run-build.mjs"
+    "build:piano": "node scripts/blender/run-build.mjs",
+    "optimize:images": "node scripts/optimize-images.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",

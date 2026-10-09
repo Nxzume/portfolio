@@ -1,7 +1,9 @@
 import { m, useScroll, useTransform } from 'framer-motion'
-import { useRef } from 'react'
+import { useRef, type ReactNode } from 'react'
+import { ResponsiveImg } from './ResponsiveImg'
 import { useContent } from '../content/context'
 import { useHomeReveal } from '../context/HomeRevealContext'
+import { useCssScrollTimeline } from '../hooks/useCssScrollTimeline'
 import { useMotionBudget } from '../hooks/useMotionBudget'
 import { easeOutExpo, easeStudio, gpuTransformTemplate } from '../lib/motion'
 import { safeHref } from '../lib/urls'
@@ -23,7 +25,6 @@ function SplitBrand({
 }) {
   const words = text.split(' ')
 
-  // Mobile: animate whole words (far fewer compositor layers than per-glyph).
   if (compact) {
     return (
       <m.p className="hero__brand" aria-label={text}>
@@ -74,11 +75,114 @@ function SplitBrand({
   )
 }
 
-export function Hero({ intensity }: Props) {
-  const { hero, site } = useContent()
-  const phase = useHomeReveal()
-  const reveal = phase !== 'intro'
-  const baseDelay = phase === 'revealing' ? 0.7 : 0.05
+function HeroCopy({
+  reveal,
+  baseDelay,
+  compact,
+  name,
+  headline,
+  tagline,
+  primaryCta,
+  secondaryCta,
+}: {
+  reveal: boolean
+  baseDelay: number
+  compact: boolean
+  name: string
+  headline: string
+  tagline: string
+  primaryCta: { label: string; href: string }
+  secondaryCta: { label: string; href: string }
+}) {
+  return (
+    <>
+      <m.p
+        className="hero__kicker"
+        initial={{ opacity: 0, x: -24 }}
+        animate={reveal ? { opacity: 1, x: 0 } : { opacity: 0, x: -24 }}
+        transition={{ duration: 0.7, delay: baseDelay, ease: easeStudio }}
+      >
+        Composer portfolio
+      </m.p>
+
+      <SplitBrand text={name} reveal={reveal} delay={baseDelay + 0.05} compact={compact} />
+
+      <m.h1
+        initial={{ opacity: 0, y: 28 }}
+        animate={reveal ? { opacity: 1, y: 0 } : { opacity: 0, y: 28 }}
+        transition={{ duration: 0.9, delay: baseDelay + 0.45, ease: easeOutExpo }}
+      >
+        {headline}
+      </m.h1>
+
+      <m.p
+        className="hero__lede"
+        initial={{ opacity: 0, y: 24 }}
+        animate={reveal ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+        transition={{ duration: 0.75, delay: baseDelay + 0.58, ease: easeStudio }}
+      >
+        {tagline}
+      </m.p>
+
+      <m.div
+        className="hero__cta"
+        initial={{ opacity: 0, y: 20 }}
+        animate={reveal ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+        transition={{ duration: 0.7, delay: baseDelay + 0.7, ease: easeStudio }}
+      >
+        <a className="btn btn--primary" href={safeHref(primaryCta.href)}>
+          {primaryCta.label}
+        </a>
+        <a className="btn btn--ghost" href={safeHref(secondaryCta.href)}>
+          {secondaryCta.label}
+        </a>
+      </m.div>
+    </>
+  )
+}
+
+function HeroMedia({
+  image,
+  glow,
+  reveal,
+}: {
+  image: string
+  glow: number
+  reveal: boolean
+}) {
+  return (
+    <>
+      {image ? (
+        <ResponsiveImg
+          className="hero__image"
+          src={image}
+          layout="full"
+          alt=""
+          fetchPriority="high"
+          decoding="async"
+        />
+      ) : null}
+      <div className="hero__veil" />
+      <m.div
+        className="hero__glow"
+        animate={{ opacity: reveal ? glow : 0 }}
+        transition={{ duration: 0.8 }}
+      />
+    </>
+  )
+}
+
+function HeroFramerFallback({
+  intensity,
+  reveal,
+  copy,
+  image,
+}: {
+  intensity: number
+  reveal: boolean
+  copy: ReactNode
+  image: string
+}) {
   const budget = useMotionBudget()
   const ref = useRef<HTMLElement>(null)
   const { scrollYProgress } = useScroll({
@@ -99,75 +203,57 @@ export function Hero({ intensity }: Props) {
         style={{ y: mediaY, scale: mediaScale }}
         transformTemplate={gpuTransformTemplate}
       >
-        {hero.image ? (
-          <img
-            className="hero__image"
-            src={hero.image}
-            alt=""
-            fetchPriority="high"
-            decoding="async"
-          />
-        ) : null}
-        <div className="hero__veil" />
-        <m.div
-          className="hero__glow"
-          animate={{ opacity: reveal ? glow : 0 }}
-          transition={{ duration: 0.8 }}
-        />
+        <HeroMedia image={image} glow={glow} reveal={reveal} />
       </m.div>
-
       <m.div
         className="hero__content gpu-scroll"
         style={{ y: contentY, opacity: contentOpacity }}
         transformTemplate={gpuTransformTemplate}
       >
-        <m.p
-          className="hero__kicker"
-          initial={{ opacity: 0, x: -24 }}
-          animate={reveal ? { opacity: 1, x: 0 } : { opacity: 0, x: -24 }}
-          transition={{ duration: 0.7, delay: baseDelay, ease: easeStudio }}
-        >
-          Composer portfolio
-        </m.p>
-
-        <SplitBrand
-          text={site.name}
-          reveal={reveal}
-          delay={baseDelay + 0.05}
-          compact={budget.compact}
-        />
-
-        <m.h1
-          initial={{ opacity: 0, y: 28 }}
-          animate={reveal ? { opacity: 1, y: 0 } : { opacity: 0, y: 28 }}
-          transition={{ duration: 0.9, delay: baseDelay + 0.45, ease: easeOutExpo }}
-        >
-          {hero.headline}
-        </m.h1>
-
-        <m.p
-          className="hero__lede"
-          initial={{ opacity: 0, y: 24 }}
-          animate={reveal ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
-          transition={{ duration: 0.75, delay: baseDelay + 0.58, ease: easeStudio }}
-        >
-          {site.tagline}
-        </m.p>
-
-        <m.div
-          className="hero__cta"
-          initial={{ opacity: 0, y: 20 }}
-          animate={reveal ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          transition={{ duration: 0.7, delay: baseDelay + 0.7, ease: easeStudio }}
-        >
-          <a className="btn btn--primary" href={safeHref(hero.primaryCta.href)}>
-            {hero.primaryCta.label}
-          </a>
-          <a className="btn btn--ghost" href={safeHref(hero.secondaryCta.href)}>
-            {hero.secondaryCta.label}
-          </a>
-        </m.div>
+        {copy}
       </m.div>
     </section>
+  )
+}
+
+export function Hero({ intensity }: Props) {
+  const { hero, site } = useContent()
+  const phase = useHomeReveal()
+  const reveal = phase !== 'intro'
+  const baseDelay = phase === 'revealing' ? 0.7 : 0.05
+  const budget = useMotionBudget()
+  const cssTimeline = useCssScrollTimeline()
+  const glow = Math.min(0.55, 0.22 + intensity * 0.35)
+  const copy = (
+    <HeroCopy
+      reveal={reveal}
+      baseDelay={baseDelay}
+      compact={budget.compact}
+      name={site.name}
+      headline={hero.headline}
+      tagline={site.tagline}
+      primaryCta={hero.primaryCta}
+      secondaryCta={hero.secondaryCta}
+    />
+  )
+
+  if (cssTimeline) {
+    return (
+      <section className="hero" id="top">
+        <div className="hero__media gpu-scroll parallax-hero-media" aria-hidden>
+          <HeroMedia image={hero.image} glow={glow} reveal={reveal} />
+        </div>
+        <div className="hero__content gpu-scroll parallax-hero-content">{copy}</div>
+      </section>
+    )
+  }
+
+  return (
+    <HeroFramerFallback
+      intensity={intensity}
+      reveal={reveal}
+      copy={copy}
+      image={hero.image}
+    />
   )
 }
