@@ -190,6 +190,11 @@
   position: absolute;
 }
 
+/* Piano intro is skipped in preview mode; never trap the admin chrome. */
+.livepreview .piano-entrance {
+  display: none !important;
+}
+
 /* whileInView animations start at opacity:0 and rely on IntersectionObserver,
    which does not fire reliably inside the nested preview scroller — sections
    (tracks, project cards, portrait) would stay invisible. A content preview
@@ -200,7 +205,7 @@
 }
 
 /* Click-to-edit affordance */
-.livepreview :is(section, .hero, .projects__card, .projects__row, .footer):hover {
+.livepreview :is(section, .hero, .projects__card, .projects__row, .projects__feature, .footer):hover {
   outline: 1px dashed rgba(124, 158, 255, 0.55);
   outline-offset: -2px;
   cursor: pointer;
