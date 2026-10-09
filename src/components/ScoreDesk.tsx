@@ -54,7 +54,6 @@ export function ScoreDesk({
   const spotifyEmbeds = (score.spotifyUrls ?? [])
     .map((url) => parseSpotifyEmbed(url))
     .filter((embed): embed is NonNullable<typeof embed> => embed != null)
-  // Dedupe identical embeds if the same link was pasted twice.
   const seen = new Set<string>()
   const spotify = spotifyEmbeds.filter((embed) => {
     const key = `${embed.kind}:${embed.id}`
@@ -92,7 +91,11 @@ export function ScoreDesk({
       ) : sketches.length ? (
         <div className="score__stage">
           <div className="score__wave-frame" aria-hidden>
-            <WaveformCanvas className="score__wave" fill intensity={activeId && isPlaying ? intensity : 0.2} />
+            <WaveformCanvas
+              className="score__wave"
+              fill
+              intensity={activeId && isPlaying ? intensity : 0.2}
+            />
           </div>
           <ul className="score__list">
             {sketches.map((sketch, i) => {
@@ -151,11 +154,17 @@ export function ScoreDesk({
                           aria-label={`Seek in ${sketch.title}`}
                           onPointerDown={() => onScrubStart?.()}
                           onChange={(e) => onSeek(Number(e.target.value))}
-                          onPointerUp={(e) => onScrubEnd?.(Number((e.target as HTMLInputElement).value))}
-                          onKeyUp={(e) => onScrubEnd?.(Number((e.target as HTMLInputElement).value))}
+                          onPointerUp={(e) =>
+                            onScrubEnd?.(Number((e.target as HTMLInputElement).value))
+                          }
+                          onKeyUp={(e) =>
+                            onScrubEnd?.(Number((e.target as HTMLInputElement).value))
+                          }
                           style={{ '--score-progress': `${progress * 100}%` } as CSSProperties}
                         />
-                        <span className="score__time">{canSeek ? formatClock(duration) : '0:00'}</span>
+                        <span className="score__time">
+                          {canSeek ? formatClock(duration) : '0:00'}
+                        </span>
                       </div>
                     ) : null}
                   </div>

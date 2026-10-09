@@ -1,7 +1,10 @@
 import { m } from 'framer-motion'
-import { useEffect, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useContent } from '../content/context'
+import { useHomeReveal } from '../context/HomeRevealContext'
+import { easeOutExpo } from '../lib/motion'
+import { clearUrlHash } from '../lib/urls'
 
 type Props = {
   variant?: 'home' | 'page'
@@ -16,8 +19,14 @@ const homeLinks = [
 
 export function Nav({ variant = 'home' }: Props) {
   const { site } = useContent()
+  const phase = useHomeReveal()
   const [scrolled, setScrolled] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
+  const reveal = phase !== 'intro'
+  const navDelay = phase === 'revealing' ? 0.95 : 0.12
+  /** After the piano intro, ignore a stale `/#section` until the user clicks nav. */
+  const skipHomeHashScroll = useRef(phase === 'intro' || phase === 'revealing')
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24)
@@ -27,6 +36,23 @@ export function Nav({ variant = 'home' }: Props) {
   }, [])
 
   useEffect(() => {
+    if (variant === 'home' && (phase === 'intro' || phase === 'revealing')) {
+      skipHomeHashScroll.current = true
+      clearUrlHash()
+      window.scrollTo(0, 0)
+      return
+    }
+
+    if (variant === 'home' && skipHomeHashScroll.current) {
+      skipHomeHashScroll.current = false
+      clearUrlHash()
+      window.scrollTo(0, 0)
+      if (location.hash) {
+        navigate({ pathname: location.pathname, search: location.search }, { replace: true })
+      }
+      return
+    }
+
     if (location.hash) {
       const id = location.hash.slice(1)
       const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -36,7 +62,7 @@ export function Nav({ variant = 'home' }: Props) {
     } else if (variant === 'page') {
       window.scrollTo(0, 0)
     }
-  }, [location, variant])
+  }, [location, navigate, phase, variant])
 
   return (
     <>
@@ -46,12 +72,11 @@ export function Nav({ variant = 'home' }: Props) {
 
       <m.header
         className={`nav ${scrolled || variant === 'page' ? 'nav--solid' : ''}`}
-        initial={{ y: -24, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        initial={{ y: -28, opacity: 0 }}
+        animate={reveal ? { y: 0, opacity: 1 } : { y: -28, opacity: 0 }}
+        transition={{ duration: 0.75, delay: navDelay, ease: easeOutExpo }}
       >
         <Link className="nav__brand" to="/">
-          <span className="nav__mark" aria-hidden />
           <span className="nav__name">{site.name}</span>
         </Link>
         <nav className="nav__links" aria-label="Primary">

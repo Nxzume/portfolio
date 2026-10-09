@@ -29,3 +29,10 @@ export function isExternalHref(href: string | undefined | null): boolean {
   const value = safeHref(href)
   return /^(https?:)?\/\//i.test(value)
 }
+
+/** Drop the hash from the URL without scrolling (avoids jumping to #compose etc.). */
+export function clearUrlHash(): void {
+  if (!window.location.hash) return
+  const url = `${window.location.pathname}${window.location.search}`
+  window.history.replaceState(window.history.state, '', url)
+}

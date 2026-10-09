@@ -1,0 +1,161 @@
+import { ContactShadows, useGLTF } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
+import { useEffect, useMemo, useRef } from 'react'
+import type { Group, Object3D } from 'three'
+import * as THREE from 'three'
+
+const MODEL = '/models/piano-keyboard.glb'
+/** Hinge press amount (radians) — keybed clearance in the GLB allows a real tip travel. */
+const PRESS = 0.085
+type HingeTarget = {
+  hinge: Object3D
+  note: string
+  pressed: number
+}
+
+type Props = {
+  onKeyPlay: (note: string) => void
+  unlocking: boolean
+}
+
+function collectHinges(root: Object3D): HingeTarget[] {
+  const hinges: HingeTarget[] = []
+  root.traverse((obj) => {
+    if (!obj.name.startsWith('Hinge_')) return
+    const note = String(obj.userData.note || obj.name.replace(/^Hinge_[WB]_/, ''))
+    if (!note) return
+    hinges.push({ hinge: obj, note, pressed: 0 })
+  })
+  return hinges
+}
+
+function PianoModel({ onKeyPlay, unlocking }: Props) {
+  const { scene } = useGLTF(MODEL)
+  const clone = useMemo(() => scene.clone(true), [scene])
+  const hinges = useMemo(() => collectHinges(clone), [clone])
+  const group = useRef<Group>(null)
+  const hingeByNote = useMemo(() => {
+    const map = new Map<string, HingeTarget>()
+    for (const h of hinges) map.set(h.note, h)
+    return map
+  }, [hinges])
+
+  useEffect(() => {
+    clone.traverse((obj) => {
+      if (!(obj instanceof THREE.Mesh)) return
+      obj.castShadow = true
+      obj.receiveShadow = true
+
+      const mats = Array.isArray(obj.material) ? obj.material : [obj.material]
+      for (const mat of mats) {
+        if (!(mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhysicalMaterial)) {
+          continue
+        }
+        mat.envMapIntensity = 0.35
+        mat.toneMapped = true
+        if (/^W_/.test(obj.name)) {
+          mat.color.set('#d8d0c4')
+          mat.roughness = 0.55
+          mat.metalness = 0
+          if ('clearcoat' in mat) mat.clearcoat = 0.08
+        } else if (/^B_/.test(obj.name)) {
+          mat.color.set('#141416')
+          mat.roughness = 0.35
+          mat.metalness = 0.05
+          if ('clearcoat' in mat) mat.clearcoat = 0.2
+        } else if (/NameRail/i.test(obj.name)) {
+          mat.color.set('#b8923a')
+          mat.roughness = 0.4
+          mat.metalness = 0.85
+        } else {
+          mat.color.set('#2a1810')
+          mat.roughness = 0.62
+          mat.metalness = 0.02
+        }
+        mat.needsUpdate = true
+      }
+
+      if (!/^[WB]_/.test(obj.name)) return
+      const hinge = obj.parent
+      if (!hinge?.name.startsWith('Hinge_')) return
+      const note = String(hinge.userData.note || obj.name.slice(2))
+      obj.userData.interactiveNote = note
+    })
+  }, [clone])
+
+  const unlockT = useRef(0)
+
+  useFrame((_, dt) => {
+    const t = Math.min(dt, 0.05)
+    for (const key of hinges) {
+      key.pressed = THREE.MathUtils.damp(key.pressed, 0, 10, t)
+      key.hinge.rotation.x = key.pressed * PRESS
+    }
+    if (!group.current) return
+
+    if (unlocking) {
+      unlockT.current = THREE.MathUtils.damp(unlockT.current, 1, 1.45, t)
+      const u = unlockT.current
+      const scale = THREE.MathUtils.lerp(5.2, 6.4, u)
+      group.current.scale.setScalar(scale)
+      group.current.position.z = THREE.MathUtils.lerp(0, 0.12, u)
+      group.current.rotation.x = THREE.MathUtils.lerp(-0.35, -0.22, u)
+    }
+  })
+
+  return (
+    <group
+      ref={group}
+      // Model is X=width, Y=up, Z=depth after glTF Yup export.
+      rotation={[-0.35, 0.22, 0]}
+      position={[0, -0.02, 0]}
+      scale={5.2}
+      onPointerDown={(e) => {
+        e.stopPropagation()
+        let cursor: Object3D | null = e.object
+        while (cursor) {
+          const note = cursor.userData.interactiveNote as string | undefined
+          if (note) {
+            const target = hingeByNote.get(note)
+            if (target) target.pressed = 1
+            onKeyPlay(note)
+            return
+          }
+          cursor = cursor.parent
+        }
+      }}
+    >
+      <primitive object={clone} />
+      <ContactShadows
+        position={[0, -0.028, 0]}
+        opacity={0.75}
+        scale={2.0}
+        blur={3.4}
+        far={0.95}
+        color="#000000"
+      />
+    </group>
+  )
+}
+
+export function PianoScene({ onKeyPlay, unlocking }: Props) {
+  return (
+    <>
+      <color attach="background" args={['#070706']} />
+      <fog attach="fog" args={['#070706', 1.6, 3.8]} />
+      <ambientLight intensity={0.16} />
+      <directionalLight
+        castShadow
+        position={[0.7, 1.5, 1.1]}
+        intensity={0.85}
+        color="#f2ebe0"
+        shadow-mapSize={[1024, 1024]}
+      />
+      <directionalLight position={[-1.1, 0.7, 0.4]} intensity={0.22} color="#8fa3b8" />
+      <pointLight position={[0.05, 0.35, 0.5]} intensity={0.35} color="#c49a4a" distance={2.2} />
+      <PianoModel onKeyPlay={onKeyPlay} unlocking={unlocking} />
+    </>
+  )
+}
+
+useGLTF.preload(MODEL)

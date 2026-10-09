@@ -1,4 +1,3 @@
-/* Hero — typography first: discipline index, huge wordmark, signal strip. */
 .hero {
   position: relative;
   min-height: 100svh;
@@ -9,25 +8,34 @@
 
 .hero__media {
   position: absolute;
-  inset: 0;
+  inset: -8% 0;
   overflow: hidden;
+  background: #050504;
+  will-change: transform;
 }
 
 .hero__image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 35%;
-  transform: scale(1.04);
-  filter: grayscale(0.55) brightness(0.5) contrast(1.05);
+  object-position: center 40%;
 }
 
 .hero__veil {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(19, 18, 17, 0.55) 0%, rgba(19, 18, 17, 0.72) 50%, var(--ink) 100%),
-    linear-gradient(90deg, rgba(19, 18, 17, 0.72) 0%, rgba(19, 18, 17, 0.25) 60%, rgba(19, 18, 17, 0.5) 100%);
+    linear-gradient(180deg, rgba(5, 5, 4, 0.15) 0%, rgba(5, 5, 4, 0.45) 45%, rgba(5, 5, 4, 0.96) 82%, #050504 100%),
+    linear-gradient(95deg, rgba(5, 5, 4, 0.78) 0%, transparent 55%);
+}
+
+.hero__glow {
+  position: absolute;
+  inset: 20% 10% auto;
+  height: 40%;
+  background: radial-gradient(ellipse at center, rgba(232, 197, 106, 0.28), transparent 65%);
+  filter: blur(8px);
+  pointer-events: none;
 }
 
 .hero__content {
@@ -35,58 +43,67 @@
   z-index: 2;
   width: min(1160px, calc(100% - clamp(2.5rem, 8vw, 5rem)));
   margin: 0 auto;
-  /* Bottom clears the signal strip. */
-  padding:
-    clamp(6.5rem, 14vh, 8.5rem)
-    0
-    clamp(7rem, 15vh, 9rem);
+  padding: clamp(6.5rem, 14vh, 8.5rem) 0 clamp(6rem, 12vh, 8rem);
+  will-change: transform, opacity;
 }
 
-
-
+.hero__kicker {
+  display: inline-flex;
+  margin: 0 0 1.1rem;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--signal-soft);
+}
 
 .hero__brand {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.18em;
+  margin: 0 0 1.4rem;
   font-family: var(--font-display);
   font-size: clamp(2.9rem, 8vw, 6.2rem);
   font-weight: 700;
   letter-spacing: -0.035em;
   line-height: 0.95;
-  margin: 0 0 1.4rem;
   color: var(--paper);
 }
 
+.hero__brand-word {
+  display: inline-flex;
+  overflow: hidden;
+  padding-bottom: 0.06em;
+}
+
+.hero__brand-char {
+  display: inline-block;
+  will-change: transform;
+}
+
+.hero__brand-space {
+  width: 0.28em;
+}
+
 .hero h1 {
-  max-width: 22ch;
-  font-size: clamp(1.3rem, 2.6vw, 1.9rem);
-  font-weight: 500;
+  max-width: 20ch;
+  margin: 0 0 1rem;
+  font-size: clamp(1.25rem, 2.6vw, 1.9rem);
+  font-weight: 600;
   line-height: 1.25;
-  letter-spacing: -0.01em;
   color: var(--signal-soft);
-  margin: 0 0 1.1rem;
 }
 
 .hero__lede {
   max-width: 34rem;
-  color: var(--paper-dim);
-  font-size: 1.02rem;
-  margin: 0 0 1.9rem;
+  margin: 0 0 1.8rem;
+  color: rgba(247, 242, 234, 0.72);
+  font-size: 1.05rem;
 }
 
 .hero__cta {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-}
-
-/* The signal strip — audio-reactive waveform along the bottom edge. */
-.hero__wave {
-  position: absolute;
-  inset: auto 0 0;
-  width: 100%;
-  height: 15%;
-  max-height: 120px;
-  opacity: 0.6;
-  display: block;
-  pointer-events: none;
-  z-index: 1;
 }

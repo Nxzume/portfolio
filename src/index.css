@@ -1,18 +1,22 @@
 /* Fonts are linked from index.html so they do not sit behind a CSS @import chain. */
 
 :root {
-  /* Studio Console — warm near-black, signal amber, mono index labels */
-  --ink: #131211;
-  --ink-2: #1a1815;
-  --ink-3: #242119;
-  --paper: #f0ece3;
-  --paper-dim: #a49d90;
-  --signal: #f5a524;
-  --signal-soft: #ffcf6e;
-  --slate: #8fa3b8;
-  --line: rgba(240, 236, 227, 0.14);
-  --line-strong: rgba(240, 236, 227, 0.28);
-  --shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  /* Concert hall — espresso stage, walnut case, ivory keys, brass accent */
+  --ink: #0c0b0a;
+  --ink-2: #14110e;
+  --ink-3: #1f1914;
+  --walnut: #2a1c12;
+  --walnut-soft: #3d2818;
+  --paper: #f3eee4;
+  --paper-dim: #b0a594;
+  --signal: #d4a84b;
+  --signal-soft: #e8c56a;
+  --brass: #c4923a;
+  --ivory: #f6f1e7;
+  --slate: #b0a594;
+  --line: rgba(243, 238, 228, 0.12);
+  --line-strong: rgba(243, 238, 228, 0.26);
+  --shadow: 0 28px 70px rgba(0, 0, 0, 0.55);
   --font-display: 'Space Grotesk', 'Figtree', sans-serif;
   --font-body: 'Figtree', sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
@@ -37,10 +41,7 @@ body {
   font-size: 1.02rem;
   line-height: 1.65;
   color: var(--paper);
-  background:
-    radial-gradient(1100px 620px at 85% -10%, rgba(245, 165, 36, 0.07), transparent 55%),
-    radial-gradient(800px 500px at -10% 30%, rgba(143, 163, 184, 0.06), transparent 50%),
-    linear-gradient(180deg, #100f0e 0%, var(--ink) 45%, #15130f 100%);
+  background: #050504;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -49,7 +50,7 @@ body::before {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  opacity: 0.05;
+  opacity: 0.04;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   z-index: 50;
 }
@@ -82,7 +83,7 @@ h3 {
   font-family: var(--font-display);
   font-weight: 600;
   line-height: 1.05;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.03em;
   margin: 0 0 0.5em;
 }
 
@@ -92,10 +93,9 @@ p {
 
 ::selection {
   background: var(--signal);
-  color: #17130a;
+  color: #17120a;
 }
 
-/* Mono index label — the recurring "console" motif. */
 .eyebrow {
   font-family: var(--font-mono);
   font-size: 0.72rem;
@@ -112,13 +112,18 @@ p {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.8rem 1.3rem;
-  border-radius: 6px;
+  border-radius: 4px;
   font-family: var(--font-mono);
   font-weight: 500;
   font-size: 0.82rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  transition: transform 0.25s var(--ease), background 0.25s var(--ease), border-color 0.25s var(--ease), color 0.25s var(--ease);
+  transition:
+    transform 0.25s var(--ease),
+    background 0.25s var(--ease),
+    border-color 0.25s var(--ease),
+    color 0.25s var(--ease),
+    box-shadow 0.25s var(--ease);
 }
 
 .btn:hover {
@@ -126,26 +131,26 @@ p {
 }
 
 .btn--primary {
-  background: var(--signal);
-  color: #17130a;
+  background: linear-gradient(180deg, var(--signal-soft) 0%, var(--signal) 100%);
+  color: #17120a;
 }
 
 .btn--primary:hover {
-  background: var(--signal-soft);
+  background: linear-gradient(180deg, #f0d08a 0%, var(--signal-soft) 100%);
 }
 
 .btn--ghost {
   border: 1px solid var(--line-strong);
-  background: transparent;
+  background: rgba(42, 28, 18, 0.35);
   color: var(--paper);
 }
 
 .btn--ghost:hover {
   border-color: var(--signal);
   color: var(--signal-soft);
+  background: rgba(61, 40, 24, 0.45);
 }
 
-/* Sections read like numbered chapters in a technical document. */
 .section {
   width: min(1160px, calc(100% - clamp(2.5rem, 8vw, 5rem)));
   margin: 0 auto;
