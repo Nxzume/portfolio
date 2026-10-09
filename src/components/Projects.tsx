@@ -1,5 +1,4 @@
-import { m, useScroll, useTransform } from 'framer-motion'
-import { useRef } from 'react'
+import { m } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { SectionReveal } from './SectionReveal'
 import { useContent } from '../content/context'
@@ -19,17 +18,13 @@ function ProjectRow({
   }
   index: number
 }) {
-  const ref = useRef<HTMLLIElement>(null)
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ['start end', 'center center'],
-  })
-  const x = useTransform(scrollYProgress, [0, 1], [index % 2 === 0 ? -48 : 48, 0])
-  const opacity = useTransform(scrollYProgress, [0, 0.55], [0.15, 1])
-  const mediaScale = useTransform(scrollYProgress, [0, 1], [1.12, 1])
-
   return (
-    <m.li ref={ref} style={{ x, opacity }}>
+    <m.li
+      initial={{ opacity: 0, y: 28 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.25, margin: '0px 0px -8% 0px' }}
+      transition={{ duration: 0.65, delay: Math.min(index, 4) * 0.06, ease: easeOutExpo }}
+    >
       <Link className="projects__feature" to={`/projects/${project.slug}`}>
         <span className="projects__feature-index" aria-hidden>
           {String(index + 1).padStart(2, '0')}
@@ -40,22 +35,15 @@ function ProjectRow({
           {project.summary ? (
             <span className="projects__feature-summary">{project.summary}</span>
           ) : null}
-          <m.span
-            className="projects__feature-cta"
-            whileHover={{ x: 6 }}
-            transition={{ type: 'spring', stiffness: 320, damping: 22 }}
-          >
-            Open project →
-          </m.span>
+          <span className="projects__feature-cta">Open project →</span>
         </span>
         {project.image ? (
           <span className="projects__feature-media" aria-hidden>
-            <m.img
+            <img
               src={project.image}
               alt=""
               loading="lazy"
               decoding="async"
-              style={{ scale: mediaScale }}
             />
           </span>
         ) : (
