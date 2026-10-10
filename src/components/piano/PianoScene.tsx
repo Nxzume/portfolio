@@ -17,6 +17,8 @@ type HingeTarget = {
 type Props = {
   onKeyPlay: (note: string) => void
   unlocking: boolean
+  /** Presses a key from code (the intro phrase); a new id re-triggers the same note. */
+  autoPress?: { note: string; id: number } | null
 }
 
 function collectHinges(root: Object3D): HingeTarget[] {
@@ -30,7 +32,7 @@ function collectHinges(root: Object3D): HingeTarget[] {
   return hinges
 }
 
-function PianoModel({ onKeyPlay, unlocking }: Props) {
+function PianoModel({ onKeyPlay, unlocking, autoPress }: Props) {
   const { scene } = useGLTF(MODEL)
   const invalidate = useThree((s) => s.invalidate)
   const clone = useMemo(() => scene.clone(true), [scene])
@@ -50,6 +52,13 @@ function PianoModel({ onKeyPlay, unlocking }: Props) {
   useEffect(() => {
     if (unlocking) invalidate()
   }, [unlocking, invalidate])
+
+  useEffect(() => {
+    if (!autoPress) return
+    const target = hingeByNote.get(autoPress.note)
+    if (target) target.pressed = 1
+    invalidate()
+  }, [autoPress, hingeByNote, invalidate])
 
   useEffect(() => {
     clone.traverse((obj) => {
@@ -164,7 +173,7 @@ function PianoModel({ onKeyPlay, unlocking }: Props) {
   )
 }
 
-export function PianoScene({ onKeyPlay, unlocking }: Props) {
+export function PianoScene({ onKeyPlay, unlocking, autoPress }: Props) {
   return (
     <>
       <color attach="background" args={['#070706']} />
@@ -180,7 +189,7 @@ export function PianoScene({ onKeyPlay, unlocking }: Props) {
       />
       <directionalLight position={[-1.1, 0.7, 0.4]} intensity={0.22} color="#8fa3b8" />
       <pointLight position={[0.05, 0.35, 0.5]} intensity={0.35} color="#c49a4a" distance={2.2} />
-      <PianoModel onKeyPlay={onKeyPlay} unlocking={unlocking} />
+      <PianoModel onKeyPlay={onKeyPlay} unlocking={unlocking} autoPress={autoPress} />
     </>
   )
 }
