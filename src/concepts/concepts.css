@@ -1,0 +1,226 @@
+/* Shared chrome for the layout concept prototypes. */
+.concept {
+  font-family: var(--font-body);
+}
+
+.concept-switcher {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.3rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(10, 10, 10, 0.88);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #f1f1f1;
+}
+
+.concept-switcher a {
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  color: rgba(241, 241, 241, 0.72);
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.concept-switcher a:hover {
+  color: #fff;
+}
+
+.concept-switcher a[aria-current='page'] {
+  background: #f1f1f1;
+  color: #111;
+}
+
+.concept-switcher .concept-switcher__all {
+  color: rgba(241, 241, 241, 0.5);
+}
+
+.spotify__frame {
+  display: block;
+  border: 0;
+  border-radius: 12px;
+  background: #121212;
+}
+
+.spotify__link {
+  display: inline-block;
+  margin-top: 0.8rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--signal-soft);
+}
+
+.spotify__link:hover {
+  text-decoration: underline;
+}
+
+.img-empty {
+  background: rgba(127, 127, 127, 0.15);
+}
+
+@media (max-width: 720px) {
+  .concept-switcher {
+    right: 0.6rem;
+    bottom: 0.6rem;
+    font-size: 0.62rem;
+  }
+
+  .concept-switcher a {
+    padding: 0.35rem 0.5rem;
+  }
+
+  .concept-a .concept-switcher {
+    bottom: 5.9rem;
+  }
+}
+
+/* ---------- /concepts index ---------- */
+.concepts-index {
+  min-height: 100vh;
+  padding: clamp(2rem, 6vw, 5rem) clamp(1.25rem, 5vw, 4rem) 4rem;
+  background: #0b0b0c;
+  color: #ececec;
+}
+
+.concepts-index__inner {
+  max-width: 76rem;
+  margin: 0 auto;
+}
+
+.concepts-index h1 {
+  max-width: 18ch;
+  margin: 0 0 1rem;
+  font-size: clamp(2.4rem, 6vw, 4.6rem);
+  line-height: 0.98;
+}
+
+.concepts-index__lede {
+  max-width: 44rem;
+  color: #a8a8ad;
+  font-size: 1.08rem;
+}
+
+.concepts-index__eyebrow {
+  margin: 0 0 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #9ad0ff;
+}
+
+.concepts-grid {
+  list-style: none;
+  margin: clamp(2rem, 5vw, 3.5rem) 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.concept-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  height: 100%;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  background: #131316;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.concept-card:hover {
+  border-color: #9ad0ff;
+  transform: translateY(-3px);
+}
+
+.concept-card__id {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #9ad0ff;
+}
+
+.concept-card h2 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.concept-card__kicker {
+  margin: -0.4rem 0 0;
+  color: #a8a8ad;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.concept-card__summary {
+  margin: 0;
+  color: #cfcfd4;
+}
+
+.concept-card__order {
+  margin: 0;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.6;
+  color: #a8a8ad;
+}
+
+.concept-card__swatches {
+  display: flex;
+  gap: 0.35rem;
+  margin-top: auto;
+}
+
+.concept-card__swatches span {
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.concept-card__open {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.concepts-index__notes {
+  max-width: 50rem;
+  color: #a8a8ad;
+  font-size: 0.95rem;
+}
+
+.concepts-index__notes a {
+  color: #9ad0ff;
+  border-bottom: 1px solid currentColor;
+}
+
+@media (max-width: 960px) {
+  .concepts-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

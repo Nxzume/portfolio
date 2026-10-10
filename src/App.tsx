@@ -1,9 +1,13 @@
 import { LazyMotion, MotionConfig, domAnimation } from 'framer-motion'
+import { lazy, Suspense } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { HomePage } from './pages/HomePage'
 import { NotFound } from './pages/NotFound'
 import { ProjectPage } from './pages/ProjectPage'
 import './App.css'
+
+/** Draft layout explorations; a separate chunk that only /concepts/* ever loads. */
+const ConceptRoutes = lazy(() => import('./concepts/ConceptRoutes'))
 
 /**
  * Public site routes only. /admin is mounted separately in main.tsx so it is
@@ -19,6 +23,14 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/projects/:slug" element={<ProjectPage />} />
+          <Route
+            path="/concepts/*"
+            element={
+              <Suspense fallback={null}>
+                <ConceptRoutes />
+              </Suspense>
+            }
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </MotionConfig>
