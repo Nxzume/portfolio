@@ -1,7 +1,6 @@
 import { m, useScroll, useTransform } from 'framer-motion'
 import { useRef, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
-import { ResponsiveImg } from './ResponsiveImg'
 import { SectionReveal } from './SectionReveal'
 import { useContent } from '../content/context'
 import { useCssScrollTimeline } from '../hooks/useCssScrollTimeline'
@@ -47,10 +46,9 @@ function ProjectBody({
       </span>
       {project.image ? (
         <span className="projects__feature-media" aria-hidden>
-          <ResponsiveImg
+          <img
             className="gpu-media parallax-project-media"
             src={project.image}
-            layout="project"
             alt=""
             loading="lazy"
             decoding="async"
@@ -131,9 +129,8 @@ function ProjectRowFramer({
         {project.image ? (
           <span className="projects__feature-media" aria-hidden>
             <m.div className="gpu-media" style={{ scale: mediaScale }} transformTemplate={gpuTransformTemplate}>
-              <ResponsiveImg
+              <img
                 src={project.image}
-                layout="project"
                 alt=""
                 loading="lazy"
                 decoding="async"
