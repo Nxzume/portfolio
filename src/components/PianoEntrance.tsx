@@ -62,7 +62,7 @@ export function PianoEntrance({ onRevealBegin, onComplete }: Props) {
       // Start the note in this turn, before React state updates yield the stack.
       primeAudio()
       const notePlay = note
-        ? playPianoNote(note, budget.compact ? 1.4 : 2.1).catch(() => {
+        ? playPianoNote(note, budget.compact ? 1.8 : 2.4).catch(() => {
             /* autoplay policies — continue without audio */
           })
         : Promise.resolve()
@@ -85,8 +85,7 @@ export function PianoEntrance({ onRevealBegin, onComplete }: Props) {
     [unlock],
   )
 
-  // Keep the dissolve short so the overlay doesn't sit on top of a ready site.
-  const exitDuration = reduced ? 0.3 : budget.compact ? 0.9 : 1.15
+  const exitDuration = reduced ? 0.3 : budget.compact ? 1.6 : 2.3
 
   return (
     <m.div

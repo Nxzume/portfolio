@@ -3,8 +3,7 @@ export const easeOutExpo = [0.16, 1, 0.3, 1] as const
 export const easeStudio = [0.22, 1, 0.36, 1] as const
 
 export const revealTransition = {
-  // Short enough that the site feels interactive as soon as the intro lifts.
-  duration: 0.85,
+  duration: 1.45,
   ease: easeOutExpo,
 } as const
 

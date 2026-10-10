@@ -113,7 +113,7 @@ function PianoModel({ onKeyPlay, unlocking }: Props) {
     }
 
     if (group.current && unlocking) {
-      unlockT.current = THREE.MathUtils.damp(unlockT.current, 1, 1.45, t)
+      unlockT.current = THREE.MathUtils.damp(unlockT.current, 1, 0.95, t)
       const u = unlockT.current
       group.current.scale.setScalar(THREE.MathUtils.lerp(5.2, 6.4, u))
       group.current.position.z = THREE.MathUtils.lerp(0, 0.12, u)
