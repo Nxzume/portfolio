@@ -1,4 +1,4 @@
-import type { ImgHTMLAttributes } from 'react'
+import { useState, type ImgHTMLAttributes } from 'react'
 import { panelMediaSizes, projectMediaSizes, responsiveImage } from '../lib/images'
 
 type Props = Omit<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'srcSet' | 'sizes'> & {
@@ -13,16 +13,25 @@ const SIZES = {
   panel: panelMediaSizes(),
 } as const
 
-/** Serves baked WebP srcset when available; otherwise the original path. */
-export function ResponsiveImg({ src, layout = 'full', alt = '', ...rest }: Props) {
+/**
+ * Prefers baked WebP srcset when present; falls back to the original path if
+ * the optimized asset 404s (e.g. wiped by an admin publish before regenerate).
+ */
+export function ResponsiveImg({ src, layout = 'full', alt = '', onError, ...rest }: Props) {
+  const [failed, setFailed] = useState(false)
   const img = responsiveImage(src)
+
   return (
     <img
       {...rest}
-      src={img.src}
-      srcSet={img.srcSet}
-      sizes={SIZES[layout]}
+      src={failed ? src : img.src}
+      srcSet={failed ? undefined : img.srcSet}
+      sizes={failed ? undefined : SIZES[layout]}
       alt={alt}
+      onError={(event) => {
+        if (!failed) setFailed(true)
+        onError?.(event)
+      }}
     />
   )
 }

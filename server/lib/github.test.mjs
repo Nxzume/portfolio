@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { buildTreeEntries, collectContentFiles, gitBlobSha, isManagedPath, planChanges } from './github.mjs'
+import {
+  buildTreeEntries,
+  collectContentFiles,
+  gitBlobSha,
+  isManagedPath,
+  isProtectedPath,
+  planChanges,
+} from './github.mjs'
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
@@ -25,6 +32,14 @@ describe('isManagedPath', () => {
     expect(isManagedPath('src/App.tsx')).toBe(false)
     expect(isManagedPath('package.json')).toBe(false)
     expect(isManagedPath('public/favicon.svg')).toBe(false)
+  })
+})
+
+describe('isProtectedPath', () => {
+  it('protects derived optimized image derivatives', () => {
+    expect(isProtectedPath('public/images/optimized/level-960.webp')).toBe(true)
+    expect(isProtectedPath('public/images/level-gameplay.png')).toBe(false)
+    expect(isProtectedPath('public/media/hero.webp')).toBe(false)
   })
 })
 
@@ -55,6 +70,17 @@ describe('planChanges', () => {
     const { uploads, deletions } = planChanges(local, remote)
     expect(uploads).toEqual([])
     expect(deletions).toEqual([])
+  })
+
+  it('does not delete protected optimized image derivatives missing locally', () => {
+    const local = new Map([['content/site.json', Buffer.from('{}')]])
+    const remote = [
+      { path: 'content/site.json', sha: gitBlobSha(Buffer.from('{}')) },
+      { path: 'public/images/optimized/level-960.webp', sha: 'abc' },
+      { path: 'public/images/cover.png', sha: 'def' },
+    ]
+    const { deletions } = planChanges(local, remote)
+    expect(deletions).toEqual(['public/images/cover.png'])
   })
 })
 

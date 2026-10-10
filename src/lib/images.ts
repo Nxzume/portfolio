@@ -31,7 +31,7 @@ export function responsiveImage(src: string): {
 
   const srcSet = WIDTHS.map((w) => `/images/optimized/${stem}-${w}.webp ${w}w`).join(', ')
   return {
-    // Smallest WebP as default — mobile never downloads the 2K PNG by accident.
+    // Prefer the smallest WebP; ResponsiveImg falls back to `src` (original) on 404.
     src: `/images/optimized/${stem}-${WIDTHS[0]}.webp`,
     srcSet,
     sizes: '100vw',

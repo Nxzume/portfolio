@@ -53,6 +53,11 @@ export function isManagedPath(filePath) {
   )
 }
 
+/** Derived WebP sizes — never delete these just because a container is missing them. */
+export function isProtectedPath(filePath) {
+  return filePath.startsWith('public/images/optimized/')
+}
+
 async function gh(token, pathname, { method = 'GET', body } = {}) {
   const res = await fetch(`${API}${pathname}`, {
     method,
@@ -98,7 +103,9 @@ export function planChanges(localFiles, remoteManagedEntries) {
     const sha = gitBlobSha(bytes)
     if (remoteByPath.get(filePath) !== sha) uploads.push({ path: filePath, bytes })
   }
-  const deletions = [...remoteByPath.keys()].filter((filePath) => !localFiles.has(filePath))
+  const deletions = [...remoteByPath.keys()].filter(
+    (filePath) => !localFiles.has(filePath) && !isProtectedPath(filePath),
+  )
   return { uploads, deletions }
 }
 
