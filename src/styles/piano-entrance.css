@@ -14,6 +14,11 @@ body.has-piano-intro {
   touch-action: none;
 }
 
+/* Let clicks/taps reach the site as soon as unlock starts (fade can finish later). */
+.piano-entrance--exiting {
+  pointer-events: none;
+}
+
 .piano-entrance__stage-inner,
 .piano-entrance__stage {
   position: absolute;
@@ -28,12 +33,23 @@ body.has-piano-intro {
   contain: layout paint;
 }
 
+.piano-entrance__canvas-hit,
 .piano-entrance__canvas {
   display: block;
-  width: 100% !important;
-  height: 100% !important;
+  width: 100%;
+  height: 100%;
   cursor: pointer;
   touch-action: none;
+}
+
+.piano-entrance__canvas-hit {
+  position: absolute;
+  inset: 0;
+}
+
+.piano-entrance__canvas {
+  width: 100% !important;
+  height: 100% !important;
   /* Keep the WebGL surface on the GPU without CSS filter animation. */
   transform: translateZ(0);
 }

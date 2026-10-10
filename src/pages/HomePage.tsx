@@ -73,7 +73,8 @@ export function HomePage() {
         }
         transition={{
           ...revealTransition,
-          delay: phase === 'revealing' ? 0.45 : 0,
+          // Start the site reveal immediately — overlay already ignores pointers.
+          delay: phase === 'revealing' ? 0.05 : 0,
           ease: easeOutExpo,
         }}
       >
