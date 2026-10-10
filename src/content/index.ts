@@ -2,6 +2,7 @@ import aboutJson from '../../content/about.json'
 import contactJson from '../../content/contact.json'
 import focusesJson from '../../content/focuses.json'
 import heroJson from '../../content/hero.json'
+import homeJson from '../../content/home.json'
 import projectsSectionJson from '../../content/projects-section.json'
 import scoreJson from '../../content/score.json'
 import siteJson from '../../content/site.json'
@@ -27,6 +28,7 @@ export const content = buildContent({
   sketches: sketchesJson,
   score: scoreJson,
   projectsSection: projectsSectionJson,
+  home: homeJson,
   projects: Object.entries(projectModules)
     // content/projects/_templates holds starter files, not real entries.
     .filter(([path]) => !path.includes('/_'))

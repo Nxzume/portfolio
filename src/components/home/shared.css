@@ -1,0 +1,30 @@
+/* Shared pieces for the homepage layout. */
+
+.concept {
+  font-family: var(--font-body);
+}
+
+.spotify__frame {
+  display: block;
+  border: 0;
+  border-radius: 12px;
+  background: #121212;
+}
+
+.spotify__link {
+  display: inline-block;
+  margin-top: 0.8rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--signal-soft);
+}
+
+.spotify__link:hover {
+  text-decoration: underline;
+}
+
+.img-empty {
+  background: rgba(127, 127, 127, 0.15);
+}

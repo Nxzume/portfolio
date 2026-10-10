@@ -1,16 +1,10 @@
 import { m } from 'framer-motion'
 import { lazy, Suspense, useLayoutEffect, useState } from 'react'
-import { About } from '../components/About'
-import { Contact, Footer } from '../components/Contact'
-import { Hero } from '../components/Hero'
-import { Nav } from '../components/Nav'
 import { PageHead } from '../components/PageHead'
+import { HomeLayout } from '../components/home/HomeLayout'
 import { usePreviewMode } from '../components/PreviewMode'
-import { Projects } from '../components/Projects'
-import { ScoreDesk } from '../components/ScoreDesk'
 import { HomeRevealProvider, type HomeRevealPhase } from '../context/HomeRevealContext'
 import { useContent } from '../content/context'
-import { useSketchPlayer } from '../hooks/useSketchPlayer'
 import { homeMeta } from '../lib/meta'
 import { easeOutExpo, revealTransition } from '../lib/motion'
 import { isPianoUnlocked } from '../lib/pianoUnlock'
@@ -23,8 +17,6 @@ const PianoEntrance = lazy(() =>
 export function HomePage() {
   const content = useContent()
   const preview = usePreviewMode()
-  const { sketches } = content
-  const player = useSketchPlayer(sketches)
   const [phase, setPhase] = useState<HomeRevealPhase>(() =>
     preview || isPianoUnlocked() ? 'live' : 'intro',
   )
@@ -79,30 +71,7 @@ export function HomePage() {
         }}
       >
         <PageHead meta={homeMeta(content)} />
-        <Nav variant="home" />
-        <main id="main">
-          <Hero intensity={player.intensity} />
-          <Projects />
-          <ScoreDesk
-            activeId={player.activeId}
-            intensity={player.intensity}
-            isPlaying={player.isPlaying}
-            currentTime={player.currentTime}
-            duration={player.duration}
-            canSeek={player.canSeek}
-            loadErrorId={player.loadErrorId}
-            onPlayTrack={(id) => {
-              const sketch = sketches.find((s) => s.id === id)
-              if (sketch) void player.play(sketch)
-            }}
-            onSeek={player.seek}
-            onScrubStart={player.beginScrub}
-            onScrubEnd={player.endScrub}
-          />
-          <About />
-          <Contact />
-        </main>
-        <Footer />
+        <HomeLayout />
       </m.div>
 
       {showEntrance ? (

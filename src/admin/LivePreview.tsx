@@ -9,12 +9,21 @@ import { rawFromFiles } from './previewContent'
 
 /** Maps a click in the preview to the content file that owns that section. */
 export function editKeyFor(target: Element, currentSlug: string | null): string | null {
-  const projectLink = target.closest('.projects__feature, .projects__row, .projects__card')
+  const projectLink = target.closest('.projects__feature, .projects__row, .projects__card, .ca-worlds a[href*="/projects/"]')
   if (projectLink) {
     const href = projectLink.getAttribute('href') || ''
     const match = href.match(/\/projects\/([a-z0-9-]+)/)
     if (match) return `projects/${match[1]}`
   }
+  // Homepage layout
+  if (target.closest('.ca-pull')) return 'focuses'
+  if (target.closest('.ca-overture')) return 'hero'
+  if (target.closest('.ca-listen')) return 'score'
+  if (target.closest('.ca-worlds')) return 'projects-section'
+  if (target.closest('.ca-craft')) return 'focuses'
+  if (target.closest('.ca-about')) return 'about'
+  if (target.closest('.ca-contact')) return 'contact'
+  if (target.closest('.ca-header, .ca-footer')) return 'site'
   if (target.closest('.hero')) return 'hero'
   if (target.closest('.focus')) return 'focuses'
   if (target.closest('.score__item')) return 'sketches'

@@ -84,7 +84,7 @@ describe('LivePreview', () => {
         <LivePreview files={files} drafts={{}} selection="site" onSelect={(key) => selections.push(key)} />,
       )
     })
-    const about = container.querySelector('.about')!
+    const about = container.querySelector('.about, .ca-about')!
     await act(async () => {
       about.dispatchEvent(new MouseEvent('click', { bubbles: true }))
     })
@@ -99,7 +99,7 @@ describe('LivePreview', () => {
         <LivePreview files={files} drafts={{}} selection="site" onSelect={(key) => selections.push(key)} />,
       )
     })
-    const row = container.querySelector('.projects__feature, .projects__row')!
+    const row = container.querySelector('.projects__feature, .projects__row, .ca-cue__link')!
     await act(async () => {
       row.dispatchEvent(new MouseEvent('click', { bubbles: true }))
     })

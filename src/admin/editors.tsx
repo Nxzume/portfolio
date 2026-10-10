@@ -125,6 +125,34 @@ function CtaFields({
   )
 }
 
+export function HomeEditor({ value, onChange, openLibrary }: EditorProps) {
+  const raw = asRow(value)
+  const set = (key: string, v: unknown) => onChange({ ...raw, [key]: v })
+  const text = (key: string, label: string, hint?: string) => (
+    <Field label={label} hint={hint}><TextInput value={str(raw[key])} onChange={(v) => set(key, v)} /></Field>
+  )
+  return (
+    <div className="editor">
+      {text('brandRole', 'Role line', 'Under your name in the header.')}
+      {text('kicker', 'Line above your name')}
+      {text('navListen', 'Piano key: music section')}
+      {text('navGames', 'Piano key: games section')}
+      {text('navWork', 'Piano key: work section')}
+      {text('navAbout', 'Piano key: about section')}
+      {text('navContact', 'Piano key: contact section')}
+      {text('gamesTitle', 'Games section title')}
+      {text('projectLinkLabel', 'Project link text')}
+      {text('workEyebrow', 'Work section label')}
+      {text('aboutEyebrow', 'About section label')}
+      {text('aboutTitle', 'About section title')}
+      <Field label="Contact background image">
+        <AssetPicker kind="image" value={str(raw.contactImage)} onChange={(v) => set('contactImage', v)} onOpenLibrary={() => openLibrary('image', (p) => set('contactImage', p))} />
+      </Field>
+      {text('backToTop', 'Back to top link')}
+    </div>
+  )
+}
+
 export function HeroEditor({ value, onChange, openLibrary }: EditorProps) {
   const raw = asRow(value)
   const set = (key: string, v: unknown) => onChange({ ...raw, [key]: v })
