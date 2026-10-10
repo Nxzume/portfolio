@@ -28,6 +28,16 @@ let primed = false
 
 function getCtx(): AudioContext {
   if (!ctx) {
+    // iOS Safari mutes Web Audio when the ringer switch is off unless the page
+    // asks for a "playback" session (Safari 17+). Harmless elsewhere.
+    const nav = navigator as Navigator & { audioSession?: { type: string } }
+    if (nav.audioSession) {
+      try {
+        nav.audioSession.type = 'playback'
+      } catch {
+        /* older Safari - ignore */
+      }
+    }
     const Ctor = AudioContextClass()
     if (!Ctor) throw new Error('Web Audio API unavailable')
     ctx = new Ctor()
@@ -43,8 +53,10 @@ function getCtx(): AudioContext {
 export function primeAudio(): void {
   try {
     const audio = getCtx()
-    if (audio.state === 'suspended') void audio.resume()
-    if (primed) return
+    if (audio.state !== 'running') void audio.resume()
+    // Keep retrying until the context is actually running: iOS ignores
+    // touchstart as an unlock gesture, so the first attempt can silently fail.
+    if (primed && audio.state === 'running') return
     primed = true
     // iOS Safari: a silent buffer tick inside the gesture reliably unlocks output.
     const buf = audio.createBuffer(1, 1, audio.sampleRate)
@@ -55,6 +67,24 @@ export function primeAudio(): void {
   } catch {
     /* private mode / autoplay blocks — playPianoNote will retry */
   }
+}
+
+const NOTE_NAMES = ['C', 'Cs', 'D', 'Ds', 'E', 'F', 'Fs', 'G', 'Gs', 'A', 'As', 'B']
+
+/** Shifts a note like "D4" by some semitones ("D4" + 4 = "Fs4"). */
+export function transposeNote(note: string, semitones: number): string | null {
+  const match = /^([A-G]s?)(\d)$/.exec(note)
+  if (!match) return null
+  const index = NOTE_NAMES.indexOf(match[1])
+  if (index < 0) return null
+  const total = Number(match[2]) * 12 + index + semitones
+  return `${NOTE_NAMES[((total % 12) + 12) % 12]}${Math.floor(total / 12)}`
+}
+
+/** Rising major arpeggio from the given note: root, third, fifth, octave. */
+export function introArpeggio(root: string): string[] {
+  const steps = [4, 7, 12].map((n) => transposeNote(root, n))
+  return steps.every(Boolean) ? [root, ...(steps as string[])] : ['C4', 'E4', 'G4', 'C5']
 }
 
 export function noteToFreq(note: string): number | null {

@@ -5,10 +5,15 @@ import { useContent } from '../content/context'
 import { useMotionBudget } from '../hooks/useMotionBudget'
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion'
 import { easeOutExpo, easeStudio } from '../lib/motion'
-import { playPianoNote, primeAudio } from '../lib/pianoAudio'
+import { introArpeggio, playPianoNote, primeAudio } from '../lib/pianoAudio'
 import { markPianoUnlocked } from '../lib/pianoUnlock'
 import { PianoScene } from './piano/PianoScene'
 import '../styles/piano-entrance.css'
+
+/** Gap between phrase notes, in ms. */
+const PHRASE_STEP_MS = 140
+
+const wait = (ms: number) => new Promise<void>((resolve) => window.setTimeout(resolve, ms))
 
 type Props = {
   onRevealBegin: () => void
@@ -21,6 +26,8 @@ export function PianoEntrance({ onRevealBegin, onComplete }: Props) {
   const budget = useMotionBudget()
   const [unlocking, setUnlocking] = useState(false)
   const [ready, setReady] = useState(false)
+  const [autoPress, setAutoPress] = useState<{ note: string; id: number } | null>(null)
+  const playing = useRef(false)
   const done = useRef(false)
   const revealStarted = useRef(false)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -34,11 +41,18 @@ export function PianoEntrance({ onRevealBegin, onComplete }: Props) {
     const root = rootRef.current
     if (!root) return
     const onGesture = () => primeAudio()
+    // iOS only unlocks audio on touchend/click, not touchstart or pointerdown.
     root.addEventListener('touchstart', onGesture, { passive: true })
+    root.addEventListener('touchend', onGesture, { passive: true })
     root.addEventListener('pointerdown', onGesture)
+    root.addEventListener('pointerup', onGesture)
+    root.addEventListener('click', onGesture)
     return () => {
       root.removeEventListener('touchstart', onGesture)
+      root.removeEventListener('touchend', onGesture)
       root.removeEventListener('pointerdown', onGesture)
+      root.removeEventListener('pointerup', onGesture)
+      root.removeEventListener('click', onGesture)
     }
   }, [])
 
@@ -56,20 +70,26 @@ export function PianoEntrance({ onRevealBegin, onComplete }: Props) {
   }, [onRevealBegin])
 
   const unlock = useCallback(
+    // Plays a quick rising arpeggio from the tapped key (from C if no key was hit).
     async (note?: string) => {
-      if (unlocking || done.current) return
+      if (unlocking || done.current || playing.current) return
+      playing.current = true
 
-      // Start the note in this turn, before React state updates yield the stack.
+      // The first note must start inside the tap so phones unlock audio.
       primeAudio()
-      const notePlay = note
-        ? playPianoNote(note, budget.compact ? 1.8 : 2.4).catch(() => {
-            /* autoplay policies — continue without audio */
-          })
-        : Promise.resolve()
+      const phrase = introArpeggio(note ?? 'C4')
+      for (let i = 0; i < phrase.length; i++) {
+        const step = phrase[i]
+        const last = i === phrase.length - 1
+        setAutoPress({ note: step, id: i })
+        void playPianoNote(step, last ? (budget.compact ? 2.2 : 2.8) : 0.9).catch(() => {
+          /* autoplay policies - continue without audio */
+        })
+        if (!last) await wait(PHRASE_STEP_MS)
+      }
 
       setUnlocking(true)
       beginReveal()
-      await notePlay
 
       if (reduced) {
         window.setTimeout(finish, 180)
@@ -156,7 +176,7 @@ export function PianoEntrance({ onRevealBegin, onComplete }: Props) {
                 }}
               >
                 <Suspense fallback={null}>
-                  <PianoScene onKeyPlay={onKeyPlay} unlocking={unlocking} />
+                  <PianoScene onKeyPlay={onKeyPlay} unlocking={unlocking} autoPress={autoPress} />
                 </Suspense>
               </Canvas>
             </div>

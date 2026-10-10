@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { noteToFreq, primeAudio } from './pianoAudio'
+import { noteToFreq, primeAudio, introArpeggio, transposeNote } from './pianoAudio'
 
 describe('noteToFreq', () => {
   it('maps A4 to 440', () => {
@@ -49,5 +49,17 @@ describe('primeAudio', () => {
     primeAudio()
     expect(resume).toHaveBeenCalled()
     expect(start).toHaveBeenCalledWith(0)
+  })
+})
+
+describe('intro phrase', () => {
+  it('runs up a major arpeggio from the tapped key', () => {
+    expect(introArpeggio('C4')).toEqual(['C4', 'E4', 'G4', 'C5'])
+    expect(introArpeggio('D4')).toEqual(['D4', 'Fs4', 'A4', 'D5'])
+  })
+
+  it('falls back to C for unknown notes', () => {
+    expect(introArpeggio('nope')).toEqual(['C4', 'E4', 'G4', 'C5'])
+    expect(transposeNote('B3', 1)).toBe('C4')
   })
 })
