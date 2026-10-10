@@ -37,6 +37,7 @@ export function loadContentFromDir(dir: string): Content {
     sketches: readJson(path.join(dir, 'sketches.json')),
     score: readJson(path.join(dir, 'score.json')),
     projectsSection: readJson(path.join(dir, 'projects-section.json')),
+    home: readJson(path.join(dir, 'home.json')),
     projects,
   })
 }

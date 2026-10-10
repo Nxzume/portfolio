@@ -1,10 +1,10 @@
 {
   "portrait": "/images/portrait.png",
-  "lead": "Alexandre Guichet is a Python and C++ software engineer with 6.5+ years of experience, based in Vancouver.",
+  "lead": "I'm a Python and C++ software engineer in Vancouver with 6.5+ years of experience.",
   "body": [
-    "Industry experience in Python, C++, C#, and deep learning / machine learning plus cloud and big data analysis, data mining with Hadoop, SQL, and Spark. He builds scalable algorithms, ships OOP applications with solid unit testing, and works closely with teams across labs and product orgs.",
-    "As Technical Lead at Microsoft he develops ARM silicon firmware (SystemC, C, C++), automates FPGA and silicon validation in Python and C++, and leads automation / SoC validation across four projects  including Azure DevOps standardization and a team of four. Earlier roles include Intel (PCIe / CXL modelling), Evenant and Algolys (full stack), and Bosch (sensor testing and ML for MEMS).",
-    "Applied Science at The University of British Columbia (2015–2018). Side craft still shows on this site: Unity games like Level and The Arena, open-source ML work (MFS), and music written for games."
+    "I've worked across Python, C++, C#, machine learning, cloud, and big data (Hadoop, SQL, Spark). Most of my work is building algorithms and applications that hold up at scale, with good tests.",
+    "At Microsoft I'm a Technical Lead. I write ARM silicon firmware (SystemC, C, C++), automate FPGA and silicon validation in Python and C++, and lead automation and SoC validation across four projects, including standardizing our Azure DevOps pipelines and leading a team of four. Before that I was at Intel (PCIe / CXL modelling), Evenant and Algolys (full stack), and Bosch (sensor testing and ML for MEMS).",
+    "I studied Applied Science at UBC (2015-2018). Outside work I make Unity games like Level and The Arena, maintain an open-source ML project (MFS), and write music for games."
   ],
   "note": "",
   "timeline": [

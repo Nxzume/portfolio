@@ -6,6 +6,7 @@
  * Kept free of imports so it can be unit tested on its own.
  */
 import type {
+  HomeContent,
   AboutContent,
   ContactContent,
   Focus,
@@ -295,4 +296,16 @@ export function normalizeSketches(raw: unknown): Sketch[] {
     (track) => track.id,
     (track, id) => ({ ...track, id }),
   )
+}
+
+const HOME_KEYS = [
+  'brandRole', 'kicker', 'navListen', 'navGames', 'navWork', 'navAbout', 'navContact',
+  'gamesTitle', 'projectLinkLabel', 'workEyebrow', 'aboutEyebrow', 'aboutTitle', 'contactImage', 'backToTop',
+] as const
+
+export function normalizeHome(raw: unknown): HomeContent {
+  const row = raw && typeof raw === 'object' && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {}
+  const out = {} as HomeContent
+  for (const key of HOME_KEYS) out[key] = str(row[key])
+  return out
 }

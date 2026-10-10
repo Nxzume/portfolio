@@ -9,6 +9,7 @@ import sharp from 'sharp'
 
 export const GLOBAL_KEYS = [
   'site',
+  'home',
   'hero',
   'about',
   'contact',

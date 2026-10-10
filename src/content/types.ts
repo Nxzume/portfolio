@@ -78,6 +78,24 @@ export type Focus = {
   body: string
 }
 
+/** Homepage labels and fixed copy (content/home.json). */
+export type HomeContent = {
+  brandRole: string
+  kicker: string
+  navListen: string
+  navGames: string
+  navWork: string
+  navAbout: string
+  navContact: string
+  gamesTitle: string
+  projectLinkLabel: string
+  workEyebrow: string
+  aboutEyebrow: string
+  aboutTitle: string
+  contactImage: string
+  backToTop: string
+}
+
 export type SectionCopy = {
   eyebrow: string
   title: string

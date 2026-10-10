@@ -5,6 +5,7 @@ import {
   AboutEditor,
   FocusesEditor,
   HeroEditor,
+  HomeEditor,
   ProjectEditor,
   SectionCopyEditor,
   SiteEditor,
@@ -28,6 +29,7 @@ function heroImageFrom(files: Record<string, unknown>, drafts: Record<string, un
 
 const GLOBAL_FILES = [
   { key: 'site', label: 'Site settings' },
+  { key: 'home', label: 'Homepage text' },
   { key: 'hero', label: 'Hero' },
   { key: 'about', label: 'About' },
   { key: 'contact', label: 'Contact' },
@@ -402,6 +404,8 @@ export default function AdminApp() {
             />
           ) : selection === 'site' ? (
             <SiteEditor {...editorProps} fallbackShareImage={heroImageFrom(files, drafts)} />
+          ) : selection === 'home' ? (
+            <HomeEditor {...editorProps} />
           ) : selection === 'hero' ? (
             <HeroEditor {...editorProps} />
           ) : selection === 'about' ? (

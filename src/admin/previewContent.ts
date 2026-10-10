@@ -11,6 +11,7 @@ export function rawFromFiles(files: Record<string, unknown>): RawContentFiles {
     sketches: files['sketches'],
     score: files['score'],
     projectsSection: files['projects-section'],
+    home: files['home'],
     projects: Object.keys(files)
       .filter((key) => key.startsWith('projects/'))
       .sort()
