@@ -3,6 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import type { Group, Object3D } from 'three'
 import * as THREE from 'three'
+import { primeAudio } from '../../lib/pianoAudio'
 
 const MODEL = '/models/piano-keyboard.glb'
 /** Hinge press amount (radians) — keybed clearance in the GLB allows a real tip travel. */
@@ -132,6 +133,8 @@ function PianoModel({ onKeyPlay, unlocking }: Props) {
       scale={5.2}
       onPointerDown={(e) => {
         e.stopPropagation()
+        // Best-effort unlock in this gesture frame (DOM listeners are the reliable path on iOS).
+        primeAudio()
         let cursor: Object3D | null = e.object
         while (cursor) {
           const note = cursor.userData.interactiveNote as string | undefined

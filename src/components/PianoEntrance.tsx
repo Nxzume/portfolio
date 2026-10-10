@@ -5,7 +5,7 @@ import { useContent } from '../content/context'
 import { useMotionBudget } from '../hooks/useMotionBudget'
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion'
 import { easeOutExpo, easeStudio } from '../lib/motion'
-import { playPianoNote } from '../lib/pianoAudio'
+import { playPianoNote, primeAudio } from '../lib/pianoAudio'
 import { markPianoUnlocked } from '../lib/pianoUnlock'
 import { PianoScene } from './piano/PianoScene'
 import '../styles/piano-entrance.css'
@@ -23,9 +23,23 @@ export function PianoEntrance({ onRevealBegin, onComplete }: Props) {
   const [ready, setReady] = useState(false)
   const done = useRef(false)
   const revealStarted = useRef(false)
+  const rootRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     window.scrollTo(0, 0)
+  }, [])
+
+  // Prime Web Audio from a real DOM gesture — R3F hits alone won't unlock iOS audio.
+  useEffect(() => {
+    const root = rootRef.current
+    if (!root) return
+    const onGesture = () => primeAudio()
+    root.addEventListener('touchstart', onGesture, { passive: true })
+    root.addEventListener('pointerdown', onGesture)
+    return () => {
+      root.removeEventListener('touchstart', onGesture)
+      root.removeEventListener('pointerdown', onGesture)
+    }
   }, [])
 
   const finish = useCallback(() => {
@@ -44,20 +58,24 @@ export function PianoEntrance({ onRevealBegin, onComplete }: Props) {
   const unlock = useCallback(
     async (note?: string) => {
       if (unlocking || done.current) return
+
+      // Start the note in this turn, before React state updates yield the stack.
+      primeAudio()
+      const notePlay = note
+        ? playPianoNote(note, budget.compact ? 1.4 : 2.1).catch(() => {
+            /* autoplay policies — continue without audio */
+          })
+        : Promise.resolve()
+
       setUnlocking(true)
       beginReveal()
-      if (note) {
-        try {
-          await playPianoNote(note, 2.1)
-        } catch {
-          /* autoplay policies — continue without audio */
-        }
-      }
+      await notePlay
+
       if (reduced) {
-        window.setTimeout(finish, 220)
+        window.setTimeout(finish, 180)
       }
     },
-    [beginReveal, finish, reduced, unlocking],
+    [beginReveal, budget.compact, finish, reduced, unlocking],
   )
 
   const onKeyPlay = useCallback(
@@ -67,11 +85,13 @@ export function PianoEntrance({ onRevealBegin, onComplete }: Props) {
     [unlock],
   )
 
-  const exitDuration = reduced ? 0.35 : 2.4
+  // Keep the dissolve short so the overlay doesn't sit on top of a ready site.
+  const exitDuration = reduced ? 0.3 : budget.compact ? 0.9 : 1.15
 
   return (
     <m.div
-      className="piano-entrance"
+      ref={rootRef}
+      className={`piano-entrance${unlocking ? ' piano-entrance--exiting' : ''}`}
       role="dialog"
       aria-modal="true"
       aria-label="Enter portfolio"
@@ -111,30 +131,36 @@ export function PianoEntrance({ onRevealBegin, onComplete }: Props) {
               Enter
             </button>
           ) : (
-            <Canvas
-              className="piano-entrance__canvas"
-              dpr={budget.compact ? [1, 1] : [1, 1.25]}
-              frameloop="demand"
-              performance={{ min: 0.5, max: 1, debounce: 200 }}
-              camera={{ position: [0, 0.42, 0.72], fov: 26, near: 0.01, far: 20 }}
-              gl={{
-                antialias: !budget.compact,
-                alpha: false,
-                powerPreference: 'high-performance',
-                toneMappingExposure: 0.78,
-                stencil: false,
-                depth: true,
-              }}
-              onCreated={({ camera, gl }) => {
-                gl.toneMappingExposure = 0.78
-                camera.lookAt(0, 0.01, -0.05)
-                setReady(true)
-              }}
+            <div
+              className="piano-entrance__canvas-hit"
+              onPointerDown={() => primeAudio()}
+              onTouchStart={() => primeAudio()}
             >
-              <Suspense fallback={null}>
-                <PianoScene onKeyPlay={onKeyPlay} unlocking={unlocking} />
-              </Suspense>
-            </Canvas>
+              <Canvas
+                className="piano-entrance__canvas"
+                dpr={budget.compact ? [1, 1] : [1, 1.25]}
+                frameloop="demand"
+                performance={{ min: 0.5, max: 1, debounce: 200 }}
+                camera={{ position: [0, 0.42, 0.72], fov: 26, near: 0.01, far: 20 }}
+                gl={{
+                  antialias: !budget.compact,
+                  alpha: false,
+                  powerPreference: 'high-performance',
+                  toneMappingExposure: 0.78,
+                  stencil: false,
+                  depth: true,
+                }}
+                onCreated={({ camera, gl }) => {
+                  gl.toneMappingExposure = 0.78
+                  camera.lookAt(0, 0.01, -0.05)
+                  setReady(true)
+                }}
+              >
+                <Suspense fallback={null}>
+                  <PianoScene onKeyPlay={onKeyPlay} unlocking={unlocking} />
+                </Suspense>
+              </Canvas>
+            </div>
           )}
         </div>
       </m.div>
@@ -146,7 +172,7 @@ export function PianoEntrance({ onRevealBegin, onComplete }: Props) {
             ? { opacity: 0, y: -28 }
             : { opacity: 1, y: 0 }
         }
-        transition={{ duration: reduced ? 0.25 : exitDuration * 0.75, ease: easeOutExpo }}
+        transition={{ duration: reduced ? 0.2 : exitDuration * 0.7, ease: easeOutExpo }}
       >
         <p className="piano-entrance__brand">{site.name}</p>
         <p className="piano-entrance__prompt">
@@ -163,7 +189,7 @@ export function PianoEntrance({ onRevealBegin, onComplete }: Props) {
             ? { scaleY: 1.05, opacity: 1 }
             : { scaleY: 0, opacity: 0 }
         }
-        transition={{ duration: exitDuration * 0.85, ease: easeOutExpo }}
+        transition={{ duration: exitDuration * 0.8, ease: easeOutExpo }}
       />
 
       <button

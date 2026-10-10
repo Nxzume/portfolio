@@ -15,11 +15,46 @@ const NOTE_OFFSETS: Record<string, number> = {
   B: 2,
 }
 
+type AudioContextCtor = typeof AudioContext
+
+function AudioContextClass(): AudioContextCtor | null {
+  if (typeof window === 'undefined') return null
+  const w = window as Window & { webkitAudioContext?: AudioContextCtor }
+  return window.AudioContext || w.webkitAudioContext || null
+}
+
 let ctx: AudioContext | null = null
+let primed = false
 
 function getCtx(): AudioContext {
-  if (!ctx) ctx = new AudioContext()
+  if (!ctx) {
+    const Ctor = AudioContextClass()
+    if (!Ctor) throw new Error('Web Audio API unavailable')
+    ctx = new Ctor()
+  }
   return ctx
+}
+
+/**
+ * Must run synchronously inside a trusted user gesture (touch/click).
+ * WebGL/R3F pointer events alone often do not unlock audio on iOS — call this
+ * from a DOM touchstart/pointerdown on the entrance shell first.
+ */
+export function primeAudio(): void {
+  try {
+    const audio = getCtx()
+    if (audio.state === 'suspended') void audio.resume()
+    if (primed) return
+    primed = true
+    // iOS Safari: a silent buffer tick inside the gesture reliably unlocks output.
+    const buf = audio.createBuffer(1, 1, audio.sampleRate)
+    const src = audio.createBufferSource()
+    src.buffer = buf
+    src.connect(audio.destination)
+    src.start(0)
+  } catch {
+    /* private mode / autoplay blocks — playPianoNote will retry */
+  }
 }
 
 export function noteToFreq(note: string): number | null {
@@ -38,6 +73,7 @@ export async function playPianoNote(note: string, duration = 1.1): Promise<void>
   const freq = noteToFreq(note)
   if (freq == null) return
 
+  primeAudio()
   const audio = getCtx()
   if (audio.state === 'suspended') await audio.resume()
 

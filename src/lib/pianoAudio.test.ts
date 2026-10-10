@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { noteToFreq } from './pianoAudio'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { noteToFreq, primeAudio } from './pianoAudio'
 
 describe('noteToFreq', () => {
   it('maps A4 to 440', () => {
@@ -17,5 +17,37 @@ describe('noteToFreq', () => {
   it('rejects junk', () => {
     expect(noteToFreq('H4')).toBeNull()
     expect(noteToFreq('')).toBeNull()
+  })
+})
+
+describe('primeAudio', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
+  })
+
+  it('resumes a suspended AudioContext and plays a silent tick', () => {
+    const resume = vi.fn(async () => {})
+    const start = vi.fn()
+    const connect = vi.fn()
+    const source = { buffer: null as AudioBuffer | null, connect, start }
+    const ctx = {
+      state: 'suspended' as AudioContextState,
+      sampleRate: 44100,
+      resume,
+      createBuffer: vi.fn(() => ({} as AudioBuffer)),
+      createBufferSource: vi.fn(() => source),
+      destination: {} as AudioDestinationNode,
+    }
+    vi.stubGlobal(
+      'AudioContext',
+      vi.fn(function AudioContextMock() {
+        return ctx
+      }),
+    )
+
+    primeAudio()
+    expect(resume).toHaveBeenCalled()
+    expect(start).toHaveBeenCalledWith(0)
   })
 })
