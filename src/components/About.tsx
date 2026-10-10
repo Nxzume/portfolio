@@ -1,6 +1,5 @@
 import { m, useScroll, useTransform } from 'framer-motion'
 import { useRef } from 'react'
-import { ResponsiveImg } from './ResponsiveImg'
 import { SectionReveal } from './SectionReveal'
 import { useContent } from '../content/context'
 import { useCssScrollTimeline } from '../hooks/useCssScrollTimeline'
@@ -60,18 +59,16 @@ function AboutPortrait() {
     <>
       <div className="about__portrait-frame">
         {about.portrait ? (
-          <ResponsiveImg
+          <img
             src={about.portrait}
-            layout="panel"
             alt={about.portraitAlt || site.name}
             loading="lazy"
             decoding="async"
           />
         ) : null}
-        <ResponsiveImg
+        <img
           className="about__portrait-overlay"
           src="/images/piano-detail.png"
-          layout="panel"
           alt=""
           aria-hidden
           loading="lazy"

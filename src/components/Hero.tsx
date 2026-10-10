@@ -1,6 +1,5 @@
 import { m, useScroll, useTransform } from 'framer-motion'
 import { useRef, type ReactNode } from 'react'
-import { ResponsiveImg } from './ResponsiveImg'
 import { useContent } from '../content/context'
 import { useHomeReveal } from '../context/HomeRevealContext'
 import { useCssScrollTimeline } from '../hooks/useCssScrollTimeline'
@@ -153,10 +152,9 @@ function HeroMedia({
   return (
     <>
       {image ? (
-        <ResponsiveImg
+        <img
           className="hero__image"
           src={image}
-          layout="full"
           alt=""
           fetchPriority="high"
           decoding="async"

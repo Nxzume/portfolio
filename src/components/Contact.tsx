@@ -1,6 +1,5 @@
 import { m, useScroll, useTransform } from 'framer-motion'
 import { useRef, type ReactNode } from 'react'
-import { ResponsiveImg } from './ResponsiveImg'
 import { SectionReveal } from './SectionReveal'
 import { useContent } from '../content/context'
 import type { ContactContent, SiteContent } from '../content/types'
@@ -95,9 +94,8 @@ function ContactFramerBg() {
             style={{ scale: bgScale, y: bgY }}
             transformTemplate={gpuTransformTemplate}
           >
-            <ResponsiveImg
+            <img
               src="/images/piano-detail.png"
-              layout="panel"
               alt=""
               aria-hidden
               loading="lazy"
@@ -118,10 +116,9 @@ export function Contact() {
       <section className="section contact" id="contact">
         <ContactInner
           bg={
-            <ResponsiveImg
+            <img
               className="contact__bg gpu-media parallax-contact-bg"
               src="/images/piano-detail.png"
-              layout="panel"
               alt=""
               aria-hidden
               loading="lazy"
