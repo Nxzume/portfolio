@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "vite",
     "dev:server": "node --watch server/index.mjs",
-    "build": "tsc -b && vite build && npm run build:ssr && npm run prerender",
-    "build:deploy": "vite build && npm run build:ssr && npm run prerender",
+    "build": "npm run optimize:images && tsc -b && vite build && npm run build:ssr && npm run prerender",
+    "build:deploy": "npm run optimize:images && vite build && npm run build:ssr && npm run prerender",
     "build:ssr": "vite build --ssr src/entry-server.tsx --outDir dist-ssr",
     "prerender": "node scripts/prerender.mjs",
     "start": "node server/index.mjs",

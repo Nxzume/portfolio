@@ -159,7 +159,7 @@ export class ContentStore {
 
   async listMedia() {
     const out = []
-    const walk = async (dir, prefix) => {
+    const walk = async (dir, prefix, skipDirs = new Set()) => {
       let entries
       try {
         entries = await readdir(dir, { withFileTypes: true })
@@ -168,8 +168,10 @@ export class ContentStore {
       }
       for (const entry of entries) {
         const full = path.join(dir, entry.name)
-        if (entry.isDirectory()) await walk(full, `${prefix}${entry.name}/`)
-        else if (entry.isFile() && !entry.name.startsWith('.')) {
+        if (entry.isDirectory()) {
+          if (skipDirs.has(entry.name)) continue
+          await walk(full, `${prefix}${entry.name}/`, skipDirs)
+        } else if (entry.isFile() && !entry.name.startsWith('.')) {
           const info = await stat(full)
           out.push({ path: `${prefix}${entry.name}`, size: info.size, modified: info.mtime.toISOString() })
         }
@@ -178,8 +180,9 @@ export class ContentStore {
 
     // Uploaded files live in public/media; the original site assets live in
     // public/images and public/audio. Show all of them in the library.
+    // Skip /images/optimized — those are derived build artifacts, not library media.
     await walk(this.mediaDir, '/media/')
-    await walk(path.join(this.publicDir, 'images'), '/images/')
+    await walk(path.join(this.publicDir, 'images'), '/images/', new Set(['optimized']))
     await walk(path.join(this.publicDir, 'audio'), '/audio/')
 
     return out.sort((a, b) => b.modified.localeCompare(a.modified))
@@ -238,6 +241,9 @@ export class ContentStore {
     const prefix = Object.keys(prefixes).find((p) => typeof publicPath === 'string' && publicPath.startsWith(p))
     if (!prefix) {
       throw new HttpError(400, 'Path must start with /media/, /images/, or /audio/')
+    }
+    if (typeof publicPath === 'string' && publicPath.startsWith('/images/optimized/')) {
+      throw new HttpError(400, 'Optimized image derivatives cannot be deleted from the media library')
     }
     const rel = publicPath.slice(prefix.length)
     const base = prefixes[prefix]

@@ -9,10 +9,12 @@ RUN --mount=type=cache,target=/root/.npm npm ci
 
 COPY . .
 # Deploy build skips tsc — CI already typechecks every PR.
+# build:deploy also runs optimize:images so /images/optimized is present in public/.
 RUN npm run build:deploy
 # The server serves media from public/; the copies vite makes in dist/ are
 # redundant here and would bloat the runtime image. (The Cloudflare Pages
 # mirror workflow builds separately and keeps them.)
+# Keep public/images/optimized in public/ (served by the Node server).
 RUN rm -rf dist/images dist/audio dist/media
 
 FROM node:22-alpine

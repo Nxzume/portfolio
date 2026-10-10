@@ -16,6 +16,7 @@ import { Changelog } from './lib/changelog.mjs'
 import { loadConfig } from './lib/config.mjs'
 import { ContentStore, HttpError, isValidFileKey } from './lib/contentStore.mjs'
 import { collectContentFiles, publishSite } from './lib/github.mjs'
+import { optimizeImages } from './lib/optimizeImages.mjs'
 import { createPipeline } from './lib/pipeline.mjs'
 import { syncFromGitHub } from './lib/sync.mjs'
 
@@ -40,6 +41,13 @@ if (config.publishEnabled && config.syncOnBoot) {
   } catch (err) {
     console.error(`[sync] failed, using content baked into the image: ${err.message}`)
   }
+}
+
+// Rebuild mobile WebP derivatives after sync (admin publish must not leave them missing).
+try {
+  await optimizeImages()
+} catch (err) {
+  console.error(`[optimize:images] failed: ${err.message}`)
 }
 
 const auth = createAuth({
